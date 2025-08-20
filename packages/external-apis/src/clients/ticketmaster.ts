@@ -1,5 +1,8 @@
-import { BaseAPIClient, APIClientConfig } from "./base";
-import type { TicketmasterEvent, TicketmasterVenue } from "../types/ticketmaster";
+import type {
+  TicketmasterEvent,
+  TicketmasterVenue,
+} from "../types/ticketmaster";
+import { type APIClientConfig, BaseAPIClient } from "./base";
 
 export class TicketmasterClient extends BaseAPIClient {
   constructor(config: Omit<APIClientConfig, "baseURL">) {
@@ -15,16 +18,16 @@ export class TicketmasterClient extends BaseAPIClient {
     return {};
   }
 
-  protected async makeRequest<T>(
+  protected override async makeRequest<T>(
     endpoint: string,
     options: RequestInit = {},
     cacheKey?: string,
     cacheTTL?: number,
   ): Promise<T> {
     // Add apikey as query parameter for Ticketmaster
-    const separator = endpoint.includes('?') ? '&' : '?';
+    const separator = endpoint.includes("?") ? "&" : "?";
     const modifiedEndpoint = `${endpoint}${separator}apikey=${this.apiKey!}`;
-    
+
     return super.makeRequest(modifiedEndpoint, options, cacheKey, cacheTTL);
   }
 
@@ -112,21 +115,29 @@ export class TicketmasterClient extends BaseAPIClient {
     });
 
     // Add API key to params
-    params.append('apikey', this.apiKey!);
+    params.append("apikey", this.apiKey!);
 
     const url = `${this.baseURL}/attractions.json?${params}`;
-    console.log('Ticketmaster search URL:', url);
-    
+    console.log("Ticketmaster search URL:", url);
+
     const response = await fetch(url);
-    
+
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `API request failed: ${response.status} ${response.statusText}`,
+      );
     }
-    
-    return await response.json();
+
+    const result = (await response.json()) as {
+      _embedded?: { attractions: any[] };
+      page: any;
+    };
+    return result;
   }
 
-  async *iterateEventsByAttraction(attractionId: string): AsyncGenerator<TicketmasterEvent[], void, unknown> {
+  async *iterateEventsByAttraction(
+    attractionId: string,
+  ): AsyncGenerator<TicketmasterEvent[], void, unknown> {
     let page = 0;
     let totalPages = 1;
 
@@ -137,7 +148,10 @@ export class TicketmasterClient extends BaseAPIClient {
         page: page.toString(),
       });
 
-      const response = await this.makeRequest<{ _embedded?: { events: TicketmasterEvent[] }; page: any }>(
+      const response = await this.makeRequest<{
+        _embedded?: { events: TicketmasterEvent[] };
+        page: any;
+      }>(
         `/events.json?${params}`,
         {},
         `ticketmaster:events:attraction:${attractionId}:${page}`,
@@ -146,11 +160,11 @@ export class TicketmasterClient extends BaseAPIClient {
 
       totalPages = response.page?.totalPages ?? 0;
       const events = response._embedded?.events ?? [];
-      
+
       if (events.length > 0) {
         yield events;
       }
-      
+
       page++;
     }
   }

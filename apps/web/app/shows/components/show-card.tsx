@@ -149,7 +149,6 @@ export function ShowCard({ show }: ShowCardProps) {
               <Badge variant="destructive">Nearly Sold Out</Badge>
             </div>
           )}
-
         </div>
       </Link>
       <CardContent className="p-4">

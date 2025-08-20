@@ -108,7 +108,10 @@ export const UpcomingShows = React.memo(function UpcomingShows({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {shows.map(({ show, venue, isHeadliner }) => (
-          <Card key={show.id} className="transition-shadow hover:shadow-lg h-fit">
+          <Card
+            key={show.id}
+            className="transition-shadow hover:shadow-lg h-fit"
+          >
             <CardContent className="p-4">
               <div className="space-y-3">
                 <div className="space-y-2">
@@ -118,7 +121,11 @@ export const UpcomingShows = React.memo(function UpcomingShows({
                         {show.name}
                       </h3>
                     </Link>
-                    {isHeadliner && <Badge variant="secondary" className="text-xs shrink-0">Headliner</Badge>}
+                    {isHeadliner && (
+                      <Badge variant="secondary" className="text-xs shrink-0">
+                        Headliner
+                      </Badge>
+                    )}
                   </div>
 
                   <div className="space-y-1 text-xs text-muted-foreground">

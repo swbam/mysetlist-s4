@@ -1,12 +1,14 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest) {
     // Convert to CSV
     const csvHeaders = [
       "ID",
-      "Name", 
+      "Name",
       "Address",
       "City",
       "State",
@@ -64,26 +66,31 @@ export async function GET(request: NextRequest) {
       "Phone",
       "Email",
       "Website",
-      "Created At"
+      "Created At",
     ].join(",");
 
-    const csvRows = venues?.map(venue => [
-      venue.id,
-      venue.name,
-      venue.address || "",
-      venue.city,
-      venue.state,
-      venue.country,
-      venue.zip_code || "",
-      venue.latitude || "",
-      venue.longitude || "",
-      venue.capacity || "",
-      venue.verified ? "Yes" : "No",
-      venue.phone || "",
-      venue.email || "",
-      venue.website || "",
-      venue.created_at
-    ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")) || [];
+    const csvRows =
+      venues?.map((venue) =>
+        [
+          venue.id,
+          venue.name,
+          venue.address || "",
+          venue.city,
+          venue.state,
+          venue.country,
+          venue.zip_code || "",
+          venue.latitude || "",
+          venue.longitude || "",
+          venue.capacity || "",
+          venue.verified ? "Yes" : "No",
+          venue.phone || "",
+          venue.email || "",
+          venue.website || "",
+          venue.created_at,
+        ]
+          .map((field) => `"${String(field).replace(/"/g, '""')}"`)
+          .join(","),
+      ) || [];
 
     const csvContent = [csvHeaders, ...csvRows].join("\n");
 
@@ -91,14 +98,14 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "text/csv",
-        "Content-Disposition": `attachment; filename="venues-export-${new Date().toISOString().split('T')[0]}.csv"`,
+        "Content-Disposition": `attachment; filename="venues-export-${new Date().toISOString().split("T")[0]}.csv"`,
       },
     });
   } catch (error) {
     console.error("Error exporting venues:", error);
     return NextResponse.json(
       { error: "Failed to export venues" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -9,26 +9,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Progress } from "@repo/design-system/components/ui/progress";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
-import { Progress } from "@repo/design-system/components/ui/progress";
 import { format } from "date-fns";
 import {
   AlertTriangle,
   CheckCircle,
   Clock,
   Database,
-  Play,
   Pause,
+  Play,
   RefreshCw,
   Server,
   TrendingUp,
-  Zap,
   XCircle,
+  Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -36,7 +36,7 @@ interface QueueHealth {
   success: boolean;
   timestamp: string;
   health: {
-    status: 'healthy' | 'warning' | 'critical';
+    status: "healthy" | "warning" | "critical";
     score: number;
     redisConnection: string;
     workersRunning: boolean;
@@ -52,7 +52,7 @@ interface QueueHealth {
   };
   queues: Array<{
     name: string;
-    status: 'running' | 'paused' | 'error';
+    status: "running" | "paused" | "error";
     counts: {
       waiting: number;
       active: number;
@@ -115,22 +115,27 @@ export default function QueueHealthDashboard() {
           Authorization: "Bearer admin-token", // In real app, use proper auth
         },
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setQueueHealth(data);
     } catch (error) {
       console.error("Error fetching queue health:", error);
-      setError(error instanceof Error ? error.message : "Failed to fetch queue health");
+      setError(
+        error instanceof Error ? error.message : "Failed to fetch queue health",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const manageQueue = async (queueName: string, action: 'pause' | 'resume' | 'clean' | 'retry-failed') => {
+  const manageQueue = async (
+    queueName: string,
+    action: "pause" | "resume" | "clean" | "retry-failed",
+  ) => {
     try {
       const response = await fetch("/api/admin/queues", {
         method: "POST",
@@ -141,7 +146,10 @@ export default function QueueHealthDashboard() {
         body: JSON.stringify({
           action,
           queueName,
-          options: action === 'clean' ? { grace: 0, limit: 100, status: 'completed' } : undefined,
+          options:
+            action === "clean"
+              ? { grace: 0, limit: 100, status: "completed" }
+              : undefined,
         }),
       });
 
@@ -205,7 +213,7 @@ export default function QueueHealthDashboard() {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
-    
+
     if (hours > 0) return `${hours}h ${minutes % 60}m`;
     if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
     return `${seconds}s`;
@@ -215,7 +223,9 @@ export default function QueueHealthDashboard() {
     return (
       <div className="flex items-center justify-center h-64">
         <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-muted-foreground">Loading queue health...</span>
+        <span className="ml-2 text-muted-foreground">
+          Loading queue health...
+        </span>
       </div>
     );
   }
@@ -226,7 +236,11 @@ export default function QueueHealthDashboard() {
         <div className="text-center">
           <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
           <span className="text-red-500">{error}</span>
-          <Button onClick={fetchQueueHealth} className="mt-2 block mx-auto" variant="outline">
+          <Button
+            onClick={fetchQueueHealth}
+            className="mt-2 block mx-auto"
+            variant="outline"
+          >
             Retry
           </Button>
         </div>
@@ -252,11 +266,17 @@ export default function QueueHealthDashboard() {
             variant={autoRefresh ? "default" : "outline"}
             size="sm"
           >
-            {autoRefresh ? <Pause className="h-4 w-4 mr-1" /> : <Play className="h-4 w-4 mr-1" />}
+            {autoRefresh ? (
+              <Pause className="h-4 w-4 mr-1" />
+            ) : (
+              <Play className="h-4 w-4 mr-1" />
+            )}
             {autoRefresh ? "Pause" : "Resume"}
           </Button>
           <Button onClick={fetchQueueHealth} disabled={isLoading} size="sm">
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
         </div>
@@ -282,8 +302,12 @@ export default function QueueHealthDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Redis Connection</CardTitle>
-            <Database className={`h-4 w-4 ${queueHealth.health.redisConnection === 'connected' ? 'text-green-500' : 'text-red-500'}`} />
+            <CardTitle className="font-medium text-sm">
+              Redis Connection
+            </CardTitle>
+            <Database
+              className={`h-4 w-4 ${queueHealth.health.redisConnection === "connected" ? "text-green-500" : "text-red-500"}`}
+            />
           </CardHeader>
           <CardContent>
             <div className="font-bold text-2xl capitalize">
@@ -296,11 +320,14 @@ export default function QueueHealthDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="font-medium text-sm">Workers</CardTitle>
-            <Server className={`h-4 w-4 ${queueHealth.health.workersRunning ? 'text-green-500' : 'text-red-500'}`} />
+            <Server
+              className={`h-4 w-4 ${queueHealth.health.workersRunning ? "text-green-500" : "text-red-500"}`}
+            />
           </CardHeader>
           <CardContent>
             <div className="font-bold text-2xl">
-              {queueHealth.workers.workers.filter(w => w.running).length}/{queueHealth.workers.workers.length}
+              {queueHealth.workers.workers.filter((w) => w.running).length}/
+              {queueHealth.workers.workers.length}
             </div>
             <p className="text-muted-foreground text-xs">Running workers</p>
           </CardContent>
@@ -308,11 +335,15 @@ export default function QueueHealthDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Active Imports</CardTitle>
+            <CardTitle className="font-medium text-sm">
+              Active Imports
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-2xl">{queueHealth.health.activeImports}</div>
+            <div className="font-bold text-2xl">
+              {queueHealth.health.activeImports}
+            </div>
             <p className="text-muted-foreground text-xs">Running now</p>
           </CardContent>
         </Card>
@@ -320,10 +351,14 @@ export default function QueueHealthDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="font-medium text-sm">Error Rate</CardTitle>
-            <AlertTriangle className={`h-4 w-4 ${queueHealth.metrics.systemErrorRate > 5 ? 'text-red-500' : 'text-green-500'}`} />
+            <AlertTriangle
+              className={`h-4 w-4 ${queueHealth.metrics.systemErrorRate > 5 ? "text-red-500" : "text-green-500"}`}
+            />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-2xl">{queueHealth.metrics.systemErrorRate}%</div>
+            <div className="font-bold text-2xl">
+              {queueHealth.metrics.systemErrorRate}%
+            </div>
             <p className="text-muted-foreground text-xs">System-wide</p>
           </CardContent>
         </Card>
@@ -353,14 +388,23 @@ export default function QueueHealthDashboard() {
                     </div>
                     <div className="flex space-x-2">
                       <Button
-                        onClick={() => manageQueue(queue.name, queue.isPaused ? 'resume' : 'pause')}
+                        onClick={() =>
+                          manageQueue(
+                            queue.name,
+                            queue.isPaused ? "resume" : "pause",
+                          )
+                        }
                         size="sm"
                         variant="outline"
                       >
-                        {queue.isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                        {queue.isPaused ? (
+                          <Play className="h-4 w-4" />
+                        ) : (
+                          <Pause className="h-4 w-4" />
+                        )}
                       </Button>
                       <Button
-                        onClick={() => manageQueue(queue.name, 'clean')}
+                        onClick={() => manageQueue(queue.name, "clean")}
                         size="sm"
                         variant="outline"
                       >
@@ -368,7 +412,9 @@ export default function QueueHealthDashboard() {
                       </Button>
                       {queue.counts.failed > 0 && (
                         <Button
-                          onClick={() => manageQueue(queue.name, 'retry-failed')}
+                          onClick={() =>
+                            manageQueue(queue.name, "retry-failed")
+                          }
                           size="sm"
                           variant="outline"
                         >
@@ -391,23 +437,33 @@ export default function QueueHealthDashboard() {
                       <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
                           <span>Waiting:</span>
-                          <span className="font-medium">{queue.counts.waiting}</span>
+                          <span className="font-medium">
+                            {queue.counts.waiting}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Active:</span>
-                          <span className="font-medium text-blue-600">{queue.counts.active}</span>
+                          <span className="font-medium text-blue-600">
+                            {queue.counts.active}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Completed:</span>
-                          <span className="font-medium text-green-600">{queue.counts.completed}</span>
+                          <span className="font-medium text-green-600">
+                            {queue.counts.completed}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Failed:</span>
-                          <span className="font-medium text-red-600">{queue.counts.failed}</span>
+                          <span className="font-medium text-red-600">
+                            {queue.counts.failed}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Delayed:</span>
-                          <span className="font-medium text-yellow-600">{queue.counts.delayed}</span>
+                          <span className="font-medium text-yellow-600">
+                            {queue.counts.delayed}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -418,11 +474,15 @@ export default function QueueHealthDashboard() {
                       <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
                           <span>Hourly Rate:</span>
-                          <span className="font-medium">{queue.metrics.throughput.hourly} jobs/hr</span>
+                          <span className="font-medium">
+                            {queue.metrics.throughput.hourly} jobs/hr
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Error Rate:</span>
-                          <span className={`font-medium ${queue.metrics.errorRate > 5 ? 'text-red-600' : 'text-green-600'}`}>
+                          <span
+                            className={`font-medium ${queue.metrics.errorRate > 5 ? "text-red-600" : "text-green-600"}`}
+                          >
                             {queue.metrics.errorRate.toFixed(1)}%
                           </span>
                         </div>
@@ -435,8 +495,10 @@ export default function QueueHealthDashboard() {
                       <div className="space-y-1 text-xs">
                         {queue.sampleJobs.active.length > 0 && (
                           <div>
-                            <span className="text-blue-600 font-medium">Active:</span>
-                            {queue.sampleJobs.active.slice(0, 2).map(job => (
+                            <span className="text-blue-600 font-medium">
+                              Active:
+                            </span>
+                            {queue.sampleJobs.active.slice(0, 2).map((job) => (
                               <div key={job.id} className="ml-2 truncate">
                                 {job.name} ({job.progress || 0}%)
                               </div>
@@ -445,8 +507,10 @@ export default function QueueHealthDashboard() {
                         )}
                         {queue.sampleJobs.failed.length > 0 && (
                           <div>
-                            <span className="text-red-600 font-medium">Failed:</span>
-                            {queue.sampleJobs.failed.slice(0, 2).map(job => (
+                            <span className="text-red-600 font-medium">
+                              Failed:
+                            </span>
+                            {queue.sampleJobs.failed.slice(0, 2).map((job) => (
                               <div key={job.id} className="ml-2 truncate">
                                 {job.name}
                               </div>
@@ -468,7 +532,9 @@ export default function QueueHealthDashboard() {
             <Card>
               <CardContent className="p-6 text-center">
                 <Zap className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-muted-foreground">No active imports running</p>
+                <p className="text-muted-foreground">
+                  No active imports running
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -496,7 +562,8 @@ export default function QueueHealthDashboard() {
                       </div>
                       <Progress value={imp.progress} />
                       <p className="text-xs text-muted-foreground">
-                        Started: {format(new Date(imp.startedAt), "MMM d, HH:mm:ss")}
+                        Started:{" "}
+                        {format(new Date(imp.startedAt), "MMM d, HH:mm:ss")}
                       </p>
                     </div>
                   </CardContent>
@@ -512,15 +579,21 @@ export default function QueueHealthDashboard() {
             {queueHealth.workers.workers.map((worker) => (
               <Card key={worker.name}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="font-medium text-sm">{worker.name}</CardTitle>
-                  {getStatusIcon(worker.running ? 'running' : 'error')}
+                  <CardTitle className="font-medium text-sm">
+                    {worker.name}
+                  </CardTitle>
+                  {getStatusIcon(worker.running ? "running" : "error")}
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Status:</span>
-                      <span className={worker.running ? 'text-green-600' : 'text-red-600'}>
-                        {worker.running ? 'Running' : 'Stopped'}
+                      <span
+                        className={
+                          worker.running ? "text-green-600" : "text-red-600"
+                        }
+                      >
+                        {worker.running ? "Running" : "Stopped"}
                       </span>
                     </div>
                     {worker.jobCount && (
@@ -539,7 +612,8 @@ export default function QueueHealthDashboard() {
 
       {/* Last Updated */}
       <div className="text-center text-muted-foreground text-xs">
-        Last updated: {format(new Date(queueHealth.timestamp), "MMM d, yyyy HH:mm:ss")}
+        Last updated:{" "}
+        {format(new Date(queueHealth.timestamp), "MMM d, yyyy HH:mm:ss")}
         {autoRefresh && " • Auto-refreshing every 5 seconds"}
       </div>
     </div>

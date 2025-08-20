@@ -1,12 +1,12 @@
-import type { SimpleJob } from "../types";
-import { db, artists, shows, songs } from "@repo/database";
-import { sql, desc, eq } from "drizzle-orm";
+import { artists, db, shows, songs } from "@repo/database";
+import { desc, eq, sql } from "drizzle-orm";
 import { RedisCache } from "../redis-config";
+import type { SimpleJob } from "../types";
 
 const cache = new RedisCache();
 
 export interface CacheWarmJobData {
-  type: 'trending' | 'popular' | 'recent' | 'artist_details' | 'search_results';
+  type: "trending" | "popular" | "recent" | "artist_details" | "search_results";
   entityId?: string;
   query?: string;
   limit?: number;
@@ -14,48 +14,51 @@ export interface CacheWarmJobData {
 
 export async function processCacheWarm(job: SimpleJob<CacheWarmJobData>) {
   const { type, entityId, query, limit = 50 } = job.data;
-  
+
   try {
     await job.log(`Warming cache for ${type}`);
     await job.updateProgress(10);
-    
+
     switch (type) {
-      case 'trending':
+      case "trending":
         await warmTrendingCache(limit);
         break;
-      
-      case 'popular':
+
+      case "popular":
         await warmPopularCache(limit);
         break;
-      
-      case 'recent':
+
+      case "recent":
         await warmRecentCache(limit);
         break;
-      
-      case 'artist_details':
-        if (!entityId) throw new Error("Artist ID required for artist_details cache warming");
+
+      case "artist_details":
+        if (!entityId)
+          throw new Error(
+            "Artist ID required for artist_details cache warming",
+          );
         await warmArtistDetailsCache(entityId);
         break;
-      
-      case 'search_results':
-        if (!query) throw new Error("Query required for search_results cache warming");
+
+      case "search_results":
+        if (!query)
+          throw new Error("Query required for search_results cache warming");
         await warmSearchResultsCache(query, limit);
         break;
-      
+
       default:
         throw new Error(`Unknown cache warm type: ${type}`);
     }
-    
+
     await job.updateProgress(100);
     await job.log(`Cache warming completed for ${type}`);
-    
+
     return {
       success: true,
       type,
       entityId,
       query,
     };
-    
   } catch (error) {
     console.error(`Cache warming failed for ${type}:`, error);
     throw error;
@@ -72,10 +75,10 @@ async function warmTrendingCache(limit: number) {
     ORDER BY trending_score DESC
     LIMIT ${limit}
   `);
-  
+
   // Cache trending artists list
-  await cache.set('trending:artists', (trendingArtists as any).rows, 3600); // 1 hour
-  
+  await cache.set("trending:artists", (trendingArtists as any).rows, 3600); // 1 hour
+
   // Cache individual artist trending data
   for (const artist of (trendingArtists as any).rows) {
     await cache.set(`trending:artist:${artist.id}`, artist, 3600);
@@ -97,8 +100,8 @@ async function warmPopularCache(limit: number) {
     .where(sql`${artists.popularity} > 0`)
     .orderBy(desc(artists.popularity))
     .limit(limit);
-  
-  await cache.set('popular:artists', popularArtists, 7200); // 2 hours
+
+  await cache.set("popular:artists", popularArtists, 7200); // 2 hours
 }
 
 async function warmRecentCache(limit: number) {
@@ -114,9 +117,9 @@ async function warmRecentCache(limit: number) {
     .from(artists)
     .orderBy(desc(artists.createdAt))
     .limit(limit);
-  
-  await cache.set('recent:artists', recentArtists, 1800); // 30 minutes
-  
+
+  await cache.set("recent:artists", recentArtists, 1800); // 30 minutes
+
   // Get recent shows
   const recentShows = await db.execute(sql`
     SELECT 
@@ -130,8 +133,8 @@ async function warmRecentCache(limit: number) {
     ORDER BY s.date DESC
     LIMIT ${limit}
   `);
-  
-  await cache.set('recent:shows', (recentShows as any).rows, 1800); // 30 minutes
+
+  await cache.set("recent:shows", (recentShows as any).rows, 1800); // 30 minutes
 }
 
 async function warmArtistDetailsCache(artistId: string) {
@@ -141,14 +144,14 @@ async function warmArtistDetailsCache(artistId: string) {
     .from(artists)
     .where(eq(artists.id, artistId))
     .limit(1);
-  
+
   if (!artist) {
     throw new Error(`Artist not found: ${artistId}`);
   }
-  
+
   // Cache artist details
   await cache.set(`artist:details:${artistId}`, artist, 3600); // 1 hour
-  
+
   // Get and cache artist's upcoming shows
   const upcomingShows = await db.execute(sql`
     SELECT 
@@ -161,9 +164,13 @@ async function warmArtistDetailsCache(artistId: string) {
     ORDER BY s.date ASC
     LIMIT 20
   `);
-  
-  await cache.set(`artist:shows:upcoming:${artistId}`, (upcomingShows as any).rows, 1800);
-  
+
+  await cache.set(
+    `artist:shows:upcoming:${artistId}`,
+    (upcomingShows as any).rows,
+    1800,
+  );
+
   // Get and cache artist's top songs
   const topSongs = await db.execute(sql`
     SELECT 
@@ -174,13 +181,13 @@ async function warmArtistDetailsCache(artistId: string) {
     ORDER BY s.popularity DESC
     LIMIT 10
   `);
-  
+
   await cache.set(`artist:songs:top:${artistId}`, (topSongs as any).rows, 7200);
 }
 
 async function warmSearchResultsCache(query: string, limit: number) {
-  const searchKey = `search:${query.toLowerCase().replace(/\s+/g, '_')}`;
-  
+  const searchKey = `search:${query.toLowerCase().replace(/\s+/g, "_")}`;
+
   // Search artists
   const artistResults = await db.execute(sql`
     SELECT 
@@ -188,7 +195,7 @@ async function warmSearchResultsCache(query: string, limit: number) {
     FROM ${artists}
     WHERE 
       name ILIKE ${`%${query}%`}
-      OR slug ILIKE ${`%${query.replace(/\s+/g, '-')}%`}
+      OR slug ILIKE ${`%${query.replace(/\s+/g, "-")}%`}
     ORDER BY 
       CASE 
         WHEN name ILIKE ${query} THEN 1
@@ -198,9 +205,9 @@ async function warmSearchResultsCache(query: string, limit: number) {
       popularity DESC
     LIMIT ${limit}
   `);
-  
+
   await cache.set(`${searchKey}:artists`, (artistResults as any).rows, 1800);
-  
+
   // Search songs
   const songResults = await db.execute(sql`
     SELECT 
@@ -212,22 +219,22 @@ async function warmSearchResultsCache(query: string, limit: number) {
     ORDER BY s.popularity DESC
     LIMIT ${limit}
   `);
-  
+
   await cache.set(`${searchKey}:songs`, (songResults as any).rows, 1800);
 }
 
 // Helper function to queue cache warming
 export async function queueCacheWarm(
-  type: CacheWarmJobData['type'],
+  type: CacheWarmJobData["type"],
   options?: {
     entityId?: string;
     query?: string;
     limit?: number;
     delay?: number;
-  }
+  },
 ) {
   const { queueManager, QueueName } = await import("../queue-manager");
-  
+
   return await queueManager.addJob(
     QueueName.CACHE_WARM,
     `cache-warm-${type}-${Date.now()}`,
@@ -242,6 +249,6 @@ export async function queueCacheWarm(
       delay: options?.delay || 0,
       removeOnComplete: { count: 20 },
       removeOnFail: { count: 10 },
-    }
+    },
   );
 }

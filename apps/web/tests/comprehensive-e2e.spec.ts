@@ -1,12 +1,18 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test("comprehensive e2e test", async ({ page }) => {
   console.log("Navigating to the homepage...");
   await page.goto("http://localhost:3001");
 
   console.log("Searching for an artist...");
-  await page.fill('input[placeholder="Search artists, shows, venues..."]', "The Strokes");
-  await page.press('input[placeholder="Search artists, shows, venues..."]', "Enter");
+  await page.fill(
+    'input[placeholder="Search artists, shows, venues..."]',
+    "The Strokes",
+  );
+  await page.press(
+    'input[placeholder="Search artists, shows, venues..."]',
+    "Enter",
+  );
 
   console.log("Clicking on the first search result...");
   await page.click(".list-group-item:first-child");

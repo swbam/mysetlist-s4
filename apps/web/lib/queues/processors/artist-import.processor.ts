@@ -1,11 +1,15 @@
-import type { SimpleJob } from "../types";
-import { queueManager, QueueName, Priority } from "../queue-manager";
-import { RedisCache } from "../redis-config";
-import { db, artists } from "@repo/database";
+import { artists, db } from "@repo/database";
+import {
+  SpotifyClient,
+  TicketmasterClient,
+  runFullImport,
+} from "@repo/external-apis";
 import { eq } from "drizzle-orm";
-import { TicketmasterClient, SpotifyClient, runFullImport } from "@repo/external-apis";
-import { updateImportStatus } from "../../import-status";
 import { v4 as uuidv4 } from "uuid";
+import { updateImportStatus } from "../../import-status";
+import { Priority, QueueName, queueManager } from "../queue-manager";
+import { RedisCache } from "../redis-config";
+import type { SimpleJob } from "../types";
 
 // Lazy cache instance to avoid connecting during import-time
 let _cache: RedisCache | null = null;
@@ -36,15 +40,26 @@ export interface ArtistImportResult {
   followUpJobs: string[];
 }
 
-export async function processArtistImport(job: SimpleJob<ArtistImportJobData>): Promise<ArtistImportResult> {
-  const { artistId, tmAttractionId, spotifyArtistId, artistName, userId, adminImport, priority = Priority.NORMAL } = job.data;
-  
+export async function processArtistImport(
+  job: SimpleJob<ArtistImportJobData>,
+): Promise<ArtistImportResult> {
+  const {
+    artistId,
+    tmAttractionId,
+    spotifyArtistId,
+    artistName,
+    userId,
+    adminImport,
+    priority = Priority.NORMAL,
+  } = job.data;
+
   // Support both new job structure (from initiateImport) and legacy structure
   const actualArtistId = artistId;
   const actualTmAttractionId = tmAttractionId;
-  const jobId = job.id || `import_${actualArtistId || actualTmAttractionId}_${Date.now()}`;
+  const jobId =
+    job.id || `import_${actualArtistId || actualTmAttractionId}_${Date.now()}`;
   const startTime = Date.now();
-  
+
   try {
     await job.updateProgress(5);
     await updateImportStatus(jobId, {
@@ -54,26 +69,26 @@ export async function processArtistImport(job: SimpleJob<ArtistImportJobData>): 
       artistId: actualArtistId,
       artistName: artistName || "Loading...",
     });
-    
+
     // For new job structure from initiateImport, directly call runFullImport
     if (actualArtistId) {
       await job.updateProgress(10);
       await job.log(`Running full import for artist ${actualArtistId}`);
-      
+
       // Call the orchestrator's runFullImport function
       await runFullImport(actualArtistId);
-      
+
       // Get final artist data
       const [artist] = await db
         .select()
         .from(artists)
         .where(eq(artists.id, actualArtistId))
         .limit(1);
-      
+
       if (!artist) {
         throw new Error(`Artist not found after import: ${actualArtistId}`);
       }
-      
+
       const result: ArtistImportResult = {
         success: true,
         artistId: artist.id,
@@ -85,7 +100,7 @@ export async function processArtistImport(job: SimpleJob<ArtistImportJobData>): 
         phase1Duration: Date.now() - startTime,
         followUpJobs: [],
       };
-      
+
       await job.updateProgress(100);
       await updateImportStatus(jobId, {
         stage: "completed",
@@ -94,15 +109,15 @@ export async function processArtistImport(job: SimpleJob<ArtistImportJobData>): 
         artistId: artist.id,
         completedAt: new Date().toISOString(),
       });
-      
+
       return result;
     }
-    
+
     // Legacy processing for backward compatibility
     if (!actualTmAttractionId) {
       throw new Error("Either artistId or tmAttractionId is required");
     }
-    
+
     // Check cache first for legacy processing
     const cacheKey = `artist:import:${actualTmAttractionId}`;
     const cachedResult = await getCache().get<ArtistImportResult>(cacheKey);
@@ -110,61 +125,64 @@ export async function processArtistImport(job: SimpleJob<ArtistImportJobData>): 
       await job.updateProgress(100);
       return { ...cachedResult, cached: true };
     }
-    
+
     // Phase 1: Create artist placeholder (< 3 seconds)
     const phase1Start = Date.now();
-    
+
     // Get artist from Ticketmaster
     await job.updateProgress(10);
     const ticketmaster = new TicketmasterClient({
       apiKey: process.env.TICKETMASTER_API_KEY || "",
     });
-    
+
     const tmArtist = await withTimeout(
       ticketmaster.getAttraction(actualTmAttractionId),
       2000,
-      "Ticketmaster timeout"
+      "Ticketmaster timeout",
     );
-    
+
     if (!tmArtist || !tmArtist.name) {
-      throw new Error(`Artist not found on Ticketmaster: ${actualTmAttractionId}`);
+      throw new Error(
+        `Artist not found on Ticketmaster: ${actualTmAttractionId}`,
+      );
     }
-    
+
     await job.updateProgress(20);
     await updateImportStatus(jobId, {
       stage: "syncing-identifiers",
       progress: 20,
       message: `Found artist: ${tmArtist.name}`,
     });
-    
+
     // Quick Spotify lookup (1 second timeout)
     let spotifyData: any = null;
     try {
       const spotify = new SpotifyClient({});
       await spotify.authenticate();
-      
+
       const searchResult = await withTimeout(
         spotify.searchArtists(tmArtist.name, 1),
         1000,
-        "Spotify timeout"
+        "Spotify timeout",
       );
-      
+
       if (searchResult?.artists?.items?.[0]) {
         spotifyData = searchResult.artists.items[0];
       }
     } catch (error) {
       console.warn("Spotify quick lookup failed:", error);
     }
-    
+
     // Create or update artist record
     const slug = generateSlug(spotifyData?.name || tmArtist.name);
-    
+
     const artistData = {
       tmAttractionId: actualTmAttractionId,
       spotifyId: spotifyData?.id || null,
       name: spotifyData?.name || tmArtist.name,
       slug,
-      imageUrl: spotifyData?.images?.[0]?.url || tmArtist.images?.[0]?.url || null,
+      imageUrl:
+        spotifyData?.images?.[0]?.url || tmArtist.images?.[0]?.url || null,
       smallImageUrl: spotifyData?.images?.[2]?.url || null,
       genres: JSON.stringify(spotifyData?.genres || []),
       popularity: spotifyData?.popularity || 0,
@@ -173,7 +191,7 @@ export async function processArtistImport(job: SimpleJob<ArtistImportJobData>): 
       verified: false,
       lastSyncedAt: new Date(),
     };
-    
+
     const [artist] = await db
       .insert(artists)
       .values(artistData)
@@ -185,13 +203,13 @@ export async function processArtistImport(job: SimpleJob<ArtistImportJobData>): 
         },
       })
       .returning();
-    
+
     if (!artist) {
       throw new Error("Failed to create or update artist");
     }
-    
+
     const phase1Duration = Date.now() - phase1Start;
-    
+
     await job.updateProgress(30);
     await updateImportStatus(jobId, {
       stage: "importing-shows",
@@ -201,10 +219,10 @@ export async function processArtistImport(job: SimpleJob<ArtistImportJobData>): 
       artistName: artist?.name || tmArtist.name,
       slug: artist?.slug || slug,
     });
-    
+
     // Run full import using orchestrator
     await runFullImport(artist.id);
-    
+
     // Cache the result
     const result: ArtistImportResult = {
       success: true,
@@ -217,9 +235,9 @@ export async function processArtistImport(job: SimpleJob<ArtistImportJobData>): 
       phase1Duration,
       followUpJobs: [],
     };
-    
+
     await getCache().set(cacheKey, result, 300); // Cache for 5 minutes
-    
+
     await job.updateProgress(100);
     await updateImportStatus(jobId, {
       stage: "completed",
@@ -228,19 +246,18 @@ export async function processArtistImport(job: SimpleJob<ArtistImportJobData>): 
       artistId: (artist?.id as string) || "",
       completedAt: new Date().toISOString(),
     });
-    
+
     return result;
-    
   } catch (error) {
-    console.error(`Artist import failed:`, error);
-    
+    console.error("Artist import failed:", error);
+
     await updateImportStatus(jobId, {
       stage: "failed",
       progress: 0,
       message: "Import failed",
       error: error instanceof Error ? error.message : "Unknown error",
     });
-    
+
     throw error;
   }
 }
@@ -250,7 +267,7 @@ async function queueFollowUpJobs(
   spotifyId: string | null,
   tmAttractionId: string,
   priority: Priority,
-  parentJobId: string
+  parentJobId: string,
 ): Promise<string[]> {
   const jobIds: string[] = [];
   const jobs: Array<{
@@ -258,9 +275,8 @@ async function queueFollowUpJobs(
     name: string;
     data: any;
     opts?: any;
-
   }> = [];
-  
+
   // Queue Spotify sync if we have Spotify ID
   if (spotifyId) {
     const spotifyJobId = `spotify_${artistId}_${Date.now()}`;
@@ -270,7 +286,7 @@ async function queueFollowUpJobs(
       data: {
         artistId,
         spotifyId,
-        syncType: 'profile',
+        syncType: "profile",
         parentJobId,
       },
       opts: {
@@ -279,7 +295,7 @@ async function queueFollowUpJobs(
       },
     });
     jobIds.push(spotifyJobId);
-    
+
     // Queue deep catalog sync as lower priority
     const catalogJobId = `catalog_${artistId}_${Date.now()}`;
     jobs.push({
@@ -299,7 +315,7 @@ async function queueFollowUpJobs(
     });
     jobIds.push(catalogJobId);
   }
-  
+
   // Queue Ticketmaster shows sync
   const tmJobId = `tm_${artistId}_${Date.now()}`;
   jobs.push({
@@ -308,7 +324,7 @@ async function queueFollowUpJobs(
     data: {
       artistId,
       tmAttractionId,
-      syncType: 'shows',
+      syncType: "shows",
       parentJobId,
     },
     opts: {
@@ -317,7 +333,7 @@ async function queueFollowUpJobs(
     },
   });
   jobIds.push(tmJobId);
-  
+
   // Queue venue sync with delay
   const venueJobId = `venue_${artistId}_${Date.now()}`;
   jobs.push({
@@ -334,24 +350,24 @@ async function queueFollowUpJobs(
     },
   });
   jobIds.push(venueJobId);
-  
+
   // Add jobs to queues
   for (const job of jobs) {
     await queueManager.addJob(job.queue, job.name, job.data, job.opts);
   }
-  
+
   return jobIds;
 }
 
 function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
-  errorMessage: string
+  errorMessage: string,
 ): Promise<T> {
   return Promise.race([
     promise,
     new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(errorMessage)), timeoutMs)
+      setTimeout(() => reject(new Error(errorMessage)), timeoutMs),
     ),
   ]);
 }

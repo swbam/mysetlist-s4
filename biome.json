@@ -10,7 +10,8 @@
       "complexity": {
         "noForEach": "off",
         "noBannedTypes": "off",
-        "noStaticOnlyClass": "off"
+        "noStaticOnlyClass": "off",
+        "useLiteralKeys": "off"
       },
       "style": {
         "noNonNullAssertion": "off",

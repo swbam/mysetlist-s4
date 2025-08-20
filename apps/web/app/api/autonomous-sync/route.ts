@@ -1,6 +1,6 @@
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     return createErrorResponse(
       "Autonomous sync failed",
       500,
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }
@@ -53,36 +53,39 @@ export async function GET(request: NextRequest) {
  */
 async function handleTrendingPipeline() {
   const startTime = Date.now();
-  
+
   try {
     // Trigger existing trending sync endpoint
-    const trendingResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3001'}/api/cron/sync-trending`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.CRON_SECRET}`,
-        'Content-Type': 'application/json',
+    const trendingResponse = await fetch(
+      `${process.env.VERCEL_URL || "http://localhost:3001"}/api/cron/sync-trending`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.CRON_SECRET}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          pipeline: "autonomous-trending",
+          batchSize: 50,
+          skipRecentlyUpdated: true,
+        }),
       },
-      body: JSON.stringify({
-        pipeline: 'autonomous-trending',
-        batchSize: 50,
-        skipRecentlyUpdated: true,
-      }),
-    });
+    );
 
     if (!trendingResponse.ok) {
       throw new Error(`Trending sync failed: ${trendingResponse.status}`);
     }
 
     const trendingResult = await trendingResponse.json();
-    
+
     // Update autonomous sync health
-    const supabase = createRouteHandlerClient({ 
-      cookies: cookies
+    const supabase = createRouteHandlerClient({
+      cookies: cookies,
     });
 
-    await supabase.rpc('log_autonomous_sync', {
-      pipeline_name: 'trending',
-      status: 'success',
+    await supabase.rpc("log_autonomous_sync", {
+      pipeline_name: "trending",
+      status: "success",
       processing_time: Date.now() - startTime,
       metadata: trendingResult,
     });
@@ -93,21 +96,20 @@ async function handleTrendingPipeline() {
       processingTime: Date.now() - startTime,
       results: trendingResult,
     });
-
   } catch (error) {
     console.error("Trending pipeline error:", error);
-    
+
     // Log failure
     try {
-      const supabase = createRouteHandlerClient({ 
-        cookies: cookies
+      const supabase = createRouteHandlerClient({
+        cookies: cookies,
       });
 
-      await supabase.rpc('log_autonomous_sync', {
-        pipeline_name: 'trending',
-        status: 'failed',
+      await supabase.rpc("log_autonomous_sync", {
+        pipeline_name: "trending",
+        status: "failed",
         processing_time: Date.now() - startTime,
-        error_message: error instanceof Error ? error.message : 'Unknown error',
+        error_message: error instanceof Error ? error.message : "Unknown error",
       });
     } catch {}
 
@@ -121,22 +123,25 @@ async function handleTrendingPipeline() {
  */
 async function handleSyncPipeline() {
   const startTime = Date.now();
-  
+
   try {
     // Trigger artist sync with batch processing
-    const syncResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3001'}/api/cron/trending-artist-sync`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.CRON_SECRET}`,
-        'Content-Type': 'application/json',
+    const syncResponse = await fetch(
+      `${process.env.VERCEL_URL || "http://localhost:3001"}/api/cron/trending-artist-sync`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.CRON_SECRET}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          pipeline: "autonomous-sync",
+          limit: 100,
+          skipRecentlyUpdated: true,
+          parallelBatches: 3,
+        }),
       },
-      body: JSON.stringify({
-        pipeline: 'autonomous-sync',
-        limit: 100,
-        skipRecentlyUpdated: true,
-        parallelBatches: 3,
-      }),
-    });
+    );
 
     if (!syncResponse.ok) {
       throw new Error(`Sync pipeline failed: ${syncResponse.status}`);
@@ -145,13 +150,13 @@ async function handleSyncPipeline() {
     const syncResult = await syncResponse.json();
 
     // Update autonomous sync health
-    const supabase = createRouteHandlerClient({ 
-      cookies: cookies
+    const supabase = createRouteHandlerClient({
+      cookies: cookies,
     });
 
-    await supabase.rpc('log_autonomous_sync', {
-      pipeline_name: 'sync',
-      status: 'success', 
+    await supabase.rpc("log_autonomous_sync", {
+      pipeline_name: "sync",
+      status: "success",
       processing_time: Date.now() - startTime,
       metadata: syncResult,
     });
@@ -162,21 +167,20 @@ async function handleSyncPipeline() {
       processingTime: Date.now() - startTime,
       results: syncResult,
     });
-
   } catch (error) {
     console.error("Sync pipeline error:", error);
 
     // Log failure
     try {
-      const supabase = createRouteHandlerClient({ 
-        cookies: cookies
+      const supabase = createRouteHandlerClient({
+        cookies: cookies,
       });
 
-      await supabase.rpc('log_autonomous_sync', {
-        pipeline_name: 'sync',
-        status: 'failed',
+      await supabase.rpc("log_autonomous_sync", {
+        pipeline_name: "sync",
+        status: "failed",
         processing_time: Date.now() - startTime,
-        error_message: error instanceof Error ? error.message : 'Unknown error',
+        error_message: error instanceof Error ? error.message : "Unknown error",
       });
     } catch {}
 
@@ -185,7 +189,7 @@ async function handleSyncPipeline() {
 }
 
 /**
- * PIPELINE 3: Maintenance Engine (Daily at 3 AM)  
+ * PIPELINE 3: Maintenance Engine (Daily at 3 AM)
  * Database cleanup, optimization, and health monitoring
  */
 async function handleMaintenancePipeline() {
@@ -198,17 +202,20 @@ async function handleMaintenancePipeline() {
   };
 
   try {
-    const supabase = createRouteHandlerClient({ 
-      cookies: cookies
+    const supabase = createRouteHandlerClient({
+      cookies: cookies,
     });
 
     // 1. Database Maintenance
     try {
       // Clean up old import status records (> 7 days)
       const { error: cleanupError } = await supabase
-        .from('import_status')
+        .from("import_status")
         .delete()
-        .lt('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+        .lt(
+          "created_at",
+          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        );
 
       if (!cleanupError) results.cleanupOperations++;
     } catch (error) {
@@ -217,8 +224,8 @@ async function handleMaintenancePipeline() {
 
     // 2. Update trending scores
     try {
-      await supabase.rpc('update_trending_scores');
-      await supabase.rpc('refresh_trending_data');
+      await supabase.rpc("update_trending_scores");
+      await supabase.rpc("refresh_trending_data");
       results.optimizationQueries += 2;
     } catch (error) {
       results.errors.push(`Trending update failed: ${error}`);
@@ -227,9 +234,9 @@ async function handleMaintenancePipeline() {
     // 3. Health checks
     try {
       const { data: healthData } = await supabase
-        .from('autonomous_sync_health')
-        .select('*');
-      
+        .from("autonomous_sync_health")
+        .select("*");
+
       if (healthData) results.healthChecks++;
     } catch (error) {
       results.errors.push(`Health check failed: ${error}`);
@@ -237,48 +244,53 @@ async function handleMaintenancePipeline() {
 
     // 4. Cache cleanup
     try {
-      const cacheResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3001'}/api/admin/cache/cleanup`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+      const cacheResponse = await fetch(
+        `${process.env.VERCEL_URL || "http://localhost:3001"}/api/admin/cache/cleanup`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.CRON_SECRET}`,
+          },
         },
-      });
-      
+      );
+
       if (cacheResponse.ok) results.cleanupOperations++;
     } catch (error) {
       results.errors.push(`Cache cleanup failed: ${error}`);
     }
 
     // Log maintenance completion
-    await supabase.rpc('log_autonomous_sync', {
-      pipeline_name: 'maintenance',
-      status: results.errors.length === 0 ? 'success' : 'partial_success',
+    await supabase.rpc("log_autonomous_sync", {
+      pipeline_name: "maintenance",
+      status: results.errors.length === 0 ? "success" : "partial_success",
       processing_time: Date.now() - startTime,
       metadata: results,
     });
 
     return createSuccessResponse({
       pipeline: "maintenance",
-      status: results.errors.length === 0 ? "completed" : "completed_with_errors",
+      status:
+        results.errors.length === 0 ? "completed" : "completed_with_errors",
       processingTime: Date.now() - startTime,
       results,
     });
-
   } catch (error) {
     console.error("Maintenance pipeline error:", error);
-    results.errors.push(error instanceof Error ? error.message : 'Unknown error');
+    results.errors.push(
+      error instanceof Error ? error.message : "Unknown error",
+    );
 
     // Log failure
     try {
-      const supabase = createRouteHandlerClient({ 
-        cookies: cookies
+      const supabase = createRouteHandlerClient({
+        cookies: cookies,
       });
 
-      await supabase.rpc('log_autonomous_sync', {
-        pipeline_name: 'maintenance',
-        status: 'failed',
+      await supabase.rpc("log_autonomous_sync", {
+        pipeline_name: "maintenance",
+        status: "failed",
         processing_time: Date.now() - startTime,
-        error_message: error instanceof Error ? error.message : 'Unknown error',
+        error_message: error instanceof Error ? error.message : "Unknown error",
       });
     } catch {}
 

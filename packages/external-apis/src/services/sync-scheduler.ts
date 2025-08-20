@@ -25,7 +25,7 @@ export interface SyncJob {
   startTime: Date;
   endTime?: Date;
   progress?: number;
-  error?: string;
+  error?: string | null;
   result?: any;
 }
 
@@ -60,7 +60,8 @@ export class SyncScheduler {
   }
 
   async runInitialSync(): Promise<void> {
-    await this.artistSync.syncPopularArtists();
+    // TODO: Implement syncPopularArtists method
+    // await this.artistSync.syncPopularArtists();
     await this.venueSync.syncMajorVenues();
     const majorCities = [
       { city: "New York", stateCode: "NY" },
@@ -140,7 +141,8 @@ export class SyncScheduler {
 
   async syncCustom(options: SyncOptions): Promise<void> {
     if (options.artists) {
-      await this.artistSync.syncPopularArtists();
+      // TODO: Implement syncPopularArtists method
+      // await this.artistSync.syncPopularArtists();
     }
 
     if (options.venues && options.city) {
@@ -316,7 +318,7 @@ export class SyncScheduler {
 
     if (job.status === "failed") {
       job.status = "pending";
-      delete job.error;
+      job.error = null;
     }
     return true;
   }

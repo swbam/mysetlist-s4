@@ -1,6 +1,6 @@
 import { db, rateLimits } from "@repo/database";
-import { and, eq, sql } from "drizzle-orm";
 import { type SupabaseClient, createClient } from "@supabase/supabase-js";
+import { and, eq, sql } from "drizzle-orm";
 import { keys } from "./keys";
 
 // Initialize Supabase client lazily

@@ -72,10 +72,17 @@ interface SecurityEvent {
 
 export default function MonitoringDashboard() {
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
-  const [databaseMetrics, setDatabaseMetrics] = useState<DatabaseMetrics | null>(null);
+  const [databaseMetrics, setDatabaseMetrics] =
+    useState<DatabaseMetrics | null>(null);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
-  const [apiPerformance, setApiPerformance] = useState<Array<{endpoint: string, time: number, requests: number}>>([]);
-  const [resourceUsage, setResourceUsage] = useState<{cpu: number, memory: number, disk: number}>({cpu: 0, memory: 0, disk: 0});
+  const [apiPerformance, setApiPerformance] = useState<
+    Array<{ endpoint: string; time: number; requests: number }>
+  >([]);
+  const [resourceUsage, setResourceUsage] = useState<{
+    cpu: number;
+    memory: number;
+    disk: number;
+  }>({ cpu: 0, memory: 0, disk: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -89,16 +96,19 @@ export default function MonitoringDashboard() {
     setIsLoading(true);
     try {
       const response = await fetch("/api/admin/monitoring");
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
 
       // Update system health
       setSystemHealth({
-        status: data.metrics.systemStatus.toLowerCase() as "healthy" | "warning" | "critical",
+        status: data.metrics.systemStatus.toLowerCase() as
+          | "healthy"
+          | "warning"
+          | "critical",
         uptime: data.metrics.uptime,
         responseTime: data.metrics.averageResponseTime,
         errorRate: data.metrics.errorRate,
@@ -119,7 +129,9 @@ export default function MonitoringDashboard() {
       setApiPerformance(data.metrics.apiPerformance || []);
 
       // Update resource usage
-      setResourceUsage(data.metrics.resourceUsage || {cpu: 0, memory: 0, disk: 0});
+      setResourceUsage(
+        data.metrics.resourceUsage || { cpu: 0, memory: 0, disk: 0 },
+      );
     } catch (error) {
       console.error("Error fetching monitoring data:", error);
       // Set fallback data on error if no data exists
@@ -176,7 +188,9 @@ export default function MonitoringDashboard() {
     return (
       <div className="flex items-center justify-center h-64">
         <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-muted-foreground">Loading monitoring data...</span>
+        <span className="ml-2 text-muted-foreground">
+          Loading monitoring data...
+        </span>
       </div>
     );
   }
@@ -187,7 +201,11 @@ export default function MonitoringDashboard() {
         <div className="text-center">
           <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
           <span className="text-red-500">Failed to load monitoring data</span>
-          <Button onClick={fetchMonitoringData} className="mt-2 block mx-auto" variant="outline">
+          <Button
+            onClick={fetchMonitoringData}
+            className="mt-2 block mx-auto"
+            variant="outline"
+          >
             Retry
           </Button>
         </div>

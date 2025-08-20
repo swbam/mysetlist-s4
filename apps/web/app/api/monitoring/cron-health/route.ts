@@ -35,12 +35,15 @@ export async function GET(request: NextRequest) {
 
     const response: any = {
       timestamp: new Date().toISOString(),
-      systemHealth: { status: 'disabled', message: 'Monitoring temporarily disabled' },
+      systemHealth: {
+        status: "disabled",
+        message: "Monitoring temporarily disabled",
+      },
     };
 
     if (jobName) {
       // Get specific job health and metrics
-      response.jobHealth = { status: 'disabled' };
+      response.jobHealth = { status: "disabled" };
 
       if (includeMetrics) {
         response.metrics = [];
@@ -50,7 +53,7 @@ export async function GET(request: NextRequest) {
       response.allJobs = [];
 
       if (includeReport) {
-        response.fullReport = { status: 'disabled' };
+        response.fullReport = { status: "disabled" };
       }
     }
 
@@ -109,7 +112,7 @@ export async function POST(request: NextRequest) {
       case "triggerHealthCheck":
         // Manually trigger a health check
         result = {
-          systemHealth: { status: 'disabled' },
+          systemHealth: { status: "disabled" },
           timestamp: new Date().toISOString(),
         };
         break;
@@ -119,7 +122,7 @@ export async function POST(request: NextRequest) {
           result = {
             jobName,
             metrics: [],
-            health: { status: 'disabled' },
+            health: { status: "disabled" },
           };
         } else {
           return NextResponse.json(

@@ -8,11 +8,11 @@ export interface SimpleJob<T = any> {
   createdAt: string;
   processAt: string;
   status: string;
-  
+
   // BullMQ-compatible methods (added by SimpleQueue processor)
   log: (message: string) => Promise<void>;
   updateProgress: (progress: number) => Promise<void>;
 }
 
 // Re-export common queue types
-export { QueueName, Priority, type JobOptions } from './queue-manager';
+export { QueueName, Priority, type JobOptions } from "./queue-manager";

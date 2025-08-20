@@ -11,47 +11,53 @@ import {
 } from "drizzle-orm/pg-core";
 import { songs } from "./setlists";
 
-export const artists = pgTable("artists", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  tmAttractionId: text("tm_attraction_id").unique(), // Ticketmaster Attraction ID
-  spotifyId: text("spotify_id").unique(),
-  mbid: text("mbid").unique(), // MusicBrainz ID for Setlist.fm
-  name: text("name").notNull(),
-  slug: text("slug").unique().notNull(),
-  imageUrl: text("image_url"),
-  smallImageUrl: text("small_image_url"),
-  genres: text("genres"), // JSON array
-  popularity: integer("popularity").default(0),
-  followers: integer("followers").default(0), // Spotify followers
-  followerCount: integer("follower_count").default(0), // App followers
-  monthlyListeners: integer("monthly_listeners"),
-  verified: boolean("verified").default(false),
-  externalUrls: text("external_urls"), // JSON object
-  importStatus: text("import_status"), // "pending" | "in_progress" | "complete" | "failed"
-  lastSyncedAt: timestamp("last_synced_at"),
-  songCatalogSyncedAt: timestamp("song_catalog_synced_at"),
-  showsSyncedAt: timestamp("shows_synced_at"),
-  totalAlbums: integer("total_albums").default(0),
-  totalSongs: integer("total_songs").default(0),
-  lastFullSyncAt: timestamp("last_full_sync_at"),
+export const artists = pgTable(
+  "artists",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tmAttractionId: text("tm_attraction_id").unique(), // Ticketmaster Attraction ID
+    spotifyId: text("spotify_id").unique(),
+    mbid: text("mbid").unique(), // MusicBrainz ID for Setlist.fm
+    name: text("name").notNull(),
+    slug: text("slug").unique().notNull(),
+    imageUrl: text("image_url"),
+    smallImageUrl: text("small_image_url"),
+    genres: text("genres"), // JSON array
+    popularity: integer("popularity").default(0),
+    followers: integer("followers").default(0), // Spotify followers
+    followerCount: integer("follower_count").default(0), // App followers
+    monthlyListeners: integer("monthly_listeners"),
+    verified: boolean("verified").default(false),
+    externalUrls: text("external_urls"), // JSON object
+    importStatus: text("import_status"), // "pending" | "in_progress" | "complete" | "failed"
+    lastSyncedAt: timestamp("last_synced_at"),
+    songCatalogSyncedAt: timestamp("song_catalog_synced_at"),
+    showsSyncedAt: timestamp("shows_synced_at"),
+    totalAlbums: integer("total_albums").default(0),
+    totalSongs: integer("total_songs").default(0),
+    lastFullSyncAt: timestamp("last_full_sync_at"),
 
-  // Historical tracking for real growth calculations
-  previousFollowers: integer("previous_followers"),
-  previousPopularity: integer("previous_popularity"),
-  previousMonthlyListeners: integer("previous_monthly_listeners"),
-  previousFollowerCount: integer("previous_follower_count"),
-  lastGrowthCalculated: timestamp("last_growth_calculated"),
+    // Historical tracking for real growth calculations
+    previousFollowers: integer("previous_followers"),
+    previousPopularity: integer("previous_popularity"),
+    previousMonthlyListeners: integer("previous_monthly_listeners"),
+    previousFollowerCount: integer("previous_follower_count"),
+    lastGrowthCalculated: timestamp("last_growth_calculated"),
 
-  trendingScore: doublePrecision("trending_score").default(0),
-  totalShows: integer("total_shows").default(0),
-  upcomingShows: integer("upcoming_shows").default(0),
-  totalSetlists: integer("total_setlists").default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => ({
-  tmAttractionIdIdx: index("idx_artist_tm_attraction").on(table.tmAttractionId),
-  spotifyIdIdx: index("idx_artist_spotify").on(table.spotifyId),
-}));
+    trendingScore: doublePrecision("trending_score").default(0),
+    totalShows: integer("total_shows").default(0),
+    upcomingShows: integer("upcoming_shows").default(0),
+    totalSetlists: integer("total_setlists").default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    tmAttractionIdIdx: index("idx_artist_tm_attraction").on(
+      table.tmAttractionId,
+    ),
+    spotifyIdIdx: index("idx_artist_spotify").on(table.spotifyId),
+  }),
+);
 
 export const artistStats = pgTable("artist_stats", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -68,16 +74,20 @@ export const artistStats = pgTable("artist_stats", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const artistSongs = pgTable("artist_songs", {
-  artistId: uuid("artist_id")
-    .references(() => artists.id, { onDelete: "cascade" })
-    .notNull(),
-  songId: uuid("song_id")
-    .references(() => songs.id, { onDelete: "cascade" })
-    .notNull(),
-  isPrimaryArtist: boolean("is_primary_artist").default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => ({
-  pk: primaryKey({ columns: [table.artistId, table.songId] }),
-}));
+export const artistSongs = pgTable(
+  "artist_songs",
+  {
+    artistId: uuid("artist_id")
+      .references(() => artists.id, { onDelete: "cascade" })
+      .notNull(),
+    songId: uuid("song_id")
+      .references(() => songs.id, { onDelete: "cascade" })
+      .notNull(),
+    isPrimaryArtist: boolean("is_primary_artist").default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.artistId, table.songId] }),
+  }),
+);

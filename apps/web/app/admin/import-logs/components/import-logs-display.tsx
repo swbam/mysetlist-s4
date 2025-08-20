@@ -1,26 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import type { ImportLog, ImportStatus } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { Progress } from "@repo/design-system/components/ui/progress";
+import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
 import { format } from "date-fns";
 import {
   Activity,
   AlertCircle,
-  CheckCircle,
-  Clock,
-  Info,
   AlertTriangle,
-  RefreshCw,
-  Download,
+  CheckCircle,
   ChevronDown,
   ChevronRight,
+  Clock,
+  Download,
+  Info,
+  RefreshCw,
 } from "lucide-react";
-import type { ImportLog, ImportStatus } from "@repo/database";
+import { useEffect, useState } from "react";
 
 interface ImportLogsDisplayProps {
   artistId: string;
@@ -28,32 +38,45 @@ interface ImportLogsDisplayProps {
   externalId?: string;
 }
 
-export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLogsDisplayProps) {
+export function ImportLogsDisplay({
+  artistId,
+  artistName,
+  externalId,
+}: ImportLogsDisplayProps) {
   const [logs, setLogs] = useState<ImportLog[]>([]);
   const [status, setStatus] = useState<ImportStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPolling, setIsPolling] = useState(false);
   const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set());
-  const [filter, setFilter] = useState<"all" | "info" | "warning" | "error" | "success">("all");
+  const [filter, setFilter] = useState<
+    "all" | "info" | "warning" | "error" | "success"
+  >("all");
 
   // Fetch logs and status
   const fetchData = async () => {
     try {
       // Fetch logs
-      const logsResponse = await fetch(`/api/admin/import-logs?artistId=${encodeURIComponent(artistId)}`);
+      const logsResponse = await fetch(
+        `/api/admin/import-logs?artistId=${encodeURIComponent(artistId)}`,
+      );
       if (logsResponse.ok) {
         const logsData = await logsResponse.json();
         setLogs(logsData.logs || []);
       }
 
       // Fetch status
-      const statusResponse = await fetch(`/api/admin/import-status?artistId=${encodeURIComponent(artistId)}`);
+      const statusResponse = await fetch(
+        `/api/admin/import-status?artistId=${encodeURIComponent(artistId)}`,
+      );
       if (statusResponse.ok) {
         const statusData = await statusResponse.json();
         setStatus(statusData.status);
-        
+
         // Start polling if import is in progress
-        if (statusData.status && !["completed", "failed"].includes(statusData.status.stage)) {
+        if (
+          statusData.status &&
+          !["completed", "failed"].includes(statusData.status.stage)
+        ) {
           setIsPolling(true);
         } else {
           setIsPolling(false);
@@ -80,16 +103,18 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
   }, [isPolling, artistId]);
 
   // Filter logs
-  const filteredLogs = filter === "all" 
-    ? logs 
-    : logs.filter(log => log.level === filter);
+  const filteredLogs =
+    filter === "all" ? logs : logs.filter((log) => log.level === filter);
 
   // Group logs by stage
-  const logsByStage = filteredLogs.reduce((acc, log) => {
-    if (!acc[log.stage]) acc[log.stage] = [];
-    acc[log.stage]!.push(log);
-    return acc;
-  }, {} as Record<string, ImportLog[]>);
+  const logsByStage = filteredLogs.reduce(
+    (acc, log) => {
+      if (!acc[log.stage]) acc[log.stage] = [];
+      acc[log.stage]!.push(log);
+      return acc;
+    },
+    {} as Record<string, ImportLog[]>,
+  );
 
   const toggleStage = (stage: string) => {
     const newExpanded = new Set(expandedStages);
@@ -142,19 +167,27 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
   };
 
   const getStatusIcon = (stage: string) => {
-    if (stage === "completed") return <CheckCircle className="h-4 w-4 text-green-500" />;
-    if (stage === "failed") return <AlertCircle className="h-4 w-4 text-red-500" />;
-    if (stage === "initializing") return <Clock className="h-4 w-4 text-blue-500" />;
+    if (stage === "completed")
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+    if (stage === "failed")
+      return <AlertCircle className="h-4 w-4 text-red-500" />;
+    if (stage === "initializing")
+      return <Clock className="h-4 w-4 text-blue-500" />;
     return <Activity className="h-4 w-4 text-blue-500 animate-pulse" />;
   };
 
   const getLogIcon = (level: string) => {
     switch (level) {
-      case "error": return <AlertCircle className="h-4 w-4 text-red-500" />;
-      case "warning": return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      case "success": return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "info": return <Info className="h-4 w-4 text-blue-500" />;
-      default: return <Activity className="h-4 w-4 text-gray-500" />;
+      case "error":
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case "warning":
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case "success":
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case "info":
+        return <Info className="h-4 w-4 text-blue-500" />;
+      default:
+        return <Activity className="h-4 w-4 text-gray-500" />;
     }
   };
 
@@ -191,13 +224,22 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Current Stage</p>
-                <p className="font-medium">{status.stage.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</p>
+                <p className="font-medium">
+                  {status.stage
+                    .replace(/-/g, " ")
+                    .replace(/\b\w/g, (l) => l.toUpperCase())}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Progress</p>
                 <div className="flex items-center gap-2">
-                  <Progress value={status.percentage || 0} className="w-[100px]" />
-                  <span className="text-sm font-medium">{status.percentage || 0}%</span>
+                  <Progress
+                    value={status.percentage || 0}
+                    className="w-[100px]"
+                  />
+                  <span className="text-sm font-medium">
+                    {status.percentage || 0}%
+                  </span>
                 </div>
               </div>
             </div>
@@ -211,8 +253,12 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
 
             {status.error && (
               <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/50">
-                <p className="text-sm font-medium text-red-700 dark:text-red-400">Error</p>
-                <p className="text-sm text-red-600 dark:text-red-300 mt-1">{status.error}</p>
+                <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                  Error
+                </p>
+                <p className="text-sm text-red-600 dark:text-red-300 mt-1">
+                  {status.error}
+                </p>
               </div>
             )}
 
@@ -233,9 +279,15 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
 
             {status.startedAt && (
               <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Started: {format(new Date(status.startedAt), "MMM d, h:mm:ss a")}</span>
+                <span>
+                  Started:{" "}
+                  {format(new Date(status.startedAt), "MMM d, h:mm:ss a")}
+                </span>
                 {status.completedAt && (
-                  <span>Completed: {format(new Date(status.completedAt), "MMM d, h:mm:ss a")}</span>
+                  <span>
+                    Completed:{" "}
+                    {format(new Date(status.completedAt), "MMM d, h:mm:ss a")}
+                  </span>
                 )}
               </div>
             )}
@@ -269,28 +321,28 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
                 variant={filter === "info" ? "default" : "outline"}
                 onClick={() => setFilter("info")}
               >
-                Info ({logs.filter(l => l.level === "info").length})
+                Info ({logs.filter((l) => l.level === "info").length})
               </Button>
               <Button
                 size="sm"
                 variant={filter === "success" ? "default" : "outline"}
                 onClick={() => setFilter("success")}
               >
-                Success ({logs.filter(l => l.level === "success").length})
+                Success ({logs.filter((l) => l.level === "success").length})
               </Button>
               <Button
                 size="sm"
                 variant={filter === "warning" ? "default" : "outline"}
                 onClick={() => setFilter("warning")}
               >
-                Warning ({logs.filter(l => l.level === "warning").length})
+                Warning ({logs.filter((l) => l.level === "warning").length})
               </Button>
               <Button
                 size="sm"
                 variant={filter === "error" ? "default" : "outline"}
                 onClick={() => setFilter("error")}
               >
-                Error ({logs.filter(l => l.level === "error").length})
+                Error ({logs.filter((l) => l.level === "error").length})
               </Button>
             </div>
 
@@ -318,17 +370,20 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
                           )}
                         </div>
                         <p className="text-sm">{log.message}</p>
-                        {log.itemsProcessed !== null && log.itemsTotal !== null && (
-                          <div className="flex items-center gap-2">
-                            <Progress
-                              value={(log.itemsProcessed / log.itemsTotal) * 100}
-                              className="w-[100px] h-2"
-                            />
-                            <span className="text-xs text-muted-foreground">
-                              {log.itemsProcessed}/{log.itemsTotal}
-                            </span>
-                          </div>
-                        )}
+                        {log.itemsProcessed !== null &&
+                          log.itemsTotal !== null && (
+                            <div className="flex items-center gap-2">
+                              <Progress
+                                value={
+                                  (log.itemsProcessed / log.itemsTotal) * 100
+                                }
+                                className="w-[100px] h-2"
+                              />
+                              <span className="text-xs text-muted-foreground">
+                                {log.itemsProcessed}/{log.itemsTotal}
+                              </span>
+                            </div>
+                          )}
                         {log.details ? (
                           <pre className="text-xs text-muted-foreground bg-accent/30 p-2 rounded mt-2 overflow-x-auto">
                             {JSON.stringify(log.details, null, 2)}
@@ -345,7 +400,9 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
 
                   {filteredLogs.length === 0 && (
                     <div className="text-center py-8 text-muted-foreground">
-                      {isLoading ? "Loading logs..." : "No logs found for this artist."}
+                      {isLoading
+                        ? "Loading logs..."
+                        : "No logs found for this artist."}
                     </div>
                   )}
                 </div>
@@ -362,20 +419,40 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
                         onClick={() => toggleStage(stage)}
                       >
                         <div className="flex items-center gap-2">
-                          {expandedStages.has(stage) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                          <span className="font-medium">{stage.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</span>
+                          {expandedStages.has(stage) ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                          <span className="font-medium">
+                            {stage
+                              .replace(/-/g, " ")
+                              .replace(/\b\w/g, (l) => l.toUpperCase())}
+                          </span>
                           <Badge variant="secondary">{stageLogs.length}</Badge>
                         </div>
                         <div className="flex gap-2">
-                          {stageLogs.some(l => l.level === "error") && <Badge variant="destructive">Has Errors</Badge>}
-                          {stageLogs.some(l => l.level === "warning") && <Badge variant="outline" className="border-yellow-500">Has Warnings</Badge>}
+                          {stageLogs.some((l) => l.level === "error") && (
+                            <Badge variant="destructive">Has Errors</Badge>
+                          )}
+                          {stageLogs.some((l) => l.level === "warning") && (
+                            <Badge
+                              variant="outline"
+                              className="border-yellow-500"
+                            >
+                              Has Warnings
+                            </Badge>
+                          )}
                         </div>
                       </button>
-                      
+
                       {expandedStages.has(stage) && (
                         <div className="border-t p-3 space-y-2">
                           {stageLogs.map((log) => (
-                            <div key={log.id} className="flex items-start gap-2 text-sm">
+                            <div
+                              key={log.id}
+                              className="flex items-start gap-2 text-sm"
+                            >
                               {getLogIcon(log.level)}
                               <div className="flex-1">
                                 <span className="text-xs text-muted-foreground mr-2">
@@ -397,7 +474,9 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
 
                   {Object.keys(logsByStage).length === 0 && (
                     <div className="text-center py-8 text-muted-foreground">
-                      {isLoading ? "Loading logs..." : "No logs found for this artist."}
+                      {isLoading
+                        ? "Loading logs..."
+                        : "No logs found for this artist."}
                     </div>
                   )}
                 </div>

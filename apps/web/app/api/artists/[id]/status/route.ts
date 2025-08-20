@@ -1,21 +1,18 @@
-import { NextResponse } from "next/server";
 import { db, importStatus } from "@repo/database";
 import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 import { ProgressBus } from "~/lib/services/progress/ProgressBus";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET(
-  _: Request,
-  { params }: { params: { id: string } },
-) {
+export async function GET(_: Request, { params }: { params: { id: string } }) {
   const artistId = params.id;
-  
+
   try {
     // First try to get status from ProgressBus (real-time)
     const liveStatus = await ProgressBus.getStatus(artistId);
-    
+
     if (liveStatus) {
       return NextResponse.json({
         artistId,
@@ -25,8 +22,8 @@ export async function GET(
         message: liveStatus.message,
         error: liveStatus.error,
         updatedAt: liveStatus.at,
-        isComplete: liveStatus.stage === 'completed',
-        hasError: liveStatus.stage === 'failed' || !!liveStatus.error,
+        isComplete: liveStatus.stage === "completed",
+        hasError: liveStatus.stage === "failed" || !!liveStatus.error,
       });
     }
 
@@ -47,8 +44,8 @@ export async function GET(
         createdAt: status.createdAt.toISOString(),
         startedAt: status.startedAt?.toISOString(),
         completedAt: status.completedAt?.toISOString(),
-        isComplete: status.stage === 'completed',
-        hasError: status.stage === 'failed',
+        isComplete: status.stage === "completed",
+        hasError: status.stage === "failed",
         jobId: status.jobId,
         artistName: status.artistName,
       });
@@ -64,7 +61,6 @@ export async function GET(
       isComplete: false,
       hasError: false,
     });
-
   } catch (error) {
     console.error(`Error getting status for artist ${artistId}:`, error);
     return NextResponse.json(
@@ -78,7 +74,7 @@ export async function GET(
         isComplete: false,
         hasError: true,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

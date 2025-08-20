@@ -16,8 +16,10 @@ async function checkData() {
     console.log(`Artists: ${artists.length} found`);
     if (artists.length > 0) {
       console.log("Sample artists:");
-      artists.forEach(artist => {
-        console.log(`  - ${artist.name} (slug: ${artist.slug}, popularity: ${artist.popularity}, trending: ${artist.trending_score})`);
+      artists.forEach((artist) => {
+        console.log(
+          `  - ${artist.name} (slug: ${artist.slug}, popularity: ${artist.popularity}, trending: ${artist.trending_score})`,
+        );
       });
     }
 
@@ -34,7 +36,6 @@ async function checkData() {
     console.log(`Venues: ${venues[0]?.count || 0} total`);
 
     console.log("\nDatabase check complete!");
-    
   } catch (error) {
     console.error("Error checking data:", error);
   } finally {

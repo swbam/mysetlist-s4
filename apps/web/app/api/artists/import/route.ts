@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import { initiateImport } from "@repo/external-apis";
-import { queueManager, QueueName, Priority } from "~/lib/queues/queue-manager";
+import { NextResponse } from "next/server";
+import { Priority, QueueName, queueManager } from "~/lib/queues/queue-manager";
 
 export async function POST(req: Request) {
   const { tmAttractionId } = await req.json();
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   try {
     // Create artist record and get info
     const artistInfo = await initiateImport(tmAttractionId);
-    
+
     // Queue the import job
     const job = await queueManager.addJob(
       QueueName.ARTIST_IMPORT,
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       {
         priority: Priority.CRITICAL,
         jobId: `import-${artistInfo.artistId}`,
-      }
+      },
     );
 
     return NextResponse.json({
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     console.error("Import initiation failed:", error);
     return NextResponse.json(
       { error: "Failed to initiate import" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

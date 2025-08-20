@@ -312,7 +312,7 @@ export default function UserActionsDialog({
           <DropdownMenuItem
             onClick={() => {
               // Navigate to user profile
-              window.open(`/users/${user.id}`, '_blank');
+              window.open(`/users/${user.id}`, "_blank");
             }}
           >
             <Eye className="mr-2 h-4 w-4" />

@@ -1,6 +1,6 @@
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
-import { type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import {
   createErrorResponse,
   createSuccessResponse,

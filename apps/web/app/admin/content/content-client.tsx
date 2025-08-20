@@ -49,36 +49,44 @@ interface ContentClientProps {
   locale: string;
 }
 
-export default function ContentClient({ artists, venues, shows, locale }: ContentClientProps) {
+export default function ContentClient({
+  artists,
+  venues,
+  shows,
+  locale,
+}: ContentClientProps) {
   const [artistSearch, setArtistSearch] = useState("");
   const [venueSearch, setVenueSearch] = useState("");
   const [showSearch, setShowSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const filteredArtists = artists.filter(artist =>
-    artist.name.toLowerCase().includes(artistSearch.toLowerCase()) ||
-    artist.genres?.toLowerCase().includes(artistSearch.toLowerCase())
+  const filteredArtists = artists.filter(
+    (artist) =>
+      artist.name.toLowerCase().includes(artistSearch.toLowerCase()) ||
+      artist.genres?.toLowerCase().includes(artistSearch.toLowerCase()),
   );
 
-  const filteredVenues = venues.filter(venue =>
-    venue.name.toLowerCase().includes(venueSearch.toLowerCase()) ||
-    venue.city?.toLowerCase().includes(venueSearch.toLowerCase()) ||
-    venue.state?.toLowerCase().includes(venueSearch.toLowerCase())
+  const filteredVenues = venues.filter(
+    (venue) =>
+      venue.name.toLowerCase().includes(venueSearch.toLowerCase()) ||
+      venue.city?.toLowerCase().includes(venueSearch.toLowerCase()) ||
+      venue.state?.toLowerCase().includes(venueSearch.toLowerCase()),
   );
 
-  const filteredShows = shows.filter(show =>
-    show.name?.toLowerCase().includes(showSearch.toLowerCase()) ||
-    show.headliner?.name?.toLowerCase().includes(showSearch.toLowerCase()) ||
-    show.venue?.name?.toLowerCase().includes(showSearch.toLowerCase())
+  const filteredShows = shows.filter(
+    (show) =>
+      show.name?.toLowerCase().includes(showSearch.toLowerCase()) ||
+      show.headliner?.name?.toLowerCase().includes(showSearch.toLowerCase()) ||
+      show.venue?.name?.toLowerCase().includes(showSearch.toLowerCase()),
   );
 
   const handleSyncArtists = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/content/sync-artists', {
-        method: 'POST',
+      const response = await fetch("/api/admin/content/sync-artists", {
+        method: "POST",
       });
-      
+
       if (response.ok) {
         const result = await response.json();
         toast({
@@ -86,7 +94,7 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
           description: `Successfully synced ${result.count || 0} artists.`,
         });
       } else {
-        throw new Error('Sync failed');
+        throw new Error("Sync failed");
       }
     } catch (error) {
       toast({
@@ -102,10 +110,10 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
   const handleImportShows = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/content/import-shows', {
-        method: 'POST',
+      const response = await fetch("/api/admin/content/import-shows", {
+        method: "POST",
       });
-      
+
       if (response.ok) {
         const result = await response.json();
         toast({
@@ -113,7 +121,7 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
           description: `Successfully imported ${result.count || 0} shows.`,
         });
       } else {
-        throw new Error('Import failed');
+        throw new Error("Import failed");
       }
     } catch (error) {
       toast({
@@ -129,10 +137,10 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
   const handleImportSetlists = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/content/import-setlists', {
-        method: 'POST',
+      const response = await fetch("/api/admin/content/import-setlists", {
+        method: "POST",
       });
-      
+
       if (response.ok) {
         const result = await response.json();
         toast({
@@ -140,7 +148,7 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
           description: `Successfully imported ${result.count || 0} setlists.`,
         });
       } else {
-        throw new Error('Import failed');
+        throw new Error("Import failed");
       }
     } catch (error) {
       toast({
@@ -154,16 +162,16 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
   };
 
   const handleReviewContent = () => {
-    window.location.href = '/admin/moderation';
+    window.location.href = "/admin/moderation";
   };
 
   const handleQualityCheck = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/content/quality-check', {
-        method: 'POST',
+      const response = await fetch("/api/admin/content/quality-check", {
+        method: "POST",
       });
-      
+
       if (response.ok) {
         const result = await response.json();
         toast({
@@ -171,7 +179,7 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
           description: `Found ${result.issues || 0} issues that need attention.`,
         });
       } else {
-        throw new Error('Quality check failed');
+        throw new Error("Quality check failed");
       }
     } catch (error) {
       toast({
@@ -236,9 +244,9 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
             <div className="text-muted-foreground text-sm">
               Update artist profiles, images, and popularity metrics
             </div>
-            <Button 
-              variant="outline" 
-              className="w-full" 
+            <Button
+              variant="outline"
+              className="w-full"
               onClick={handleSyncArtists}
               disabled={loading}
             >
@@ -263,8 +271,8 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
             <div className="text-muted-foreground text-sm">
               Sync with Ticketmaster and other event sources
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full"
               onClick={handleImportShows}
               disabled={loading}
@@ -290,8 +298,8 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
             <div className="text-muted-foreground text-sm">
               Populate historical concert setlists for popular artists
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full"
               onClick={handleImportSetlists}
               disabled={loading}
@@ -309,17 +317,15 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
               <Users className="h-5 w-5" />
               User Content
             </CardTitle>
-            <CardDescription>
-              Manage user-generated content
-            </CardDescription>
+            <CardDescription>Manage user-generated content</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
               <Badge variant="secondary">42 Pending</Badge>
               <Badge variant="outline">128 Flagged</Badge>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full"
               onClick={handleReviewContent}
             >
@@ -348,8 +354,8 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
                 Shows without setlists: <Badge variant="outline">156</Badge>
               </div>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full"
               onClick={handleQualityCheck}
               disabled={loading}
@@ -479,7 +485,8 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
                         <TableCell>
                           <div className="text-sm">
                             <p>
-                              {artist.followers?.toLocaleString() ?? 0} followers
+                              {artist.followers?.toLocaleString() ?? 0}{" "}
+                              followers
                             </p>
                             <p className="text-muted-foreground">
                               {artist.artist_stats?.[0]?.total_shows ?? 0} shows
@@ -494,7 +501,9 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
                                 style={{ width: `${artist.popularity}%` }}
                               />
                             </div>
-                            <span className="text-sm">{artist.popularity}%</span>
+                            <span className="text-sm">
+                              {artist.popularity}%
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>

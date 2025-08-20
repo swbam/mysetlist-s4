@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { ProgressBus, onProgress, offProgress } from "~/lib/services/progress/ProgressBus";
+import {
+  ProgressBus,
+  offProgress,
+  onProgress,
+} from "~/lib/services/progress/ProgressBus";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -17,7 +21,9 @@ export async function GET(
     );
   }
 
-  console.log(`[SSE Import Progress] Starting real-time stream for artist ${artistId}`);
+  console.log(
+    `[SSE Import Progress] Starting real-time stream for artist ${artistId}`,
+  );
 
   // Create a readable stream for Server-Sent Events
   const encoder = new TextEncoder();
@@ -32,7 +38,10 @@ export async function GET(
           const eventData = `event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`;
           controller.enqueue(encoder.encode(eventData));
         } catch (err) {
-          console.error(`[SSE Import Progress] Error sending ${eventType} event:`, err);
+          console.error(
+            `[SSE Import Progress] Error sending ${eventType} event:`,
+            err,
+          );
         }
       };
 
@@ -46,8 +55,11 @@ export async function GET(
       // Set up real-time progress listener
       progressListener = (event: any) => {
         try {
-          console.log(`[SSE Import Progress] Real-time progress event for ${artistId}:`, event);
-          
+          console.log(
+            `[SSE Import Progress] Real-time progress event for ${artistId}:`,
+            event,
+          );
+
           // Format progress event to match what the frontend expects
           const progressData = {
             artistId,
@@ -55,8 +67,8 @@ export async function GET(
             progress: event.progress,
             message: event.message,
             timestamp: event.at || new Date().toISOString(),
-            isComplete: event.stage === 'completed',
-            hasError: event.stage === 'failed' || !!event.error,
+            isComplete: event.stage === "completed",
+            hasError: event.stage === "failed" || !!event.error,
             errorMessage: event.error,
             startedAt: event.startedAt,
             completedAt: event.completedAt,
@@ -64,26 +76,29 @@ export async function GET(
             totalShows: event.metadata?.totalShows,
             totalVenues: event.metadata?.totalVenues,
           };
-          
+
           // Send progress update
           sendEvent("progress", progressData);
-          
+
           // Send completion or error events
-          if (event.stage === 'completed') {
+          if (event.stage === "completed") {
             sendEvent("complete", {
               ...progressData,
               isComplete: true,
-              progress: 100
+              progress: 100,
             });
-          } else if (event.stage === 'failed' || event.error) {
+          } else if (event.stage === "failed" || event.error) {
             sendEvent("error", {
               ...progressData,
               hasError: true,
-              errorMessage: event.error || event.message
+              errorMessage: event.error || event.message,
             });
           }
         } catch (err) {
-          console.error(`[SSE Import Progress] Error handling progress event for ${artistId}:`, err);
+          console.error(
+            `[SSE Import Progress] Error handling progress event for ${artistId}:`,
+            err,
+          );
         }
       };
 
@@ -95,15 +110,19 @@ export async function GET(
         try {
           const currentStatus = await ProgressBus.getStatus(artistId);
           if (currentStatus) {
-            console.log(`[SSE Import Progress] Sending current status for ${artistId}:`, currentStatus);
+            console.log(
+              `[SSE Import Progress] Sending current status for ${artistId}:`,
+              currentStatus,
+            );
             sendEvent("progress", {
               artistId,
               stage: currentStatus.stage,
               progress: currentStatus.progress,
               message: currentStatus.message,
               timestamp: currentStatus.at,
-              isComplete: currentStatus.stage === 'completed',
-              hasError: currentStatus.stage === 'failed' || !!currentStatus.error,
+              isComplete: currentStatus.stage === "completed",
+              hasError:
+                currentStatus.stage === "failed" || !!currentStatus.error,
               errorMessage: currentStatus.error,
             });
           } else {
@@ -117,7 +136,10 @@ export async function GET(
             });
           }
         } catch (error) {
-          console.error(`[SSE Import Progress] Error getting current status for ${artistId}:`, error);
+          console.error(
+            `[SSE Import Progress] Error getting current status for ${artistId}:`,
+            error,
+          );
           sendEvent("error", {
             message: "Failed to get initial status",
             details: error instanceof Error ? error.message : "Unknown error",
@@ -131,16 +153,21 @@ export async function GET(
       keepAliveInterval = setInterval(() => {
         try {
           sendEvent("ping", {
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         } catch (err) {
-          console.error(`[SSE Import Progress] Error sending keep-alive for ${artistId}:`, err);
+          console.error(
+            `[SSE Import Progress] Error sending keep-alive for ${artistId}:`,
+            err,
+          );
         }
       }, 30000);
 
       // Store cleanup function
       (controller as any)._cleanup = () => {
-        console.log(`[SSE Import Progress] Cleaning up stream for artist ${artistId}`);
+        console.log(
+          `[SSE Import Progress] Cleaning up stream for artist ${artistId}`,
+        );
         if (progressListener) {
           offProgress(artistId, progressListener);
           progressListener = null;
@@ -153,7 +180,9 @@ export async function GET(
     },
 
     cancel() {
-      console.log(`[SSE Import Progress] Stream cancelled for artist ${artistId}`);
+      console.log(
+        `[SSE Import Progress] Stream cancelled for artist ${artistId}`,
+      );
       if ((this as any)._cleanup) {
         (this as any)._cleanup();
       }
@@ -165,7 +194,7 @@ export async function GET(
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache, no-store, must-revalidate",
-      "Connection": "keep-alive",
+      Connection: "keep-alive",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET",
       "Access-Control-Allow-Headers": "Cache-Control",

@@ -1,8 +1,8 @@
 import {
   boolean,
   date,
-  inet,
   index,
+  inet,
   integer,
   jsonb,
   pgEnum,
@@ -13,8 +13,8 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { users } from "./users";
 import { artists } from "./artists";
+import { users } from "./users";
 
 // Enums for admin tables
 export const systemHealthStatusEnum = pgEnum("system_health_status", [
@@ -54,7 +54,7 @@ export const backupStatusEnum = pgEnum("backup_status", [
 
 export const importStageEnum = pgEnum("import_stage", [
   "initializing",
-  "syncing-identifiers", 
+  "syncing-identifiers",
   "importing-songs",
   "importing-shows",
   "creating-setlists",
@@ -188,29 +188,33 @@ export const dataBackups = pgTable("data_backups", {
 });
 
 // Import status tracking for artist imports
-export const importStatus = pgTable("import_status", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  artistId: uuid("artist_id")
-    .references(() => artists.id, { onDelete: "cascade" })
-    .notNull()
-    .unique(),
-  stage: importStageEnum("stage").notNull(),
-  percentage: integer("percentage").default(0), // Database column name
-  message: text("message"),
-  error: text("error"),
-  jobId: varchar("job_id", { length: 255 }),
-  totalSongs: integer("total_songs").default(0),
-  totalShows: integer("total_shows").default(0),
-  totalVenues: integer("total_venues").default(0),
-  artistName: varchar("artist_name", { length: 255 }),
-  startedAt: timestamp("started_at"),
-  phaseTimings: jsonb("phase_timings"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  completedAt: timestamp("completed_at"),
-}, (table) => ({
-  artistIdIdx: index("idx_import_status_artist").on(table.artistId),
-}));
+export const importStatus = pgTable(
+  "import_status",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    artistId: uuid("artist_id")
+      .references(() => artists.id, { onDelete: "cascade" })
+      .notNull()
+      .unique(),
+    stage: importStageEnum("stage").notNull(),
+    percentage: integer("percentage").default(0), // Database column name
+    message: text("message"),
+    error: text("error"),
+    jobId: varchar("job_id", { length: 255 }),
+    totalSongs: integer("total_songs").default(0),
+    totalShows: integer("total_shows").default(0),
+    totalVenues: integer("total_venues").default(0),
+    artistName: varchar("artist_name", { length: 255 }),
+    startedAt: timestamp("started_at"),
+    phaseTimings: jsonb("phase_timings"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    completedAt: timestamp("completed_at"),
+  },
+  (table) => ({
+    artistIdIdx: index("idx_import_status_artist").on(table.artistId),
+  }),
+);
 
 // Log level enum
 export const logLevelEnum = pgEnum("log_level", [
@@ -229,22 +233,22 @@ export const importLogs = pgTable("import_logs", {
   ticketmasterId: varchar("ticketmaster_id", { length: 255 }),
   spotifyId: varchar("spotify_id", { length: 255 }),
   jobId: varchar("job_id", { length: 255 }),
-  
+
   // Log details
   level: logLevelEnum("level").notNull(),
   stage: varchar("stage", { length: 50 }).notNull(),
   message: text("message").notNull(),
   details: jsonb("details"),
-  
+
   // Metrics
   itemsProcessed: integer("items_processed").default(0),
   itemsTotal: integer("items_total"),
   durationMs: integer("duration_ms"),
-  
+
   // Error tracking
   errorCode: varchar("error_code", { length: 50 }),
   errorStack: text("error_stack"),
-  
+
   // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

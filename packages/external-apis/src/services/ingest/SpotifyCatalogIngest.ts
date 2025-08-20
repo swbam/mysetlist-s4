@@ -1,5 +1,5 @@
 import { db } from "@repo/database";
-import { songs, artistSongs } from "@repo/database";
+import { artistSongs, songs } from "@repo/database";
 import { SpotifyClient } from "../../clients/spotify";
 import { pLimit } from "../../utils/concurrency";
 
@@ -7,15 +7,29 @@ const LIVENESS_THRESHOLD = 0.8; // > 0.8 considered likely-live
 
 function isLikelyLiveAlbum(name: string) {
   const n = (name || "").toLowerCase();
-  return n.includes("live") || n.includes("unplugged") || n.includes("concert") || n.includes("mtv live") || n.includes("at ");
+  return (
+    n.includes("live") ||
+    n.includes("unplugged") ||
+    n.includes("concert") ||
+    n.includes("mtv live") ||
+    n.includes("at ")
+  );
 }
 
 function isLikelyLiveTitle(name: string) {
   const n = (name || "").toLowerCase();
-  return n.includes("(live") || n.includes(" - live") || n.includes("live at") || n.includes("unplugged");
+  return (
+    n.includes("(live") ||
+    n.includes(" - live") ||
+    n.includes("live at") ||
+    n.includes("unplugged")
+  );
 }
 
-export async function ingestStudioCatalog(artistId: string, spotifyArtistId: string) {
+export async function ingestStudioCatalog(
+  artistId: string,
+  spotifyArtistId: string,
+) {
   const spotifyClient = new SpotifyClient({});
   await spotifyClient.authenticate();
 
@@ -26,16 +40,20 @@ export async function ingestStudioCatalog(artistId: string, spotifyArtistId: str
   // 2) Tracks (bounded parallelism per album)
   const limit = pLimit(10);
   const albumTrackArrays = await Promise.allSettled(
-    albums.map((a: any) => limit(() => spotifyClient.listAlbumTracks(a.id)))
+    albums.map((a: any) => limit(() => spotifyClient.listAlbumTracks(a.id))),
   );
   const roughTracks = albumTrackArrays.flatMap((r: any) =>
-    r.status === "fulfilled" ? r.value : []
+    r.status === "fulfilled" ? r.value : [],
   );
   // Pre-filter by title to avoid obvious lives early
-  const filteredByTitle = roughTracks.filter((t: any) => !isLikelyLiveTitle(t?.name));
+  const filteredByTitle = roughTracks.filter(
+    (t: any) => !isLikelyLiveTitle(t?.name),
+  );
 
   // 3) Fetch full track details for ISRC + popularity (batch requests)
-  const trackIds = Array.from(new Set(filteredByTitle.map((t: any) => t.id))).filter(Boolean) as string[];
+  const trackIds = Array.from(
+    new Set(filteredByTitle.map((t: any) => t.id)),
+  ).filter(Boolean) as string[];
   const details: any[] = [];
   for (let i = 0; i < trackIds.length; i += 50) {
     const batch = trackIds.slice(i, i + 50);
@@ -43,7 +61,7 @@ export async function ingestStudioCatalog(artistId: string, spotifyArtistId: str
     details.push(...(batchDetails.tracks ?? []));
   }
 
-  // 4) Audio features to exclude hidden live (applause, room) - batch requests  
+  // 4) Audio features to exclude hidden live (applause, room) - batch requests
   const features: any[] = [];
   for (let i = 0; i < trackIds.length; i += 100) {
     const batch = trackIds.slice(i, i + 100);
@@ -61,7 +79,9 @@ export async function ingestStudioCatalog(artistId: string, spotifyArtistId: str
   // 6) Deduplicate strictly by ISRC, fallback to (title+duration)
   const byKey = new Map<string, any>();
   for (const t of studioDetails) {
-    const key = t?.external_ids?.isrc ?? `t:${(t.name || "").toLowerCase().trim()}:d:${Math.round((t.duration_ms || 0) / 1000)}`;
+    const key =
+      t?.external_ids?.isrc ??
+      `t:${(t.name || "").toLowerCase().trim()}:d:${Math.round((t.duration_ms || 0) / 1000)}`;
     const prev = byKey.get(key);
     if (!prev || (t.popularity ?? 0) > (prev.popularity ?? 0)) {
       byKey.set(key, t);
@@ -95,15 +115,18 @@ export async function ingestStudioCatalog(artistId: string, spotifyArtistId: str
             durationMs: t?.duration_ms ?? null,
             isLive: false,
             isRemix: (t.name || "").toLowerCase().includes("remix"),
-          }
+          },
         })
         .returning();
 
       if (song[0]) {
-        await tx.insert(artistSongs).values({
-          artistId,
-          songId: song[0].id,
-        }).onConflictDoNothing();
+        await tx
+          .insert(artistSongs)
+          .values({
+            artistId,
+            songId: song[0].id,
+          })
+          .onConflictDoNothing();
       }
     }
   });

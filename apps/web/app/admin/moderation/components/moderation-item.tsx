@@ -271,14 +271,14 @@ export default function ModerationItem({ type, item }: ModerationItemProps) {
                   <XCircle className="mr-1 h-4 w-4" />
                   Reject
                 </Button>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
+                <Button
+                  size="sm"
+                  variant="ghost"
                   disabled={loading}
                   onClick={async () => {
                     try {
                       setLoading(true);
-                      
+
                       // Update moderation status to flagged
                       const table = "setlists";
 
@@ -287,7 +287,8 @@ export default function ModerationItem({ type, item }: ModerationItemProps) {
                         .update({
                           moderation_status: "flagged",
                           reviewed_at: new Date().toISOString(),
-                          reviewed_by: (await supabase.auth.getUser()).data.user?.id,
+                          reviewed_by: (await supabase.auth.getUser()).data.user
+                            ?.id,
                         })
                         .eq("id", item.id);
 
@@ -295,7 +296,8 @@ export default function ModerationItem({ type, item }: ModerationItemProps) {
 
                       // Log action
                       await supabase.from("moderation_logs").insert({
-                        moderator_id: (await supabase.auth.getUser()).data.user?.id,
+                        moderator_id: (await supabase.auth.getUser()).data.user
+                          ?.id,
                         action: "flag",
                         target_type: type,
                         target_id: item.id,
@@ -304,14 +306,16 @@ export default function ModerationItem({ type, item }: ModerationItemProps) {
 
                       toast({
                         title: "Content flagged",
-                        description: "The content has been flagged for further review.",
+                        description:
+                          "The content has been flagged for further review.",
                       });
 
                       router.refresh();
                     } catch {
                       toast({
                         title: "Error",
-                        description: "Failed to flag content. Please try again.",
+                        description:
+                          "Failed to flag content. Please try again.",
                         variant: "destructive",
                       });
                     } finally {

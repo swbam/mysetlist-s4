@@ -1,5 +1,5 @@
 import { artists, db } from "@repo/database";
-import { desc, sql, and, lt, or, isNull } from "drizzle-orm";
+import { and, desc, isNull, lt, or, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import {
   createErrorResponse,
@@ -23,11 +23,11 @@ export async function POST(request: NextRequest) {
     await requireCronAuth();
 
     const body = await request.json().catch(() => ({}));
-    const { 
-      limit = 10, 
-      mode = "auto", 
+    const {
+      limit = 10,
+      mode = "auto",
       forceResync = false,
-      maxAge = 24 // hours
+      maxAge = 24, // hours
     } = body;
 
     const startTime = Date.now();
@@ -39,7 +39,13 @@ export async function POST(request: NextRequest) {
       failed: 0,
       errors: [] as string[],
       processingTime: 0,
-      artistDetails: [] as Array<{ id: string; name: string; status: string; duration?: number; error?: string }>
+      artistDetails: [] as Array<{
+        id: string;
+        name: string;
+        status: string;
+        duration?: number;
+        error?: string;
+      }>,
     };
 
     // Find artists that need resyncing
@@ -59,16 +65,18 @@ export async function POST(request: NextRequest) {
           showsSyncedAt: artists.showsSyncedAt,
         })
         .from(artists)
-        .where(and(
-          sql`${artists.tmAttractionId} IS NOT NULL`,
-          sql`${artists.importStatus} != 'failed'`
-        ))
+        .where(
+          and(
+            sql`${artists.tmAttractionId} IS NOT NULL`,
+            sql`${artists.importStatus} != 'failed'`,
+          ),
+        )
         .orderBy(desc(artists.popularity))
         .limit(limit);
     } else if (mode === "stale") {
       // Resync artists that haven't been fully synced recently
       const cutoffTime = new Date(Date.now() - maxAge * 60 * 60 * 1000);
-      
+
       artistsToResync = await db
         .select({
           id: artists.id,
@@ -81,21 +89,23 @@ export async function POST(request: NextRequest) {
           showsSyncedAt: artists.showsSyncedAt,
         })
         .from(artists)
-        .where(and(
-          sql`${artists.tmAttractionId} IS NOT NULL`,
-          or(
-            isNull(artists.lastFullSyncAt),
-            lt(artists.lastFullSyncAt, cutoffTime),
-            // Also include artists with incomplete syncs
-            and(
-              sql`${artists.importStatus} = 'completed'`,
-              or(
-                isNull(artists.songCatalogSyncedAt),
-                isNull(artists.showsSyncedAt)
-              )
-            )
-          )
-        ))
+        .where(
+          and(
+            sql`${artists.tmAttractionId} IS NOT NULL`,
+            or(
+              isNull(artists.lastFullSyncAt),
+              lt(artists.lastFullSyncAt, cutoffTime),
+              // Also include artists with incomplete syncs
+              and(
+                sql`${artists.importStatus} = 'completed'`,
+                or(
+                  isNull(artists.songCatalogSyncedAt),
+                  isNull(artists.showsSyncedAt),
+                ),
+              ),
+            ),
+          ),
+        )
         .orderBy(desc(artists.popularity))
         .limit(limit);
     } else {
@@ -112,17 +122,19 @@ export async function POST(request: NextRequest) {
           showsSyncedAt: artists.showsSyncedAt,
         })
         .from(artists)
-        .where(and(
-          sql`${artists.tmAttractionId} IS NOT NULL`,
-          or(
-            sql`${artists.importStatus} = 'failed'`,
-            sql`${artists.importStatus} = 'in_progress'`,
-            and(
-              sql`${artists.importStatus} = 'initializing'`,
-              lt(artists.updatedAt, new Date(Date.now() - 30 * 60 * 1000)) // Stuck for > 30 min
-            )
-          )
-        ))
+        .where(
+          and(
+            sql`${artists.tmAttractionId} IS NOT NULL`,
+            or(
+              sql`${artists.importStatus} = 'failed'`,
+              sql`${artists.importStatus} = 'in_progress'`,
+              and(
+                sql`${artists.importStatus} = 'initializing'`,
+                lt(artists.updatedAt, new Date(Date.now() - 30 * 60 * 1000)), // Stuck for > 30 min
+              ),
+            ),
+          ),
+        )
         .orderBy(desc(artists.popularity))
         .limit(limit);
     }
@@ -143,38 +155,41 @@ export async function POST(request: NextRequest) {
       results.processed++;
 
       try {
-        console.log(`[RESYNC] Starting full import for artist: ${artist.name} (${artist.id})`);
-        
+        console.log(
+          `[RESYNC] Starting full import for artist: ${artist.name} (${artist.id})`,
+        );
+
         // Call runFullImport and await completion - NOT fire-and-forget
         const importResult = await runFullImport(artist.id);
-        
+
         const artistDuration = Date.now() - artistStartTime;
-        
+
         if (importResult.success) {
           results.completed++;
           results.artistDetails.push({
             id: artist.id,
             name: artist.name,
-            status: 'completed',
-            duration: artistDuration
+            status: "completed",
+            duration: artistDuration,
           });
-          
-          console.log(`[RESYNC] Completed import for ${artist.name} in ${artistDuration}ms`);
+
+          console.log(
+            `[RESYNC] Completed import for ${artist.name} in ${artistDuration}ms`,
+          );
         } else {
           results.failed++;
-          const errorMsg = `Failed to resync ${artist.name}: ${importResult.error || 'Unknown error'}`;
+          const errorMsg = `Failed to resync ${artist.name}: ${importResult.error || "Unknown error"}`;
           results.errors.push(errorMsg);
           results.artistDetails.push({
             id: artist.id,
             name: artist.name,
-            status: 'failed',
+            status: "failed",
             duration: artistDuration,
-            error: importResult.error
+            error: importResult.error,
           });
-          
+
           console.error(`[RESYNC] ${errorMsg}`);
         }
-
       } catch (error) {
         const artistDuration = Date.now() - artistStartTime;
         results.failed++;
@@ -183,11 +198,11 @@ export async function POST(request: NextRequest) {
         results.artistDetails.push({
           id: artist.id,
           name: artist.name,
-          status: 'failed',
+          status: "failed",
           duration: artistDuration,
-          error: errorMsg
+          error: errorMsg,
         });
-        
+
         console.error(`[RESYNC] ${errorMsg}`, error);
       }
 
@@ -209,14 +224,13 @@ export async function POST(request: NextRequest) {
         )
       `);
     } catch (logError) {
-      console.warn('Failed to log cron run:', logError);
+      console.warn("Failed to log cron run:", logError);
     }
 
     return createSuccessResponse({
       message: `Artist resync completed: ${results.completed} successful, ${results.failed} failed`,
       results,
     });
-
   } catch (error) {
     console.error("Artist resync cron failed:", error);
 
@@ -230,7 +244,7 @@ export async function POST(request: NextRequest) {
         )
       `);
     } catch (logError) {
-      console.warn('Failed to log cron error:', logError);
+      console.warn("Failed to log cron error:", logError);
     }
 
     return createErrorResponse(

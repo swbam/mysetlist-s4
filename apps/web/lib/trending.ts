@@ -143,7 +143,9 @@ export async function getTrendingArtists(
 
     // If no artists have trending_score > 0, fall back to popularity-based sorting
     if (error || !artists || artists.length === 0) {
-      console.log("No artists with trending_score > 0, falling back to popularity");
+      console.log(
+        "No artists with trending_score > 0, falling back to popularity",
+      );
       const fallbackQuery = await supabase
         .from("artists")
         .select(
@@ -168,7 +170,7 @@ export async function getTrendingArtists(
         console.error("Error in fallback query:", fallbackQuery.error);
         return [];
       }
-      
+
       artists = fallbackQuery.data;
     }
 

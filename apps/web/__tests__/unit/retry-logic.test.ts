@@ -4,15 +4,15 @@
  * Validates GROK.md retry requirements
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchJson } from '../../lib/services/util/http';
-import { pLimit, processBatch } from '../../lib/services/util/concurrency';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { pLimit, processBatch } from "../../lib/services/util/concurrency";
+import { fetchJson } from "../../lib/services/util/http";
 
 // Mock global fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-describe('Retry Logic and HTTP Utilities', () => {
+describe("Retry Logic and HTTP Utilities", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
@@ -22,35 +22,39 @@ describe('Retry Logic and HTTP Utilities', () => {
     vi.useRealTimers();
   });
 
-  describe('fetchJson retry wrapper', () => {
-    it('should succeed on first attempt when request is successful', async () => {
-      const mockResponse = { data: 'success' };
+  describe("fetchJson retry wrapper", () => {
+    it("should succeed on first attempt when request is successful", async () => {
+      const mockResponse = { data: "success" };
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve(mockResponse),
       });
 
-      const result = await fetchJson('https://api.example.com/test');
+      const result = await fetchJson("https://api.example.com/test");
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockResponse);
     });
 
-    it('should retry on 429 (rate limit) errors', async () => {
-      const mockResponse = { data: 'success' };
-      
+    it("should retry on 429 (rate limit) errors", async () => {
+      const mockResponse = { data: "success" };
+
       // First two calls fail with 429
       mockFetch
-        .mockRejectedValueOnce(new Error('HTTP 429'))
-        .mockRejectedValueOnce(new Error('HTTP 429'))
+        .mockRejectedValueOnce(new Error("HTTP 429"))
+        .mockRejectedValueOnce(new Error("HTTP 429"))
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
           json: () => Promise.resolve(mockResponse),
         });
 
-      const promise = fetchJson('https://api.example.com/test', {}, { tries: 3, baseDelay: 100 });
+      const promise = fetchJson(
+        "https://api.example.com/test",
+        {},
+        { tries: 3, baseDelay: 100 },
+      );
 
       // Fast-forward through retries
       await vi.runAllTimersAsync();
@@ -60,19 +64,19 @@ describe('Retry Logic and HTTP Utilities', () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it('should retry on 5xx server errors', async () => {
-      const mockResponse = { data: 'success' };
-      
+    it("should retry on 5xx server errors", async () => {
+      const mockResponse = { data: "success" };
+
       mockFetch
         .mockResolvedValueOnce({
           ok: false,
           status: 500,
-          text: () => Promise.resolve('Internal Server Error'),
+          text: () => Promise.resolve("Internal Server Error"),
         })
         .mockResolvedValueOnce({
           ok: false,
           status: 502,
-          text: () => Promise.resolve('Bad Gateway'),
+          text: () => Promise.resolve("Bad Gateway"),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -80,7 +84,11 @@ describe('Retry Logic and HTTP Utilities', () => {
           json: () => Promise.resolve(mockResponse),
         });
 
-      const promise = fetchJson('https://api.example.com/test', {}, { tries: 3, baseDelay: 100 });
+      const promise = fetchJson(
+        "https://api.example.com/test",
+        {},
+        { tries: 3, baseDelay: 100 },
+      );
 
       await vi.runAllTimersAsync();
       const result = await promise;
@@ -89,24 +97,28 @@ describe('Retry Logic and HTTP Utilities', () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it('should NOT retry on 4xx client errors (except 429)', async () => {
+    it("should NOT retry on 4xx client errors (except 429)", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        text: () => Promise.resolve('Not Found'),
+        text: () => Promise.resolve("Not Found"),
       });
 
       await expect(
-        fetchJson('https://api.example.com/test', {}, { tries: 3, baseDelay: 100 })
-      ).rejects.toThrow('HTTP 404: Not Found');
+        fetchJson(
+          "https://api.example.com/test",
+          {},
+          { tries: 3, baseDelay: 100 },
+        ),
+      ).rejects.toThrow("HTTP 404: Not Found");
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
     });
 
-    it('should implement exponential backoff with jitter', async () => {
+    it("should implement exponential backoff with jitter", async () => {
       const delays: number[] = [];
       const originalSetTimeout = global.setTimeout;
-      
+
       // Mock setTimeout to capture delays
       global.setTimeout = vi.fn().mockImplementation((callback, delay) => {
         delays.push(delay);
@@ -114,15 +126,19 @@ describe('Retry Logic and HTTP Utilities', () => {
       }) as any;
 
       mockFetch
-        .mockRejectedValueOnce(new Error('HTTP 500'))
-        .mockRejectedValueOnce(new Error('HTTP 500'))
+        .mockRejectedValueOnce(new Error("HTTP 500"))
+        .mockRejectedValueOnce(new Error("HTTP 500"))
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
           json: () => Promise.resolve({ success: true }),
         });
 
-      await fetchJson('https://api.example.com/test', {}, { tries: 3, baseDelay: 400 });
+      await fetchJson(
+        "https://api.example.com/test",
+        {},
+        { tries: 3, baseDelay: 400 },
+      );
 
       // Verify exponential backoff pattern (with jitter)
       expect(delays).toHaveLength(2);
@@ -134,27 +150,31 @@ describe('Retry Logic and HTTP Utilities', () => {
       global.setTimeout = originalSetTimeout;
     });
 
-    it('should throw error after exhausting all retries', async () => {
-      mockFetch.mockRejectedValue(new Error('HTTP 500'));
+    it("should throw error after exhausting all retries", async () => {
+      mockFetch.mockRejectedValue(new Error("HTTP 500"));
 
       await expect(
-        fetchJson('https://api.example.com/test', {}, { tries: 3, baseDelay: 100 })
-      ).rejects.toThrow('HTTP 500');
+        fetchJson(
+          "https://api.example.com/test",
+          {},
+          { tries: 3, baseDelay: 100 },
+        ),
+      ).rejects.toThrow("HTTP 500");
 
       expect(mockFetch).toHaveBeenCalledTimes(3);
     });
 
-    it('should use default retry configuration', async () => {
+    it("should use default retry configuration", async () => {
       mockFetch
-        .mockRejectedValueOnce(new Error('HTTP 500'))
-        .mockRejectedValueOnce(new Error('HTTP 500'))
+        .mockRejectedValueOnce(new Error("HTTP 500"))
+        .mockRejectedValueOnce(new Error("HTTP 500"))
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
           json: () => Promise.resolve({ success: true }),
         });
 
-      const promise = fetchJson('https://api.example.com/test');
+      const promise = fetchJson("https://api.example.com/test");
       await vi.runAllTimersAsync();
       const result = await promise;
 
@@ -162,47 +182,47 @@ describe('Retry Logic and HTTP Utilities', () => {
       expect(result).toEqual({ success: true });
     });
 
-    it('should handle JSON parsing errors', async () => {
+    it("should handle JSON parsing errors", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => Promise.reject(new Error('Invalid JSON')),
+        json: () => Promise.reject(new Error("Invalid JSON")),
       });
 
       await expect(
-        fetchJson('https://api.example.com/test', {}, { tries: 2 })
-      ).rejects.toThrow('Invalid JSON');
+        fetchJson("https://api.example.com/test", {}, { tries: 2 }),
+      ).rejects.toThrow("Invalid JSON");
 
       expect(mockFetch).toHaveBeenCalledTimes(2); // Should retry on JSON parse error
     });
 
-    it('should preserve request headers and body', async () => {
-      const headers = { 'Authorization': 'Bearer token' };
-      const body = JSON.stringify({ test: 'data' });
-      
+    it("should preserve request headers and body", async () => {
+      const headers = { Authorization: "Bearer token" };
+      const body = JSON.stringify({ test: "data" });
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: () => Promise.resolve({ success: true }),
       });
 
-      await fetchJson('https://api.example.com/test', {
-        method: 'POST',
+      await fetchJson("https://api.example.com/test", {
+        method: "POST",
         headers,
         body,
       });
 
-      expect(mockFetch).toHaveBeenCalledWith('https://api.example.com/test', {
-        method: 'POST',
+      expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/test", {
+        method: "POST",
         headers,
         body,
       });
     });
   });
 
-  describe('Concurrency Control', () => {
-    describe('pLimit', () => {
-      it('should limit concurrent operations', async () => {
+  describe("Concurrency Control", () => {
+    describe("pLimit", () => {
+      it("should limit concurrent operations", async () => {
         let activeCount = 0;
         let maxActive = 0;
         const limit = pLimit(2);
@@ -210,8 +230,8 @@ describe('Retry Logic and HTTP Utilities', () => {
         const mockOperation = () => {
           activeCount++;
           maxActive = Math.max(maxActive, activeCount);
-          
-          return new Promise(resolve => {
+
+          return new Promise((resolve) => {
             setTimeout(() => {
               activeCount--;
               resolve(`result-${activeCount + 1}`);
@@ -219,7 +239,9 @@ describe('Retry Logic and HTTP Utilities', () => {
           });
         };
 
-        const promises = Array(5).fill(null).map(() => limit(mockOperation));
+        const promises = Array(5)
+          .fill(null)
+          .map(() => limit(mockOperation));
 
         vi.advanceTimersByTime(500);
         await Promise.all(promises);
@@ -227,7 +249,7 @@ describe('Retry Logic and HTTP Utilities', () => {
         expect(maxActive).toBe(2); // Should never exceed limit
       });
 
-      it('should queue operations when limit is reached', async () => {
+      it("should queue operations when limit is reached", async () => {
         const executionOrder: number[] = [];
         const limit = pLimit(1);
 
@@ -247,16 +269,16 @@ describe('Retry Logic and HTTP Utilities', () => {
         expect(executionOrder).toEqual([1, 2, 3]); // Should execute in order
       });
 
-      it('should handle operation failures gracefully', async () => {
+      it("should handle operation failures gracefully", async () => {
         const limit = pLimit(2);
         let successCount = 0;
 
         const successOperation = () => {
           successCount++;
-          return Promise.resolve('success');
+          return Promise.resolve("success");
         };
 
-        const failOperation = () => Promise.reject(new Error('fail'));
+        const failOperation = () => Promise.reject(new Error("fail"));
 
         const promises = [
           limit(successOperation),
@@ -267,17 +289,17 @@ describe('Retry Logic and HTTP Utilities', () => {
         const results = await Promise.allSettled(promises);
 
         expect(successCount).toBe(2);
-        expect(results[0].status).toBe('fulfilled');
-        expect(results[1].status).toBe('rejected');
-        expect(results[2].status).toBe('fulfilled');
+        expect(results[0].status).toBe("fulfilled");
+        expect(results[1].status).toBe("rejected");
+        expect(results[2].status).toBe("fulfilled");
       });
     });
 
-    describe('processBatch', () => {
-      it('should process items in controlled batches', async () => {
+    describe("processBatch", () => {
+      it("should process items in controlled batches", async () => {
         const items = [1, 2, 3, 4, 5];
         const results: number[] = [];
-        
+
         const processor = async (item: number) => {
           results.push(item * 2);
           return item * 2;
@@ -292,12 +314,12 @@ describe('Retry Logic and HTTP Utilities', () => {
         expect(results.sort()).toEqual([2, 4, 6, 8, 10]);
       });
 
-      it('should report progress during processing', async () => {
+      it("should report progress during processing", async () => {
         const items = [1, 2, 3, 4];
         const progressUpdates: Array<{ completed: number; total: number }> = [];
-        
+
         const processor = async (item: number) => {
-          await new Promise(resolve => setTimeout(resolve, 10));
+          await new Promise((resolve) => setTimeout(resolve, 10));
           return item;
         };
 
@@ -312,14 +334,17 @@ describe('Retry Logic and HTTP Utilities', () => {
         await promise;
 
         expect(progressUpdates.length).toBeGreaterThan(0);
-        expect(progressUpdates[progressUpdates.length - 1]).toEqual({ completed: 4, total: 4 });
+        expect(progressUpdates[progressUpdates.length - 1]).toEqual({
+          completed: 4,
+          total: 4,
+        });
       });
 
-      it('should continue on errors when configured', async () => {
+      it("should continue on errors when configured", async () => {
         const items = [1, 2, 3, 4];
         const results: number[] = [];
         const errors: Error[] = [];
-        
+
         const processor = async (item: number) => {
           if (item === 2) {
             throw new Error(`Failed on item ${item}`);
@@ -338,13 +363,13 @@ describe('Retry Logic and HTTP Utilities', () => {
 
         expect(results).toEqual([1, 3, 4]);
         expect(errors).toHaveLength(1);
-        expect(errors[0].message).toBe('Failed on item 2');
+        expect(errors[0].message).toBe("Failed on item 2");
       });
 
-      it('should stop on first error when configured', async () => {
+      it("should stop on first error when configured", async () => {
         const items = [1, 2, 3, 4];
         const results: number[] = [];
-        
+
         const processor = async (item: number) => {
           if (item === 2) {
             throw new Error(`Failed on item ${item}`);
@@ -357,22 +382,22 @@ describe('Retry Logic and HTTP Utilities', () => {
           processBatch(items, processor, {
             concurrency: 1,
             continueOnError: false,
-          })
-        ).rejects.toThrow('Failed on item 2');
+          }),
+        ).rejects.toThrow("Failed on item 2");
 
         expect(results).toEqual([1]); // Should stop after first item and before error
       });
     });
   });
 
-  describe('Integration: API Call Patterns', () => {
-    it('should handle Spotify batch operations with retries', async () => {
-      const trackIds = ['1', '2', '3', '4', '5'];
+  describe("Integration: API Call Patterns", () => {
+    it("should handle Spotify batch operations with retries", async () => {
+      const trackIds = ["1", "2", "3", "4", "5"];
       const batchSize = 2;
       const responses = [
-        { tracks: [{ id: '1' }, { id: '2' }] },
-        { tracks: [{ id: '3' }, { id: '4' }] },
-        { tracks: [{ id: '5' }] },
+        { tracks: [{ id: "1" }, { id: "2" }] },
+        { tracks: [{ id: "3" }, { id: "4" }] },
+        { tracks: [{ id: "5" }] },
       ];
 
       let callCount = 0;
@@ -386,51 +411,51 @@ describe('Retry Logic and HTTP Utilities', () => {
       });
 
       const allTracks: any[] = [];
-      
+
       // Simulate Spotify batch processing
       for (let i = 0; i < trackIds.length; i += batchSize) {
         const batch = trackIds.slice(i, i + batchSize);
-        const url = `https://api.spotify.com/v1/tracks?ids=${batch.join(',')}`;
-        
+        const url = `https://api.spotify.com/v1/tracks?ids=${batch.join(",")}`;
+
         const data = await fetchJson(url, {
-          headers: { Authorization: 'Bearer token' },
+          headers: { Authorization: "Bearer token" },
         });
-        
+
         allTracks.push(...(data.tracks || []));
       }
 
       expect(allTracks).toHaveLength(5);
       expect(mockFetch).toHaveBeenCalledTimes(3);
-      expect(allTracks.map(t => t.id)).toEqual(['1', '2', '3', '4', '5']);
+      expect(allTracks.map((t) => t.id)).toEqual(["1", "2", "3", "4", "5"]);
     });
 
-    it('should handle Ticketmaster pagination with retries', async () => {
+    it("should handle Ticketmaster pagination with retries", async () => {
       const pages = [
-        { 
-          _embedded: { events: [{ id: 'event1' }, { id: 'event2' }] },
-          page: { totalPages: 3, number: 0 }
+        {
+          _embedded: { events: [{ id: "event1" }, { id: "event2" }] },
+          page: { totalPages: 3, number: 0 },
         },
-        { 
-          _embedded: { events: [{ id: 'event3' }, { id: 'event4' }] },
-          page: { totalPages: 3, number: 1 }
+        {
+          _embedded: { events: [{ id: "event3" }, { id: "event4" }] },
+          page: { totalPages: 3, number: 1 },
         },
-        { 
-          _embedded: { events: [{ id: 'event5' }] },
-          page: { totalPages: 3, number: 2 }
+        {
+          _embedded: { events: [{ id: "event5" }] },
+          page: { totalPages: 3, number: 2 },
         },
       ];
 
       let pageRequests = 0;
       mockFetch.mockImplementation((url: string) => {
         const urlObj = new URL(url);
-        const page = parseInt(urlObj.searchParams.get('page') || '0');
-        
+        const page = Number.parseInt(urlObj.searchParams.get("page") || "0");
+
         // Simulate failure on second page first attempt
         if (page === 1 && pageRequests === 1) {
           pageRequests++;
-          return Promise.reject(new Error('HTTP 500'));
+          return Promise.reject(new Error("HTTP 500"));
         }
-        
+
         pageRequests++;
         return Promise.resolve({
           ok: true,
@@ -446,30 +471,36 @@ describe('Retry Logic and HTTP Utilities', () => {
       // Simulate paginated fetching
       while (page < totalPages) {
         const url = `https://app.ticketmaster.com/discovery/v2/events.json?attractionId=test&size=200&page=${page}&apikey=key`;
-        
+
         const promise = fetchJson(url, {}, { tries: 3, baseDelay: 100 });
         await vi.runAllTimersAsync();
         const data = await promise;
 
         totalPages = data?.page?.totalPages ?? 0;
         const events = data?._embedded?.events ?? [];
-        
+
         allEvents.push(...events);
         page++;
       }
 
       expect(allEvents).toHaveLength(5);
-      expect(allEvents.map(e => e.id)).toEqual(['event1', 'event2', 'event3', 'event4', 'event5']);
+      expect(allEvents.map((e) => e.id)).toEqual([
+        "event1",
+        "event2",
+        "event3",
+        "event4",
+        "event5",
+      ]);
       expect(pageRequests).toBeGreaterThan(3); // Should include retry
     });
 
-    it('should handle rate limiting gracefully', async () => {
+    it("should handle rate limiting gracefully", async () => {
       let requestCount = 0;
       const rateLimitReset = Date.now() + 60000; // 1 minute from now
 
       mockFetch.mockImplementation(() => {
         requestCount++;
-        
+
         if (requestCount <= 2) {
           // Simulate rate limit
           return Promise.resolve({
@@ -477,14 +508,15 @@ describe('Retry Logic and HTTP Utilities', () => {
             status: 429,
             headers: {
               get: (name: string) => {
-                if (name === 'X-RateLimit-Reset') return rateLimitReset.toString();
+                if (name === "X-RateLimit-Reset")
+                  return rateLimitReset.toString();
                 return null;
-              }
+              },
             },
-            text: () => Promise.resolve('Rate limit exceeded'),
+            text: () => Promise.resolve("Rate limit exceeded"),
           });
         }
-        
+
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -492,8 +524,12 @@ describe('Retry Logic and HTTP Utilities', () => {
         });
       });
 
-      const promise = fetchJson('https://api.example.com/test', {}, { tries: 3, baseDelay: 100 });
-      
+      const promise = fetchJson(
+        "https://api.example.com/test",
+        {},
+        { tries: 3, baseDelay: 100 },
+      );
+
       // Fast-forward through rate limit backoff
       await vi.runAllTimersAsync();
       const result = await promise;

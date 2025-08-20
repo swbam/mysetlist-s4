@@ -16,7 +16,10 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { showId } = await params;
     if (!showId) {
-      return NextResponse.json({ error: "showId is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "showId is required" },
+        { status: 400 },
+      );
     }
 
     // Fetch setlists for this show
@@ -83,7 +86,9 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       id: s.id,
       name: s.name ?? "Setlist",
       type: s.type as "predicted" | "actual",
-      songs: (songsBySetlist.get(s.id) || []).sort((a, b) => a.position - b.position),
+      songs: (songsBySetlist.get(s.id) || []).sort(
+        (a, b) => a.position - b.position,
+      ),
     }));
 
     return NextResponse.json({ setlists: payload });

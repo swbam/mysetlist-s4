@@ -22,7 +22,11 @@ export function RealPopularArtists() {
           console.log("Popular artists data:", data);
           setArtists(data.artists || []);
         } else {
-          console.error("Failed to fetch popular artists:", response.status, response.statusText);
+          console.error(
+            "Failed to fetch popular artists:",
+            response.status,
+            response.statusText,
+          );
           // Use fallback artists on error
           setArtists([
             { name: "Taylor Swift", slug: "taylor-swift" },

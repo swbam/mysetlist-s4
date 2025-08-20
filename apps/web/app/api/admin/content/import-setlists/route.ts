@@ -1,13 +1,15 @@
-import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
 import { SetlistFmClient } from "@repo/external-apis";
+import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "~/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
     if (!artistName) {
       return NextResponse.json(
         { error: "Artist name is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
     if (!setlistfmApiKey) {
       return NextResponse.json(
         { error: "Setlist.fm API key not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -130,7 +132,7 @@ export async function POST(request: NextRequest) {
 
           for (const set of sets) {
             const songs = set.song || [];
-            
+
             for (const song of songs) {
               if (!song.name) continue;
 
@@ -164,15 +166,13 @@ export async function POST(request: NextRequest) {
               }
 
               // Add song to setlist
-              await supabase
-                .from("setlist_songs")
-                .insert({
-                  setlist_id: newSetlist.id,
-                  song_id: songId,
-                  position: position,
-                  is_encore: (set.encore || 0) > 0,
-                  created_at: new Date().toISOString(),
-                });
+              await supabase.from("setlist_songs").insert({
+                setlist_id: newSetlist.id,
+                song_id: songId,
+                position: position,
+                is_encore: (set.encore || 0) > 0,
+                created_at: new Date().toISOString(),
+              });
 
               position++;
             }
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
       console.error("Setlist.fm API error:", apiError);
       return NextResponse.json(
         { error: "Failed to fetch setlists from Setlist.fm API" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -202,21 +202,21 @@ export async function POST(request: NextRequest) {
         artist_name: artistName,
         setlists_imported: importedCount,
         songs_imported: songsImported,
-        import_timestamp: new Date().toISOString()
+        import_timestamp: new Date().toISOString(),
       },
     });
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: "Setlists import completed",
       setlists_imported: importedCount,
-      songs_imported: songsImported
+      songs_imported: songsImported,
     });
   } catch (error) {
     console.error("Error importing setlists:", error);
     return NextResponse.json(
       { error: "Failed to import setlists" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

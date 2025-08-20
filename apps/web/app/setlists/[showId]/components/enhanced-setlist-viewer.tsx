@@ -127,21 +127,21 @@ export const EnhancedSetlistViewer = ({
   const handleSongSuggestion = async (song: any) => {
     try {
       // First, upsert the song to ensure it exists in our database
-    const songResponse = await fetch("/api/songs/upsert", {
+      const songResponse = await fetch("/api/songs/upsert", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-      spotifyId: song.spotify_id,
-      title: song.title,
-      artist: song.artist,
-      album: song.album,
-      albumArtUrl: song.album_art_url,
-      duration: song.duration_ms,
-      isExplicit: song.is_explicit,
-      popularity: song.popularity,
-      previewUrl: song.preview_url,
+          spotifyId: song.spotify_id,
+          title: song.title,
+          artist: song.artist,
+          album: song.album,
+          albumArtUrl: song.album_art_url,
+          duration: song.duration_ms,
+          isExplicit: song.is_explicit,
+          popularity: song.popularity,
+          previewUrl: song.preview_url,
         }),
       });
 
@@ -231,7 +231,9 @@ export const EnhancedSetlistViewer = ({
   // If there's no setlist yet, render an empty shell with song selector to let users start adding
   const isEmpty = !currentSetlist || currentSetlist.songs.length === 0;
 
-  const songs = (currentSetlist?.songs || []).sort((a, b) => a.position - b.position);
+  const songs = (currentSetlist?.songs || []).sort(
+    (a, b) => a.position - b.position,
+  );
   const playedSongs = songs.filter((song) => song.isPlayed).length;
   const progress = songs.length > 0 ? (playedSongs / songs.length) * 100 : 0;
   const currentlyPlaying = songs.find(
@@ -330,17 +332,19 @@ export const EnhancedSetlistViewer = ({
           )}
         </CardHeader>
 
-  {/* Song Selector - Show when predicted list active or when empty to bootstrap */}
-  {((activeSetlist === "predicted" || isEmpty) && artistId && artistName) && (
-          <div className="px-6 py-4 border-b">
-            <SongSelector
-              artistId={artistId}
-              artistName={artistName}
-              onSongSelect={handleSongSuggestion}
-              disabled={loading}
-            />
-          </div>
-        )}
+        {/* Song Selector - Show when predicted list active or when empty to bootstrap */}
+        {(activeSetlist === "predicted" || isEmpty) &&
+          artistId &&
+          artistName && (
+            <div className="px-6 py-4 border-b">
+              <SongSelector
+                artistId={artistId}
+                artistName={artistName}
+                onSongSelect={handleSongSuggestion}
+                disabled={loading}
+              />
+            </div>
+          )}
 
         <CardContent className="p-0">
           <div className="divide-y">
@@ -437,7 +441,7 @@ export const EnhancedSetlistViewer = ({
                           handleVote(setlistSong.id, voteType),
                         disabled:
                           !setlistSong.isPlayed &&
-                          (currentSetlist?.type === "actual"),
+                          currentSetlist?.type === "actual",
                         variant: "compact",
                         size: "sm",
                       })}

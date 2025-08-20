@@ -1,8 +1,7 @@
-import { db, artists } from "@repo/database";
-import { report } from "../progress/ProgressBus";
-import { ingestShowsAndVenues } from "../ingest/TicketmasterIngest";
+import { artists, db, eq } from "@repo/database";
 import { ingestStudioCatalog } from "../ingest/SpotifyCatalogIngest";
-import { eq } from "drizzle-orm";
+import { ingestShowsAndVenues } from "../ingest/TicketmasterIngest";
+import { report } from "../progress/ProgressBus";
 
 export async function initiateImport(tmAttractionId: string) {
   const artist = await db
@@ -19,22 +18,31 @@ export async function initiateImport(tmAttractionId: string) {
     })
     .returning();
 
-  await report(artist[0].id, "initializing", 10, "Starting import…");
+  const artistRecord = artist[0];
+  if (!artistRecord) {
+    throw new Error("Failed to create or find artist record");
+  }
+
+  await report(artistRecord.id, "initializing", 10, "Starting import…");
 
   // Return artist info and let the caller handle queue job creation
-  return { 
-    artistId: artist[0].id, 
-    slug: artist[0].slug,
+  return {
+    artistId: artistRecord.id,
+    slug: artistRecord.slug,
     tmAttractionId,
-    spotifyArtistId: artist[0].spotifyId,
-    artistName: artist[0].name,
+    spotifyArtistId: artistRecord.spotifyId,
+    artistName: artistRecord.name,
   };
 }
 
 export async function runFullImport(artistId: string) {
-  let artist = await db.query.artists.findFirst({
-    where: eq(artists.id, artistId),
-  });
+  let artistResults = await db
+    .select()
+    .from(artists)
+    .where(eq(artists.id, artistId))
+    .limit(1);
+
+  let artist = artistResults[0];
 
   if (!artist) {
     await report(artistId, "failed", 0, "Artist not found.");
@@ -45,10 +53,7 @@ export async function runFullImport(artistId: string) {
     // Phase 2: Ingest shows and venues from Ticketmaster
     if (artist.tmAttractionId) {
       await report(artistId, "importing-shows", 25, "Syncing shows & venues…");
-      await ingestShowsAndVenues(
-        artistId,
-        artist.tmAttractionId,
-      );
+      await ingestShowsAndVenues(artistId, artist.tmAttractionId);
       await db
         .update(artists)
         .set({ showsSyncedAt: new Date() })
@@ -64,9 +69,13 @@ export async function runFullImport(artistId: string) {
     }
 
     // Re-fetch artist to get any updates from show ingest
-    artist = await db.query.artists.findFirst({
-      where: eq(artists.id, artistId),
-    });
+    artistResults = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.id, artistId))
+      .limit(1);
+
+    artist = artistResults[0];
 
     // Phase 3: Ingest studio catalog from Spotify
     if (artist?.spotifyId) {
@@ -76,10 +85,7 @@ export async function runFullImport(artistId: string) {
         75,
         "Importing studio-only catalog…",
       );
-      await ingestStudioCatalog(
-        artistId,
-        artist.spotifyId,
-      );
+      await ingestStudioCatalog(artistId, artist.spotifyId);
       await db
         .update(artists)
         .set({ songCatalogSyncedAt: new Date() })

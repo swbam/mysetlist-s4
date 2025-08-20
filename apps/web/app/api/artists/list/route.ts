@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { db, artists } from "@repo/database";
+import { artists, db } from "@repo/database";
 import { desc } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
@@ -30,7 +30,7 @@ export async function GET() {
     console.error("Error fetching artists:", error);
     return NextResponse.json(
       { error: "Failed to fetch artists" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -12,11 +12,11 @@ import {
   venues,
 } from "@repo/database";
 import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
+import { initiateImport } from "@repo/external-apis/src/services/orchestrators/ArtistImportOrchestrator";
 import { and, desc, sql as drizzleSql, eq, or } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
-import { CACHE_TAGS, REVALIDATION_TIMES } from "~/lib/cache";
 import { absoluteUrl } from "~/lib/absolute-url";
-import { initiateImport } from "@repo/external-apis/src/services/orchestrators/ArtistImportOrchestrator";
+import { CACHE_TAGS, REVALIDATION_TIMES } from "~/lib/cache";
 
 export async function importArtist(tmAttractionId: string) {
   return await initiateImport(tmAttractionId);
@@ -71,7 +71,7 @@ const _getArtist = async (slug: string) => {
 
     // Artist not found - attempt auto-import
     console.log("Artist not found in database, attempting auto-import:", slug);
-    
+
     try {
       const autoImportResult = await attemptAutoImport(slug);
       if (autoImportResult) {
@@ -91,32 +91,32 @@ const _getArtist = async (slug: string) => {
   }
 };
 
-
-
 // Auto-import function that searches external APIs and triggers import
 async function attemptAutoImport(slug: string) {
   try {
     // Convert slug to artist name for search
     const searchName = slug.replace(/-/g, " ");
-    
+
     // Search external APIs in parallel for best match
     const searchPromises = await Promise.allSettled([
       searchSpotifyArtist(searchName),
-      searchTicketmasterArtist(searchName)
+      searchTicketmasterArtist(searchName),
     ]);
-    
-    const spotifyResult = searchPromises[0].status === 'fulfilled' ? searchPromises[0].value : null;
-    const ticketmasterResult = searchPromises[1].status === 'fulfilled' ? searchPromises[1].value : null;
-    
+
+    const spotifyResult =
+      searchPromises[0].status === "fulfilled" ? searchPromises[0].value : null;
+    const ticketmasterResult =
+      searchPromises[1].status === "fulfilled" ? searchPromises[1].value : null;
+
     // Prefer Ticketmaster for auto-import (has shows data)
     const tmAttractionId = ticketmasterResult?.tmAttractionId;
     const spotifyId = spotifyResult?.spotifyId;
-    
+
     if (!tmAttractionId && !spotifyId) {
       console.log("No external artist found for:", searchName);
       return null;
     }
-    
+
     // Trigger auto-import via internal API
     const importUrl = getImportUrl();
     const importResponse = await fetch(`${importUrl}/api/artists/auto-import`, {
@@ -124,7 +124,7 @@ async function attemptAutoImport(slug: string) {
       headers: {
         "Content-Type": "application/json",
         ...(process.env.CRON_SECRET && {
-          "Authorization": `Bearer ${process.env.CRON_SECRET}`
+          Authorization: `Bearer ${process.env.CRON_SECRET}`,
         }),
       },
       body: JSON.stringify({
@@ -133,14 +133,14 @@ async function attemptAutoImport(slug: string) {
         artistName: searchName,
       }),
     });
-    
+
     if (!importResponse.ok) {
       console.error("Auto-import failed:", await importResponse.text());
       return null;
     }
-    
+
     const importData = await importResponse.json();
-    
+
     // If artist already exists, fetch and return it
     if (importData.alreadyExists && importData.artistId) {
       const existingArtist = await db
@@ -150,7 +150,7 @@ async function attemptAutoImport(slug: string) {
         .limit(1);
       return existingArtist[0] || null;
     }
-    
+
     // Return minimal artist data while import runs in background
     return {
       id: importData.artistId,
@@ -207,7 +207,7 @@ async function searchSpotifyArtist(name: string) {
     const result = await spotifyClient.searchArtists(name);
     const artist = result.artists?.items?.[0];
     if (!artist) return null;
-    
+
     return {
       spotifyId: artist.id,
       name: artist.name,
@@ -226,21 +226,22 @@ async function searchSpotifyArtist(name: string) {
 async function searchTicketmasterArtist(name: string) {
   try {
     const ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env.TICKETMASTER_API_KEY || ""
+      apiKey: process.env.TICKETMASTER_API_KEY || "",
     });
     const attractions = await ticketmasterClient.searchAttractions({
       keyword: name,
       size: 1,
-      classificationName: 'music'
+      classificationName: "music",
     });
-    
+
     const attraction = attractions._embedded?.attractions?.[0];
     if (!attraction) return null;
-    
+
     return {
       tmAttractionId: attraction.id,
       name: attraction.name,
-      imageUrl: attraction.images?.find((img: any) => img.ratio === "16_9")?.url,
+      imageUrl: attraction.images?.find((img: any) => img.ratio === "16_9")
+        ?.url,
     };
   } catch (error) {
     console.error("Ticketmaster search error:", error);
@@ -310,8 +311,10 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
       console.log(
         `No ${type} shows found for artist ${artistId}. Query may need adjustment or data sync required.`,
       );
-      console.log(`Query details: type=${type}, artistId=${artistId}, limit=${type === "upcoming" ? 15 : 25}`);
-      
+      console.log(
+        `Query details: type=${type}, artistId=${artistId}, limit=${type === "upcoming" ? 15 : 25}`,
+      );
+
       // For debugging - let's check if artist actually exists and has any shows at all
       try {
         const artistExists = await db
@@ -319,12 +322,12 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
           .from(artists)
           .where(eq(artists.id, artistId))
           .limit(1);
-        
+
         if (artistExists.length === 0) {
           console.log(`Artist ${artistId} does not exist in database`);
         } else {
           console.log(`Artist exists: ${artistExists[0].name}`);
-          
+
           // Check for any shows for this artist (regardless of date)
           const anyShows = await db
             .select({ id: shows.id, date: shows.date, status: shows.status })
@@ -337,16 +340,23 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
               ),
             )
             .limit(5);
-          
+
           console.log(`Total shows for artist: ${anyShows.length}`);
           if (anyShows.length > 0) {
-            console.log('Sample shows:', anyShows.map(s => ({ id: s.id, date: s.date, status: s.status })));
+            console.log(
+              "Sample shows:",
+              anyShows.map((s) => ({
+                id: s.id,
+                date: s.date,
+                status: s.status,
+              })),
+            );
           }
         }
       } catch (debugError) {
-        console.error('Debug query failed:', debugError);
+        console.error("Debug query failed:", debugError);
       }
-      
+
       return [];
     }
 
@@ -573,7 +583,7 @@ const _getArtistSongsWithSetlistData = async (artistId: string, limit = 50) => {
       .orderBy(desc(songs.popularity))
       .limit(limit);
 
-    return artistSongs.map(song => ({
+    return artistSongs.map((song) => ({
       song,
       timesPlayed: 0, // Simplified for now
       lastPlayed: null,

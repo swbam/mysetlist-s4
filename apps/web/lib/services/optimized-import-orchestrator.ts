@@ -1,6 +1,6 @@
 import {
-  artists,
   artistSongs,
+  artists,
   db,
   eq,
   setlistSongs as setlistSongsTable,
@@ -11,14 +11,14 @@ import {
   venues,
 } from "@repo/database";
 import {
-  SpotifyClient,
-  TicketmasterClient,
   ArtistSyncService,
   ShowSyncService,
+  SpotifyClient,
+  TicketmasterClient,
   VenueSyncService,
 } from "@repo/external-apis";
+import type { Redis } from "ioredis";
 import { updateImportStatus } from "~/lib/import-status";
-import { Redis } from "ioredis";
 
 // ================================
 // Optimized Import Orchestrator
@@ -45,12 +45,14 @@ export class OptimizedImportOrchestrator {
   private artistSyncService: ArtistSyncService;
   private showSyncService: ShowSyncService;
   private venueSyncService: VenueSyncService;
-  private progressCallback?: (progress: OptimizedImportProgress) => Promise<void>;
+  private progressCallback?: (
+    progress: OptimizedImportProgress,
+  ) => Promise<void>;
   private redis?: Redis;
 
   constructor(
     progressCallback?: (progress: OptimizedImportProgress) => Promise<void>,
-    redis?: Redis
+    redis?: Redis,
   ) {
     this.spotifyClient = new SpotifyClient({});
     this.ticketmasterClient = new TicketmasterClient({
@@ -74,10 +76,10 @@ export class OptimizedImportOrchestrator {
   async executeSmartImport(
     tmAttractionId: string,
     artistId?: string,
-    jobId?: string
+    jobId?: string,
   ): Promise<any> {
     const startTime = Date.now();
-    
+
     try {
       // If artistId provided, skip Phase 1 (already completed)
       if (!artistId) {
@@ -98,19 +100,22 @@ export class OptimizedImportOrchestrator {
       // ========================================
       // PARALLEL EXECUTION OF PHASE 2 COMPONENTS
       // ========================================
-      
-      await this.updateProgress({
-        stage: "importing-shows",
-        progress: 30,
-        message: "Importing shows and venues...",
-        artistId,
-      }, jobId);
+
+      await this.updateProgress(
+        {
+          stage: "importing-shows",
+          progress: 30,
+          message: "Importing shows and venues...",
+          artistId,
+        },
+        jobId,
+      );
 
       // Start all parallel tasks
       const [showsResult, topSongsResult] = await Promise.allSettled([
         // Phase 2A: Import shows and venues
         this.importShowsAndVenues(artist),
-        
+
         // Phase 2B: Import top songs for setlists (priority)
         this.importTopSongsForSetlists(artist),
       ]);
@@ -129,41 +134,47 @@ export class OptimizedImportOrchestrator {
       // ========================================
       // PHASE 2C: CREATE SETLISTS IMMEDIATELY
       // ========================================
-      
-      await this.updateProgress({
-        stage: "creating-setlists",
-        progress: 60,
-        message: "Creating initial setlists for shows...",
-        artistId,
-        metrics: {
-          showsImported: showsData.shows.length,
-          venuesCreated: showsData.venues,
-          songsImported: topSongs.length,
+
+      await this.updateProgress(
+        {
+          stage: "creating-setlists",
+          progress: 60,
+          message: "Creating initial setlists for shows...",
+          artistId,
+          metrics: {
+            showsImported: showsData.shows.length,
+            venuesCreated: showsData.venues,
+            songsImported: topSongs.length,
+          },
         },
-      }, jobId);
+        jobId,
+      );
 
       const setlistsCreated = await this.createSmartSetlists(
         artistId,
         showsData.shows,
-        topSongs
+        topSongs,
       );
 
       // ========================================
       // PHASE 3: COMPLETE CATALOG IMPORT (BACKGROUND)
       // ========================================
-      
-      await this.updateProgress({
-        stage: "importing-songs",
-        progress: 75,
-        message: "Completing full song catalog import...",
-        artistId,
-        metrics: {
-          showsImported: showsData.shows.length,
-          venuesCreated: showsData.venues,
-          songsImported: topSongs.length,
-          setlistsCreated,
+
+      await this.updateProgress(
+        {
+          stage: "importing-songs",
+          progress: 75,
+          message: "Completing full song catalog import...",
+          artistId,
+          metrics: {
+            showsImported: showsData.shows.length,
+            venuesCreated: showsData.venues,
+            songsImported: topSongs.length,
+            setlistsCreated,
+          },
         },
-      }, jobId);
+        jobId,
+      );
 
       // Import remaining songs in background
       const fullCatalog = await this.importFullSongCatalog(artist);
@@ -171,20 +182,23 @@ export class OptimizedImportOrchestrator {
       // ========================================
       // COMPLETION
       // ========================================
-      
-      await this.updateProgress({
-        stage: "completed",
-        progress: 100,
-        message: `Import complete! ${showsData.shows.length} shows, ${fullCatalog.totalSongs} songs imported.`,
-        artistId,
-        completedAt: new Date().toISOString(),
-        metrics: {
-          showsImported: showsData.shows.length,
-          venuesCreated: showsData.venues,
-          songsImported: fullCatalog.totalSongs,
-          setlistsCreated,
+
+      await this.updateProgress(
+        {
+          stage: "completed",
+          progress: 100,
+          message: `Import complete! ${showsData.shows.length} shows, ${fullCatalog.totalSongs} songs imported.`,
+          artistId,
+          completedAt: new Date().toISOString(),
+          metrics: {
+            showsImported: showsData.shows.length,
+            venuesCreated: showsData.venues,
+            songsImported: fullCatalog.totalSongs,
+            setlistsCreated,
+          },
         },
-      }, jobId);
+        jobId,
+      );
 
       const totalDuration = Date.now() - startTime;
       console.log(`Smart import completed in ${totalDuration}ms`);
@@ -200,18 +214,20 @@ export class OptimizedImportOrchestrator {
           duration: totalDuration,
         },
       };
-      
     } catch (error) {
       console.error("Smart import failed:", error);
-      
-      await this.updateProgress({
-        stage: "failed",
-        progress: 0,
-        message: "Import failed",
-        error: error instanceof Error ? error.message : "Unknown error",
-        artistId,
-        completedAt: new Date().toISOString(),
-      }, jobId);
+
+      await this.updateProgress(
+        {
+          stage: "failed",
+          progress: 0,
+          message: "Import failed",
+          error: error instanceof Error ? error.message : "Unknown error",
+          artistId,
+          completedAt: new Date().toISOString(),
+        },
+        jobId,
+      );
 
       throw error;
     }
@@ -234,7 +250,7 @@ export class OptimizedImportOrchestrator {
         sort: "date,asc",
         classificationName: "Music",
       });
-      
+
       const events = result._embedded?.events || [];
 
       if (!events || events.length === 0) {
@@ -260,7 +276,7 @@ export class OptimizedImportOrchestrator {
           } catch (error) {
             console.error(`Failed to sync venue ${venue.name}:`, error);
           }
-        }
+        },
       );
 
       await Promise.all(venuePromises);
@@ -289,7 +305,6 @@ export class OptimizedImportOrchestrator {
         shows: dbShows,
         venues: uniqueVenues.size,
       };
-      
     } catch (error) {
       console.error("Failed to import shows and venues:", error);
       return { shows: [], venues: 0 };
@@ -311,7 +326,7 @@ export class OptimizedImportOrchestrator {
       // Get top tracks quickly
       const topTracks = await this.spotifyClient.getArtistTopTracks(
         artist.spotifyId,
-        "US"
+        "US",
       );
 
       if (!topTracks || topTracks.tracks.length === 0) {
@@ -383,7 +398,6 @@ export class OptimizedImportOrchestrator {
 
       const importedSongs = (await Promise.all(songPromises)).filter(Boolean);
       return importedSongs;
-      
     } catch (error) {
       console.error("Failed to import top songs:", error);
       return [];
@@ -396,7 +410,7 @@ export class OptimizedImportOrchestrator {
   private async createSmartSetlists(
     artistId: string,
     showsList: any[],
-    availableSongs: any[]
+    availableSongs: any[],
   ): Promise<number> {
     if (showsList.length === 0 || availableSongs.length === 0) {
       console.log("No shows or songs available for setlist creation");
@@ -407,8 +421,11 @@ export class OptimizedImportOrchestrator {
 
     // Prioritize upcoming shows
     const now = new Date();
-    const upcomingShows = showsList.filter(show => new Date(show.date) >= now);
-    const showsToProcess = upcomingShows.length > 0 ? upcomingShows : showsList.slice(0, 10);
+    const upcomingShows = showsList.filter(
+      (show) => new Date(show.date) >= now,
+    );
+    const showsToProcess =
+      upcomingShows.length > 0 ? upcomingShows : showsList.slice(0, 10);
 
     for (const show of showsToProcess) {
       try {
@@ -424,7 +441,11 @@ export class OptimizedImportOrchestrator {
         }
 
         // Create smart setlist with variety
-        const selectedSongs = this.selectSmartSetlistSongs(availableSongs, 5, 15);
+        const selectedSongs = this.selectSmartSetlistSongs(
+          availableSongs,
+          5,
+          15,
+        );
 
         if (selectedSongs.length === 0) {
           continue;
@@ -470,31 +491,35 @@ export class OptimizedImportOrchestrator {
   private selectSmartSetlistSongs(
     songs: any[],
     minSongs: number,
-    maxSongs: number
+    maxSongs: number,
   ): any[] {
     if (songs.length === 0) return [];
 
     // Sort by popularity
     const sortedSongs = [...songs].sort(
-      (a, b) => (b.popularity || 0) - (a.popularity || 0)
+      (a, b) => (b.popularity || 0) - (a.popularity || 0),
     );
 
     // Random setlist size for variety
-    const targetCount = Math.floor(Math.random() * (maxSongs - minSongs + 1)) + minSongs;
+    const targetCount =
+      Math.floor(Math.random() * (maxSongs - minSongs + 1)) + minSongs;
 
     // Smart selection algorithm:
     // - 40% most popular songs (guaranteed crowd pleasers)
     // - 30% mid-popularity (fan favorites)
     // - 30% variety picks (deep cuts)
-    
+
     const popularCount = Math.ceil(targetCount * 0.4);
     const midCount = Math.ceil(targetCount * 0.3);
     const varietyCount = targetCount - popularCount - midCount;
 
-    const popularSongs = sortedSongs.slice(0, Math.min(popularCount, sortedSongs.length));
+    const popularSongs = sortedSongs.slice(
+      0,
+      Math.min(popularCount, sortedSongs.length),
+    );
     const midSongs = sortedSongs.slice(
       popularCount,
-      Math.min(popularCount + midCount * 2, sortedSongs.length)
+      Math.min(popularCount + midCount * 2, sortedSongs.length),
     );
     const varietySongs = sortedSongs.slice(popularCount + midCount * 2);
 
@@ -520,7 +545,7 @@ export class OptimizedImportOrchestrator {
 
       // Use the artist sync service for complete catalog
       const catalogResult = await this.artistSyncService.syncCatalog(
-        artist.spotifyId
+        artist.spotifyId,
       );
 
       // Update artist record
@@ -535,7 +560,6 @@ export class OptimizedImportOrchestrator {
         .where(eq(artists.id, artist.id));
 
       return catalogResult;
-      
     } catch (error) {
       console.error("Failed to import full catalog:", error);
       return { totalSongs: 0, totalAlbums: 0 };
@@ -545,7 +569,10 @@ export class OptimizedImportOrchestrator {
   /**
    * Update progress with Redis pub/sub for real-time SSE
    */
-  private async updateProgress(progress: OptimizedImportProgress, jobId?: string): Promise<void> {
+  private async updateProgress(
+    progress: OptimizedImportProgress,
+    jobId?: string,
+  ): Promise<void> {
     // Update via callback if provided
     if (this.progressCallback) {
       await this.progressCallback(progress);
@@ -555,7 +582,14 @@ export class OptimizedImportOrchestrator {
     const trackingId = jobId || progress.artistId;
     if (trackingId) {
       await updateImportStatus(trackingId, {
-        stage: progress.stage as "initializing" | "syncing-identifiers" | "importing-shows" | "importing-songs" | "creating-setlists" | "completed" | "failed",
+        stage: progress.stage as
+          | "initializing"
+          | "syncing-identifiers"
+          | "importing-shows"
+          | "importing-songs"
+          | "creating-setlists"
+          | "completed"
+          | "failed",
         progress: progress.progress,
         message: progress.message,
         error: progress.error,
@@ -567,12 +601,12 @@ export class OptimizedImportOrchestrator {
     if (this.redis && trackingId) {
       const channel = `import:progress:${trackingId}`;
       await this.redis.publish(channel, JSON.stringify(progress));
-      
+
       // Also cache the latest status
       await this.redis.setex(
         `import:status:${trackingId}`,
         300, // 5 minutes TTL
-        JSON.stringify(progress)
+        JSON.stringify(progress),
       );
     }
   }

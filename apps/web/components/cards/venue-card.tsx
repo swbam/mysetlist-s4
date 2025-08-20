@@ -167,7 +167,6 @@ export function VenueCard({
             </div>
           )}
 
-
           {/* Favorite Button */}
           {showFavoriteButton && (
             <div className="absolute bottom-3 right-3">

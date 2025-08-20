@@ -118,106 +118,106 @@ export default async function UsersPage() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table className="min-w-[800px]">
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Content</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead>Last Active</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users?.map((user) => {
-                const isBanned = bannedUserIds.has(user.id);
-                const hasWarnings = user.warning_count > 0;
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Content</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead>Last Active</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users?.map((user) => {
+                  const isBanned = bannedUserIds.has(user.id);
+                  const hasWarnings = user.warning_count > 0;
 
-                return (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        {user.avatar_url ? (
-                          <img
-                            src={user.avatar_url}
-                            alt={user.display_name || user.email}
-                            className="h-10 w-10 rounded-full"
-                          />
-                        ) : (
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                            <span className="font-medium text-sm">
-                              {(user.display_name ||
-                                user.email)?.[0]?.toUpperCase()}
-                            </span>
+                  return (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          {user.avatar_url ? (
+                            <img
+                              src={user.avatar_url}
+                              alt={user.display_name || user.email}
+                              className="h-10 w-10 rounded-full"
+                            />
+                          ) : (
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                              <span className="font-medium text-sm">
+                                {(user.display_name ||
+                                  user.email)?.[0]?.toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-medium">
+                              {user.display_name || "Anonymous"}
+                            </p>
+                            <p className="text-muted-foreground text-sm">
+                              {user.email}
+                            </p>
                           </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            user.role === "admin"
+                              ? "destructive"
+                              : user.role === "moderator"
+                                ? "default"
+                                : "secondary"
+                          }
+                        >
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {isBanned ? (
+                          <Badge variant="destructive">
+                            <Ban className="mr-1 h-3 w-3" />
+                            Banned
+                          </Badge>
+                        ) : hasWarnings ? (
+                          <Badge variant="outline" className="text-yellow-600">
+                            <AlertTriangle className="mr-1 h-3 w-3" />
+                            {user.warning_count} warning
+                            {user.warning_count > 1 ? "s" : ""}
+                          </Badge>
+                        ) : user.email_verified ? (
+                          <Badge variant="outline" className="text-green-600">
+                            Active
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">Unverified</Badge>
                         )}
-                        <div>
-                          <p className="font-medium">
-                            {user.display_name || "Anonymous"}
-                          </p>
-                          <p className="text-muted-foreground text-sm">
-                            {user.email}
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          <p>{user._setlists?.[0]?.count ?? 0} setlists</p>
+                          <p className="text-muted-foreground">
+                            {user._count?.[0]?.count ?? 0} votes
                           </p>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          user.role === "admin"
-                            ? "destructive"
-                            : user.role === "moderator"
-                              ? "default"
-                              : "secondary"
-                        }
-                      >
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {isBanned ? (
-                        <Badge variant="destructive">
-                          <Ban className="mr-1 h-3 w-3" />
-                          Banned
-                        </Badge>
-                      ) : hasWarnings ? (
-                        <Badge variant="outline" className="text-yellow-600">
-                          <AlertTriangle className="mr-1 h-3 w-3" />
-                          {user.warning_count} warning
-                          {user.warning_count > 1 ? "s" : ""}
-                        </Badge>
-                      ) : user.email_verified ? (
-                        <Badge variant="outline" className="text-green-600">
-                          Active
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Unverified</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <p>{user._setlists?.[0]?.count ?? 0} setlists</p>
-                        <p className="text-muted-foreground">
-                          {user._count?.[0]?.count ?? 0} votes
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(user.created_at), "MMM d, yyyy")}
-                    </TableCell>
-                    <TableCell>
-                      {user.last_login_at
-                        ? format(new Date(user.last_login_at), "MMM d, yyyy")
-                        : "Never"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <UserActionsDialog user={user} isBanned={isBanned} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(user.created_at), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        {user.last_login_at
+                          ? format(new Date(user.last_login_at), "MMM d, yyyy")
+                          : "Never"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <UserActionsDialog user={user} isBanned={isBanned} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
             </Table>
           </div>
         </CardContent>

@@ -1,11 +1,11 @@
-import type { SimpleJob } from "../types";
 import { RedisCache } from "../redis-config";
+import type { SimpleJob } from "../types";
 
 const cache = new RedisCache();
 
 export interface WebhookJobData {
   url: string;
-  method: 'POST' | 'PUT' | 'PATCH';
+  method: "POST" | "PUT" | "PATCH";
   payload: Record<string, any>;
   headers?: Record<string, string>;
   retries?: number;
@@ -14,21 +14,28 @@ export interface WebhookJobData {
 }
 
 export async function processWebhook(job: SimpleJob<WebhookJobData>) {
-  const { url, method = 'POST', payload, headers = {}, timeout = 10000, event } = job.data;
-  
+  const {
+    url,
+    method = "POST",
+    payload,
+    headers = {},
+    timeout = 10000,
+    event,
+  } = job.data;
+
   try {
-    await job.log(`Sending webhook to ${url} for event: ${event || 'unknown'}`);
+    await job.log(`Sending webhook to ${url} for event: ${event || "unknown"}`);
     await job.updateProgress(10);
-    
+
     // Prepare request headers
     const requestHeaders = {
-      'Content-Type': 'application/json',
-      'User-Agent': 'SetlistApp-Webhook/1.0',
+      "Content-Type": "application/json",
+      "User-Agent": "SetlistApp-Webhook/1.0",
       ...headers,
     };
-    
+
     await job.updateProgress(30);
-    
+
     // Send webhook request
     const response = await fetch(url, {
       method,
@@ -36,18 +43,20 @@ export async function processWebhook(job: SimpleJob<WebhookJobData>) {
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(timeout),
     });
-    
+
     await job.updateProgress(70);
-    
+
     const responseText = await response.text();
-    
+
     if (!response.ok) {
-      throw new Error(`Webhook failed with status ${response.status}: ${responseText}`);
+      throw new Error(
+        `Webhook failed with status ${response.status}: ${responseText}`,
+      );
     }
-    
+
     await job.updateProgress(100);
     await job.log(`Webhook delivered successfully to ${url}`);
-    
+
     return {
       success: true,
       url,
@@ -55,7 +64,6 @@ export async function processWebhook(job: SimpleJob<WebhookJobData>) {
       response: responseText,
       event,
     };
-    
   } catch (error) {
     console.error(`Webhook failed for ${url}:`, error);
     throw error;
@@ -68,20 +76,20 @@ export async function queueWebhook(
   event: string,
   payload: Record<string, any>,
   options?: {
-    method?: 'POST' | 'PUT' | 'PATCH';
+    method?: "POST" | "PUT" | "PATCH";
     headers?: Record<string, string>;
     timeout?: number;
     delay?: number;
-  }
+  },
 ) {
   const { queueManager, QueueName } = await import("../queue-manager");
-  
+
   return await queueManager.addJob(
     QueueName.WEBHOOK,
     `webhook-${event}-${Date.now()}`,
     {
       url,
-      method: options?.method || 'POST',
+      method: options?.method || "POST",
       payload: {
         event,
         timestamp: new Date().toISOString(),
@@ -95,19 +103,19 @@ export async function queueWebhook(
       priority: 15,
       delay: options?.delay || 0,
       attempts: 3,
-      backoff: { type: 'exponential', delay: 5000 },
+      backoff: { type: "exponential", delay: 5000 },
       removeOnComplete: { count: 100 },
       removeOnFail: { count: 50 },
-    }
+    },
   );
 }
 
 // Common webhook events
 export const WebhookEvents = {
-  ARTIST_IMPORTED: 'artist.imported',
-  ARTIST_UPDATED: 'artist.updated',
-  SHOWS_SYNCED: 'shows.synced',
-  CATALOG_SYNCED: 'catalog.synced',
-  IMPORT_FAILED: 'import.failed',
-  IMPORT_COMPLETED: 'import.completed',
+  ARTIST_IMPORTED: "artist.imported",
+  ARTIST_UPDATED: "artist.updated",
+  SHOWS_SYNCED: "shows.synced",
+  CATALOG_SYNCED: "catalog.synced",
+  IMPORT_FAILED: "import.failed",
+  IMPORT_COMPLETED: "import.completed",
 } as const;

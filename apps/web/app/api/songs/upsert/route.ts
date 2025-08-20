@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { db, songs } from "@repo/database";
-import { eq, and } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +32,12 @@ export async function POST(request: NextRequest) {
     }
 
     const name = title;
-    const durMs = typeof durationMs === "number" ? durationMs : typeof duration === "number" ? duration : null;
+    const durMs =
+      typeof durationMs === "number"
+        ? durationMs
+        : typeof duration === "number"
+          ? duration
+          : null;
 
     let upserted;
 
@@ -80,12 +85,7 @@ export async function POST(request: NextRequest) {
       const existing = await db
         .select({ id: songs.id })
         .from(songs)
-        .where(
-          and(
-            eq(songs.name, name!),
-            eq(songs.artist, artist!),
-          ),
-        )
+        .where(and(eq(songs.name, name!), eq(songs.artist, artist!)))
         .limit(1);
 
       if (existing.length) {
@@ -118,7 +118,8 @@ export async function POST(request: NextRequest) {
             durationMs: durMs ?? undefined,
             popularity: typeof popularity === "number" ? popularity : undefined,
             previewUrl: previewUrl ?? undefined,
-            isExplicit: typeof isExplicit === "boolean" ? isExplicit : undefined,
+            isExplicit:
+              typeof isExplicit === "boolean" ? isExplicit : undefined,
             releaseDate: releaseDate ?? undefined,
             albumType: albumType ?? undefined,
             externalUrls: externalUrls ?? undefined,
@@ -130,7 +131,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (!upserted) {
-      return NextResponse.json({ error: "Failed to upsert song" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to upsert song" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ song: upserted });

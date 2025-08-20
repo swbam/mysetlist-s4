@@ -78,8 +78,7 @@ export default async function ModerationPage() {
           </CardContent>
         </Card>
 
-  {/* Reviews removed from scope */}
-
+        {/* Reviews removed from scope */}
       </div>
 
       {/* Moderation Queue */}
@@ -137,7 +136,6 @@ export default async function ModerationPage() {
                 ))
               )}
             </TabsContent>
-
           </Tabs>
         </CardContent>
       </Card>

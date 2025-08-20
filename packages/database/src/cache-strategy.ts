@@ -188,7 +188,7 @@ export function invalidateSearchCache(query?: string) {
   if (query) {
     // Invalidate specific query patterns
     const keysToDelete: string[] = [];
-  for (const [key] of searchCache.entries()) {
+    for (const [key] of searchCache.entries()) {
       if (key.includes(`search:${query}`)) {
         keysToDelete.push(key);
       }
@@ -308,7 +308,7 @@ export function withCache<T extends Record<string, any>>(
   fetcher: () => Promise<T>,
   options: {
     ttl?: number;
-  cache?: SimpleCache<string, CacheEntry<T>>;
+    cache?: SimpleCache<string, CacheEntry<T>>;
     skipCache?: boolean;
   } = {},
 ) {

@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { db, importStatus } from "@repo/database";
 import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 import { ProgressBus } from "~/lib/services/progress/ProgressBus";
 
 export const dynamic = "force-dynamic";
@@ -53,9 +53,12 @@ export async function GET(
 
     // First try to get status from ProgressBus (real-time)
     const liveStatus = await ProgressBus.getStatus(artistId);
-    
+
     if (liveStatus) {
-      console.log(`[Import Status API] Found live status for ${artistId}:`, liveStatus);
+      console.log(
+        `[Import Status API] Found live status for ${artistId}:`,
+        liveStatus,
+      );
       const status = {
         stage: liveStatus.stage,
         percentage: liveStatus.progress || 0,
@@ -64,7 +67,7 @@ export async function GET(
         error: liveStatus.error,
         startedAt: liveStatus.at,
         updatedAt: liveStatus.at,
-        completedAt: liveStatus.stage === 'completed' ? liveStatus.at : null,
+        completedAt: liveStatus.stage === "completed" ? liveStatus.at : null,
         isComplete: liveStatus.stage === "completed",
         hasError: liveStatus.stage === "failed" || !!liveStatus.error,
         errorMessage: liveStatus.error,
@@ -72,7 +75,7 @@ export async function GET(
         estimatedTimeRemaining: calculateEstimatedTime({
           startedAt: liveStatus.at,
           stage: liveStatus.stage,
-          progress: liveStatus.progress
+          progress: liveStatus.progress,
         }),
       };
 
@@ -85,14 +88,18 @@ export async function GET(
     });
 
     if (dbStatus) {
-      console.log(`[Import Status API] Found database status for ${artistId}:`, dbStatus);
+      console.log(
+        `[Import Status API] Found database status for ${artistId}:`,
+        dbStatus,
+      );
       const status = {
         stage: dbStatus.stage,
         percentage: dbStatus.percentage || 0,
         progress: dbStatus.percentage || 0, // Alias for compatibility
         message: dbStatus.message || "Processing...",
         error: dbStatus.error,
-        startedAt: dbStatus.startedAt?.toISOString() || dbStatus.createdAt.toISOString(),
+        startedAt:
+          dbStatus.startedAt?.toISOString() || dbStatus.createdAt.toISOString(),
         updatedAt: dbStatus.updatedAt.toISOString(),
         completedAt: dbStatus.completedAt?.toISOString() || null,
         isComplete: dbStatus.stage === "completed",
@@ -100,9 +107,11 @@ export async function GET(
         errorMessage: dbStatus.error,
         artistId: dbStatus.artistId,
         estimatedTimeRemaining: calculateEstimatedTime({
-          startedAt: dbStatus.startedAt?.toISOString() || dbStatus.createdAt.toISOString(),
+          startedAt:
+            dbStatus.startedAt?.toISOString() ||
+            dbStatus.createdAt.toISOString(),
           stage: dbStatus.stage,
-          progress: dbStatus.percentage || 0
+          progress: dbStatus.percentage || 0,
         }),
       };
 
@@ -110,7 +119,9 @@ export async function GET(
     }
 
     // No status found anywhere, return waiting status
-    console.log(`[Import Status API] No status found for ${artistId}, returning waiting state`);
+    console.log(
+      `[Import Status API] No status found for ${artistId}, returning waiting state`,
+    );
     return NextResponse.json({
       stage: "initializing",
       percentage: 0,
@@ -126,13 +137,15 @@ export async function GET(
       artistId,
       estimatedTimeRemaining: null,
     });
-
   } catch (error) {
-    console.error(`[Import Status API] Error fetching import status for ${artistId}:`, error);
+    console.error(
+      `[Import Status API] Error fetching import status for ${artistId}:`,
+      error,
+    );
     return NextResponse.json(
-      { 
+      {
         error: "Failed to fetch import status",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );

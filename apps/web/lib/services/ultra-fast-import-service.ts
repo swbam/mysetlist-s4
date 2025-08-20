@@ -1,21 +1,21 @@
 import {
-  artists,
   artistSongs,
+  artists,
   db,
+  setlistSongs,
+  setlists,
   shows,
   songs,
   venues,
-  setlists,
-  setlistSongs,
 } from "@repo/database";
-import { eq, sql } from "drizzle-orm";
-import { 
-  SpotifyClient, 
-  TicketmasterClient,
+import {
   ArtistSyncService,
   ShowSyncService,
-  VenueSyncService
+  SpotifyClient,
+  TicketmasterClient,
+  VenueSyncService,
 } from "@repo/external-apis";
+import { eq, sql } from "drizzle-orm";
 import { ImportLogger } from "~/lib/import-logger";
 import { updateImportStatus } from "~/lib/import-status";
 import { CacheManager } from "./cache-manager";
@@ -26,8 +26,13 @@ import { CacheManager } from "./cache-manager";
 
 export interface ImportTask {
   id: string;
-  type: 'spotify-artist' | 'spotify-albums' | 'spotify-tracks' | 
-        'ticketmaster-shows' | 'ticketmaster-venues' | 'setlists';
+  type:
+    | "spotify-artist"
+    | "spotify-albums"
+    | "spotify-tracks"
+    | "ticketmaster-shows"
+    | "ticketmaster-venues"
+    | "setlists";
   priority: 1 | 2 | 3;
   artistId: string;
   spotifyId?: string;
@@ -50,7 +55,7 @@ export interface ImportProgress {
   estimatedTimeRemaining?: number;
   substeps?: Array<{
     name: string;
-    status: 'pending' | 'running' | 'completed' | 'failed';
+    status: "pending" | "running" | "completed" | "failed";
     progress: number;
   }>;
 }
@@ -91,14 +96,14 @@ class WorkerPool {
     // Sort by priority
     const sortedTasks = tasks.sort((a, b) => a.priority - b.priority);
     this.taskQueue.push(...sortedTasks);
-    
+
     // Start processing
     const promises: Promise<void>[] = [];
     while (this.taskQueue.length > 0 && this.activeWorkers < this.maxWorkers) {
       const task = this.taskQueue.shift()!;
       promises.push(this.processTask(task));
     }
-    
+
     // Wait for all tasks to complete
     await Promise.all(promises);
     return this.results;
@@ -106,11 +111,11 @@ class WorkerPool {
 
   private async processTask(task: ImportTask): Promise<void> {
     this.activeWorkers++;
-    
+
     try {
       const result = await this.executeTask(task);
       this.results.set(task.id, result);
-      
+
       // Execute callback if exists
       const callback = this.callbacks.get(task.id);
       if (callback) {
@@ -119,22 +124,24 @@ class WorkerPool {
       }
     } catch (error) {
       console.error(`Task ${task.id} failed:`, error);
-      
+
       // Retry logic
       if (task.retryCount === undefined) task.retryCount = 0;
       if (task.maxRetries === undefined) task.maxRetries = 3;
-      
+
       if (task.retryCount < task.maxRetries) {
         task.retryCount++;
         // Exponential backoff
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, task.retryCount || 0) * 1000));
+        await new Promise((resolve) =>
+          setTimeout(resolve, 2 ** (task.retryCount || 0) * 1000),
+        );
         this.taskQueue.push(task);
       } else {
         this.results.set(task.id, { error: error.message });
       }
     } finally {
       this.activeWorkers--;
-      
+
       // Process next task if available
       if (this.taskQueue.length > 0 && this.activeWorkers < this.maxWorkers) {
         const nextTask = this.taskQueue.shift()!;
@@ -150,93 +157,100 @@ class WorkerPool {
     });
 
     switch (task.type) {
-      case 'spotify-artist':
+      case "spotify-artist":
         await spotifyClient.authenticate();
         return await spotifyClient.getArtist(task.spotifyId!);
-        
-      case 'spotify-albums':
+
+      case "spotify-albums":
         await spotifyClient.authenticate();
         return await this.fetchAllAlbums(spotifyClient, task.spotifyId!);
-        
-      case 'spotify-tracks':
+
+      case "spotify-tracks":
         await spotifyClient.authenticate();
         return await this.fetchAllTracks(spotifyClient, task.data.albums);
-        
-      case 'ticketmaster-shows':
+
+      case "ticketmaster-shows":
         return await this.fetchShows(ticketmasterClient, task.tmAttractionId!);
-        
-      case 'ticketmaster-venues':
+
+      case "ticketmaster-venues":
         return await this.fetchVenues(task.data.shows);
-        
+
       default:
         throw new Error(`Unknown task type: ${task.type}`);
     }
   }
 
   private async fetchAllAlbums(spotify: SpotifyClient, artistId: string) {
-    const albumTypes = ['album', 'single'];
+    const albumTypes = ["album", "single"];
     const results = await Promise.all(
-      albumTypes.map(type => 
-        spotify.getArtistAlbums(artistId, { 
-          include_groups: type, 
+      albumTypes.map((type) =>
+        spotify.getArtistAlbums(artistId, {
+          include_groups: type,
           limit: 50,
-          market: 'US'
-        })
-      )
+          market: "US",
+        }),
+      ),
     );
-    
+
     return results.flat();
   }
 
   private async fetchAllTracks(spotify: SpotifyClient, albums: any[]) {
     const chunks = this.chunkArray(albums, 10);
     const allTracks: any[] = [];
-    
+
     for (const chunk of chunks) {
       const tracks = await Promise.all(
-        chunk.map(album => spotify.getAlbumTracks(album.id))
+        chunk.map((album) => spotify.getAlbumTracks(album.id)),
       );
       allTracks.push(...tracks.flat());
     }
-    
+
     return this.filterStudioTracks(allTracks);
   }
 
   private filterStudioTracks(tracks: any[]) {
     const seen = new Set<string>();
-    return tracks.filter(track => {
+    return tracks.filter((track) => {
       const name = track.name.toLowerCase();
-      const album = track.album?.name?.toLowerCase() || '';
-      
+      const album = track.album?.name?.toLowerCase() || "";
+
       // Exclude live recordings
-      if (name.includes('(live') || 
-          name.includes(' - live') ||
-          album.includes('live at') ||
-          album.includes('unplugged')) {
+      if (
+        name.includes("(live") ||
+        name.includes(" - live") ||
+        album.includes("live at") ||
+        album.includes("unplugged")
+      ) {
         return false;
       }
-      
+
       // Exclude remixes, acoustic versions, radio edits
-      if (name.includes('remix') ||
-          name.includes('acoustic') ||
-          name.includes('radio edit') ||
-          name.includes('demo') ||
-          name.includes('instrumental')) {
+      if (
+        name.includes("remix") ||
+        name.includes("acoustic") ||
+        name.includes("radio edit") ||
+        name.includes("demo") ||
+        name.includes("instrumental")
+      ) {
         return false;
       }
-      
+
       // Deduplicate by normalized name
-      const normalized = name.replace(/[^a-z0-9]/g, '');
+      const normalized = name.replace(/[^a-z0-9]/g, "");
       if (seen.has(normalized)) {
         return false;
       }
       seen.add(normalized);
-      
+
       return true;
     });
   }
 
-  private async fetchShows(ticketmaster: TicketmasterClient, attractionId: string) {
+  private async fetchShows(
+    ticketmaster: TicketmasterClient,
+    attractionId: string,
+  ) {
     const result = await ticketmaster.searchEvents({
       attractionId,
       classificationName: "Music",
@@ -247,8 +261,8 @@ class WorkerPool {
 
   private async fetchVenues(shows: any[]) {
     const uniqueVenues = new Map();
-    
-    shows.forEach(show => {
+
+    shows.forEach((show) => {
       if (show._embedded?.venues?.[0]) {
         const venue = show._embedded.venues[0];
         if (!uniqueVenues.has(venue.id)) {
@@ -256,7 +270,7 @@ class WorkerPool {
         }
       }
     });
-    
+
     return Array.from(uniqueVenues.values());
   }
 
@@ -281,54 +295,57 @@ class PredictiveCache {
   private cache = new Map<string, any>();
   private predictions = new Map<string, string[]>();
   private importQueue = new Set<string>();
-  
+
   async prefetchLikelyArtists(searchQuery: string) {
     if (searchQuery.length < 2) return;
-    
+
     // Predict top 3 likely artists based on search
     const predictions = await this.predictArtists(searchQuery);
-    
+
     // Store predictions
-    this.predictions.set(searchQuery, predictions.map(p => p.tmAttractionId));
-    
+    this.predictions.set(
+      searchQuery,
+      predictions.map((p) => p.tmAttractionId),
+    );
+
     // Silently import in background before user clicks
-    predictions.forEach(artist => {
+    predictions.forEach((artist) => {
       if (!this.importQueue.has(artist.tmAttractionId)) {
         this.importQueue.add(artist.tmAttractionId);
         this.backgroundImport(artist.tmAttractionId);
       }
     });
   }
-  
+
   private async predictArtists(query: string): Promise<any[]> {
     const ticketmaster = new TicketmasterClient({
       apiKey: process.env.TICKETMASTER_API_KEY || "",
     });
-    
+
     try {
       const results = await ticketmaster.searchAttractions({
         keyword: query,
         size: 3,
-        classificationName: 'music'
+        classificationName: "music",
       });
-      
+
       return results?._embedded?.attractions || [];
     } catch {
       return [];
     }
   }
-  
+
   private async backgroundImport(tmAttractionId: string) {
     try {
       const service = new UltraFastImportService();
-      const result = await service.importArtist(tmAttractionId, { 
+      const result = await service.importArtist(tmAttractionId, {
         background: true,
-        priority: 'low' 
+        priority: "low",
       });
-      
+
       // Cache the result
       this.cache.set(tmAttractionId, result);
-      
+
       // Remove from queue
       this.importQueue.delete(tmAttractionId);
     } catch (error) {
@@ -336,11 +353,11 @@ class PredictiveCache {
       this.importQueue.delete(tmAttractionId);
     }
   }
-  
+
   getCached(tmAttractionId: string): any | null {
     return this.cache.get(tmAttractionId) || null;
   }
-  
+
   isPredicted(query: string, tmAttractionId: string): boolean {
     const predictions = this.predictions.get(query) || [];
     return predictions.includes(tmAttractionId);
@@ -355,162 +372,170 @@ export class UltraFastImportService {
   private workers = new WorkerPool(10);
   private cache = CacheManager.getInstance();
   private predictiveCache = new PredictiveCache();
-  private progressCallbacks = new Map<string, (progress: ImportProgress) => void>();
+  private progressCallbacks = new Map<
+    string,
+    (progress: ImportProgress) => void
+  >();
   private logger?: ImportLogger;
-  
-  constructor() {
-    // Initialize services
-  }
 
   /**
    * Ultra-fast artist import with < 3s initial load
    */
   async importArtist(
-    tmAttractionId: string, 
+    tmAttractionId: string,
     options: {
       background?: boolean;
-      priority?: 'high' | 'normal' | 'low';
+      priority?: "high" | "normal" | "low";
       progressCallback?: (progress: ImportProgress) => void;
       jobId?: string;
-    } = {}
+    } = {},
   ): Promise<ImportResult> {
     const startTime = Date.now();
     const jobId = options.jobId || `import_${tmAttractionId}_${Date.now()}`;
-    
+
     // Check predictive cache first
     const cached = this.predictiveCache.getCached(tmAttractionId);
     if (cached) {
       return { ...cached, cached: true };
     }
-    
+
     // Register progress callback
     if (options.progressCallback) {
       this.progressCallbacks.set(jobId, options.progressCallback);
     }
-    
+
     // Initialize logger
     this.logger = new ImportLogger({
       artistId: `tmp_${tmAttractionId}`,
       tmAttractionId: tmAttractionId,
     });
-    
+
     try {
       // Sync job tracking removed - using progress callbacks instead
-      
+
       // Phase 1: Create placeholder immediately (< 100ms)
       const phase1Start = Date.now();
       await this.updateProgress(jobId, {
-        stage: 'initializing',
+        stage: "initializing",
         progress: 5,
-        message: 'Creating artist placeholder...',
+        message: "Creating artist placeholder...",
         timestamp: Date.now(),
       });
-      
+
       const artist = await this.createPlaceholder(tmAttractionId);
       const phase1Duration = Date.now() - phase1Start;
-      
+
       // Update logger with real artist ID
       this.logger.updateArtistId(artist.id);
-      
+
       await this.updateProgress(jobId, {
-        stage: 'phase1_complete',
+        stage: "phase1_complete",
         progress: 25,
         message: `Artist "${artist.name}" ready! Loading in background...`,
         artistId: artist.id,
         timestamp: Date.now(),
       });
-      
+
       // Fire all imports in parallel (non-blocking)
       const phase2Start = Date.now();
       const phase3Start = Date.now();
-      
+
       const tasks: ImportTask[] = [
         {
           id: `${jobId}_spotify_artist`,
-          type: 'spotify-artist',
+          type: "spotify-artist",
           priority: 1,
           artistId: artist.id,
           spotifyId: artist.spotifyId,
         },
         {
           id: `${jobId}_tm_shows`,
-          type: 'ticketmaster-shows',
+          type: "ticketmaster-shows",
           priority: 1,
           artistId: artist.id,
           tmAttractionId: tmAttractionId,
         },
       ];
-      
+
       // Dispatch parallel tasks
-      this.workers.dispatch(tasks).then(async (results) => {
-        // Phase 2: Process shows and venues
-        const showsResult = results.get(`${jobId}_tm_shows`);
-        if (showsResult && !showsResult.error) {
-          await this.processShows(artist.id, showsResult);
-          
-          const venueTasks: ImportTask[] = [{
-            id: `${jobId}_venues`,
-            type: 'ticketmaster-venues',
-            priority: 2,
-            artistId: artist.id,
-            data: { shows: showsResult }
-          }];
-          
-          const venueResults = await this.workers.dispatch(venueTasks);
-          const venues = venueResults.get(`${jobId}_venues`);
-          if (venues && !venues.error) {
-            await this.processVenues(venues);
-          }
-        }
-        
-        // Phase 3: Import complete song catalog
-        if (artist.spotifyId) {
-          const albumTasks: ImportTask[] = [{
-            id: `${jobId}_albums`,
-            type: 'spotify-albums',
-            priority: 2,
-            artistId: artist.id,
-            spotifyId: artist.spotifyId,
-          }];
-          
-          const albumResults = await this.workers.dispatch(albumTasks);
-          const albums = albumResults.get(`${jobId}_albums`);
-          
-          if (albums && !albums.error) {
-            const trackTasks: ImportTask[] = [{
-              id: `${jobId}_tracks`,
-              type: 'spotify-tracks',
-              priority: 3,
-              artistId: artist.id,
-              data: { albums }
-            }];
-            
-            const trackResults = await this.workers.dispatch(trackTasks);
-            const tracks = trackResults.get(`${jobId}_tracks`);
-            
-            if (tracks && !tracks.error) {
-              await this.processSongs(artist.id, tracks);
+      this.workers
+        .dispatch(tasks)
+        .then(async (results) => {
+          // Phase 2: Process shows and venues
+          const showsResult = results.get(`${jobId}_tm_shows`);
+          if (showsResult && !showsResult.error) {
+            await this.processShows(artist.id, showsResult);
+
+            const venueTasks: ImportTask[] = [
+              {
+                id: `${jobId}_venues`,
+                type: "ticketmaster-venues",
+                priority: 2,
+                artistId: artist.id,
+                data: { shows: showsResult },
+              },
+            ];
+
+            const venueResults = await this.workers.dispatch(venueTasks);
+            const venues = venueResults.get(`${jobId}_venues`);
+            if (venues && !venues.error) {
+              await this.processVenues(venues);
             }
           }
-        }
-        
-        // Sync job tracking removed
-        
-        await this.updateProgress(jobId, {
-          stage: 'completed',
-          progress: 100,
-          message: 'Import completed successfully!',
-          artistId: artist.id,
-          timestamp: Date.now(),
+
+          // Phase 3: Import complete song catalog
+          if (artist.spotifyId) {
+            const albumTasks: ImportTask[] = [
+              {
+                id: `${jobId}_albums`,
+                type: "spotify-albums",
+                priority: 2,
+                artistId: artist.id,
+                spotifyId: artist.spotifyId,
+              },
+            ];
+
+            const albumResults = await this.workers.dispatch(albumTasks);
+            const albums = albumResults.get(`${jobId}_albums`);
+
+            if (albums && !albums.error) {
+              const trackTasks: ImportTask[] = [
+                {
+                  id: `${jobId}_tracks`,
+                  type: "spotify-tracks",
+                  priority: 3,
+                  artistId: artist.id,
+                  data: { albums },
+                },
+              ];
+
+              const trackResults = await this.workers.dispatch(trackTasks);
+              const tracks = trackResults.get(`${jobId}_tracks`);
+
+              if (tracks && !tracks.error) {
+                await this.processSongs(artist.id, tracks);
+              }
+            }
+          }
+
+          // Sync job tracking removed
+
+          await this.updateProgress(jobId, {
+            stage: "completed",
+            progress: 100,
+            message: "Import completed successfully!",
+            artistId: artist.id,
+            timestamp: Date.now(),
+          });
+        })
+        .catch(async (error) => {
+          console.error("Background import failed:", error);
+
+          // Sync job tracking removed
         });
-      }).catch(async (error) => {
-        console.error('Background import failed:', error);
-        
-        // Sync job tracking removed
-      });
-      
+
       const totalDuration = Date.now() - startTime;
-      
+
       // Return immediately, don't wait for background tasks
       return {
         success: true,
@@ -527,18 +552,17 @@ export class UltraFastImportService {
           phase3: { duration: 0, items: 0 },
         },
       };
-      
     } catch (error) {
-      console.error('Import failed:', error);
-      
+      console.error("Import failed:", error);
+
       await this.updateProgress(jobId, {
-        stage: 'failed',
+        stage: "failed",
         progress: 0,
-        message: 'Import failed',
+        message: "Import failed",
         error: error.message,
         timestamp: Date.now(),
       });
-      
+
       throw error;
     } finally {
       // Clean up progress callback
@@ -553,37 +577,40 @@ export class UltraFastImportService {
     const ticketmaster = new TicketmasterClient({
       apiKey: process.env.TICKETMASTER_API_KEY || "",
     });
-    
+
     // Get basic data from Ticketmaster
     const tmArtist = await ticketmaster.getAttraction(tmAttractionId);
-    
+
     if (!tmArtist || !tmArtist.name) {
       throw new Error(`Artist not found: ${tmAttractionId}`);
     }
-    
+
     // Quick Spotify lookup (with 1s timeout)
     let spotifyData: any = null;
     try {
       const spotify = new SpotifyClient({});
       await spotify.authenticate();
-      
+
       const searchPromise = spotify.searchArtists(tmArtist.name, 1);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 1000)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout")), 1000),
       );
-      
-      const searchResult = await Promise.race([searchPromise, timeoutPromise]) as any;
-      
+
+      const searchResult = (await Promise.race([
+        searchPromise,
+        timeoutPromise,
+      ])) as any;
+
       if (searchResult?.artists?.items?.[0]) {
         spotifyData = searchResult.artists.items[0];
       }
     } catch {
       // Continue without Spotify data
     }
-    
+
     // Create artist record
     const slug = this.generateSlug(spotifyData?.name || tmArtist.name);
-    
+
     const [artist] = await db
       .insert(artists)
       .values({
@@ -591,9 +618,15 @@ export class UltraFastImportService {
         spotifyId: spotifyData?.id || null,
         name: spotifyData?.name || tmArtist.name,
         slug,
-        imageUrl: spotifyData?.images?.[0]?.url || tmArtist.images?.[0]?.url || null,
+        imageUrl:
+          spotifyData?.images?.[0]?.url || tmArtist.images?.[0]?.url || null,
         smallImageUrl: spotifyData?.images?.[2]?.url || null,
-        genres: JSON.stringify(spotifyData?.genres || (tmArtist.classifications?.[0]?.genre?.name ? [tmArtist.classifications[0].genre.name] : [])),
+        genres: JSON.stringify(
+          spotifyData?.genres ||
+            (tmArtist.classifications?.[0]?.genre?.name
+              ? [tmArtist.classifications[0].genre.name]
+              : []),
+        ),
         popularity: spotifyData?.popularity || 0,
         followers: spotifyData?.followers?.total || 0,
         externalUrls: JSON.stringify(spotifyData?.external_urls || {}),
@@ -605,12 +638,13 @@ export class UltraFastImportService {
         set: {
           spotifyId: spotifyData?.id || null,
           name: spotifyData?.name || tmArtist.name,
-          imageUrl: spotifyData?.images?.[0]?.url || tmArtist.images?.[0]?.url || null,
+          imageUrl:
+            spotifyData?.images?.[0]?.url || tmArtist.images?.[0]?.url || null,
           updatedAt: new Date(),
         },
       })
       .returning();
-    
+
     return artist;
   }
 
@@ -619,15 +653,17 @@ export class UltraFastImportService {
    */
   private async processShows(artistId: string, showsData: any[]) {
     if (!showsData || showsData.length === 0) return;
-    
-    const showRecords = showsData.map(show => ({
+
+    const showRecords = showsData.map((show) => ({
       tmEventId: show.id,
       headlinerArtistId: artistId,
       name: show.name,
-      date: new Date(show.dates?.start?.dateTime || show.dates?.start?.localDate),
+      date: new Date(
+        show.dates?.start?.dateTime || show.dates?.start?.localDate,
+      ),
       venueId: null, // Will be linked later
       timezone: show.dates?.timezone || null,
-      status: show.dates?.status?.code || 'scheduled',
+      status: show.dates?.status?.code || "scheduled",
       priceMin: show.priceRanges?.[0]?.min || null,
       priceMax: show.priceRanges?.[0]?.max || null,
       ticketUrl: show.url || null,
@@ -636,7 +672,7 @@ export class UltraFastImportService {
       seatmapUrl: show.seatmap?.staticUrl || null,
       rawData: JSON.stringify(show),
     }));
-    
+
     await db
       .insert(shows)
       .values(showRecords as any)
@@ -648,8 +684,8 @@ export class UltraFastImportService {
    */
   private async processVenues(venuesData: any[]) {
     if (!venuesData || venuesData.length === 0) return;
-    
-    const venueRecords = venuesData.map(venue => ({
+
+    const venueRecords = venuesData.map((venue) => ({
       tmVenueId: venue.id,
       name: venue.name,
       city: venue.city?.name || null,
@@ -657,20 +693,24 @@ export class UltraFastImportService {
       country: venue.country?.countryCode || venue.country?.name || null,
       address: venue.address?.line1 || null,
       postalCode: venue.postalCode || null,
-      latitude: venue.location?.latitude ? parseFloat(venue.location.latitude) : null,
-      longitude: venue.location?.longitude ? parseFloat(venue.location.longitude) : null,
+      latitude: venue.location?.latitude
+        ? Number.parseFloat(venue.location.latitude)
+        : null,
+      longitude: venue.location?.longitude
+        ? Number.parseFloat(venue.location.longitude)
+        : null,
       timezone: venue.timezone || null,
       url: venue.url || null,
       imageUrl: venue.images?.[0]?.url || null,
       capacity: venue.generalInfo?.generalRule || null,
       rawData: JSON.stringify(venue),
     }));
-    
+
     await db
       .insert(venues)
       .values(venueRecords as any)
       .onConflictDoNothing();
-    
+
     // Link venues to shows
     for (const venue of venuesData) {
       await db.execute(sql`
@@ -688,17 +728,20 @@ export class UltraFastImportService {
    */
   private async processSongs(artistId: string, tracksData: any[]) {
     if (!tracksData || tracksData.length === 0) return;
-    
+
     // Deduplicate tracks
     const uniqueTracks = new Map<string, any>();
-    tracksData.forEach(track => {
+    tracksData.forEach((track) => {
       const key = this.normalizeTitle(track.name);
-      if (!uniqueTracks.has(key) || track.popularity > uniqueTracks.get(key).popularity) {
+      if (
+        !uniqueTracks.has(key) ||
+        track.popularity > uniqueTracks.get(key).popularity
+      ) {
         uniqueTracks.set(key, track);
       }
     });
-    
-    const songRecords = Array.from(uniqueTracks.values()).map(track => ({
+
+    const songRecords = Array.from(uniqueTracks.values()).map((track) => ({
       spotifyId: track.id,
       name: track.name,
       duration: track.duration_ms || null,
@@ -717,7 +760,7 @@ export class UltraFastImportService {
       isrc: track.external_ids?.isrc || null,
       rawData: JSON.stringify(track),
     }));
-    
+
     // Insert songs
     const insertedSongs = await db
       .insert(songs)
@@ -730,18 +773,18 @@ export class UltraFastImportService {
         },
       })
       .returning({ id: songs.id, spotifyId: songs.spotifyId });
-    
+
     // Link songs to artist
-    const artistSongRecords = insertedSongs.map(song => ({
+    const artistSongRecords = insertedSongs.map((song) => ({
       artistId: artistId,
       songId: song.id,
     }));
-    
+
     await db
       .insert(artistSongs)
       .values(artistSongRecords)
       .onConflictDoNothing();
-    
+
     // Update artist song count
     await db.execute(sql`
       UPDATE ${artists}
@@ -759,19 +802,26 @@ export class UltraFastImportService {
     // Update import status
     if (progress.artistId) {
       await updateImportStatus(progress.artistId, {
-        stage: progress.stage as "initializing" | "syncing-identifiers" | "importing-shows" | "importing-songs" | "creating-setlists" | "completed" | "failed",
+        stage: progress.stage as
+          | "initializing"
+          | "syncing-identifiers"
+          | "importing-shows"
+          | "importing-songs"
+          | "creating-setlists"
+          | "completed"
+          | "failed",
         progress: progress.progress,
         message: progress.message,
         error: progress.error,
       });
     }
-    
+
     // Notify callback
     const callback = this.progressCallbacks.get(jobId);
     if (callback) {
       callback(progress);
     }
-    
+
     // Log progress
     if (this.logger) {
       await this.logger.info(progress.stage, progress.message, {
@@ -787,17 +837,15 @@ export class UltraFastImportService {
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   }
 
   /**
    * Normalize title for deduplication
    */
   private normalizeTitle(title: string): string {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '');
+    return title.toLowerCase().replace(/[^a-z0-9]/g, "");
   }
 
   /**

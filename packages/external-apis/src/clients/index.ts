@@ -23,6 +23,4 @@ export type {
   TicketmasterVenue,
 } from "../types/ticketmaster";
 
-export type {
-  SetlistFmSetlist,
-} from "../types/setlistfm";
+export type { SetlistFmSetlist } from "../types/setlistfm";

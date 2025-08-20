@@ -2,11 +2,18 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 import { Progress } from "@repo/design-system/components/ui/progress";
-import { CheckCircle, Music, Users, MapPin, Clock, AlertCircle } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  MapPin,
+  Music,
+  Users,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface ImportProgress {
-  stage: 
+  stage:
     | "initializing"
     | "syncing-identifiers"
     | "importing-songs"
@@ -50,7 +57,9 @@ export function ArtistImportLoading({
     // Try to use Server-Sent Events for real-time updates
     const useSSE = () => {
       try {
-        const eventSource = new EventSource(`/api/artists/import/progress/${jobId}`);
+        const eventSource = new EventSource(
+          `/api/artists/import/progress/${jobId}`,
+        );
         eventSourceRef.current = eventSource;
 
         eventSource.onopen = () => {
@@ -113,10 +122,10 @@ export function ArtistImportLoading({
 
       // Poll every 3 seconds
       const interval = setInterval(pollProgress, 3000);
-      
+
       // Initial poll
       pollProgress();
-      
+
       return () => clearInterval(interval);
     };
 
@@ -229,18 +238,24 @@ export function ArtistImportLoading({
             Successfully imported all artist data
           </p>
         </div>
-        
+
         <div className="grid grid-cols-3 gap-6 mt-6 w-full max-w-md">
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">{progress.totalSongs || 0}</div>
+            <div className="text-3xl font-bold text-blue-600">
+              {progress.totalSongs || 0}
+            </div>
             <div className="text-sm text-muted-foreground">Studio Songs</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">{progress.totalShows || 0}</div>
+            <div className="text-3xl font-bold text-green-600">
+              {progress.totalShows || 0}
+            </div>
             <div className="text-sm text-muted-foreground">Shows</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600">{progress.totalVenues || 0}</div>
+            <div className="text-3xl font-bold text-purple-600">
+              {progress.totalVenues || 0}
+            </div>
             <div className="text-sm text-muted-foreground">Venues</div>
           </div>
         </div>
@@ -250,9 +265,7 @@ export function ArtistImportLoading({
             The artist page will automatically refresh with the new data
           </p>
           {isConnected && (
-            <p className="text-xs text-green-600">
-              ✓ Real-time updates active
-            </p>
+            <p className="text-xs text-green-600">✓ Real-time updates active</p>
           )}
         </div>
       </div>
@@ -263,7 +276,9 @@ export function ArtistImportLoading({
     <div className="flex min-h-[400px] flex-col items-center justify-center space-y-6 rounded-lg border bg-card p-8">
       <div className="flex items-center space-x-3">
         {getStageIcon(progress.stage)}
-        <h3 className="text-lg font-semibold">{getStageTitle(progress.stage)}</h3>
+        <h3 className="text-lg font-semibold">
+          {getStageTitle(progress.stage)}
+        </h3>
       </div>
 
       <div className="w-full max-w-lg space-y-4">
@@ -289,7 +304,8 @@ export function ArtistImportLoading({
               Importing Complete Discography
             </p>
             <p className="text-xs text-blue-600 mt-1">
-              We're filtering out live versions and importing only studio recordings for the best voting experience
+              We're filtering out live versions and importing only studio
+              recordings for the best voting experience
             </p>
           </div>
         </div>
@@ -302,7 +318,8 @@ export function ArtistImportLoading({
               Fetching Show Data
             </p>
             <p className="text-xs text-green-600 mt-1">
-              Getting upcoming shows, historical performances, and venue information from Ticketmaster
+              Getting upcoming shows, historical performances, and venue
+              information from Ticketmaster
             </p>
           </div>
         </div>
@@ -315,7 +332,8 @@ export function ArtistImportLoading({
               Creating Setlists
             </p>
             <p className="text-xs text-purple-600 mt-1">
-              Generating predicted setlists for upcoming shows based on popular songs and recent performances
+              Generating predicted setlists for upcoming shows based on popular
+              songs and recent performances
             </p>
           </div>
         </div>
@@ -324,13 +342,9 @@ export function ArtistImportLoading({
       {/* Connection status */}
       <div className="text-center">
         {isConnected ? (
-          <p className="text-xs text-green-600">
-            ✓ Real-time updates active
-          </p>
+          <p className="text-xs text-green-600">✓ Real-time updates active</p>
         ) : (
-          <p className="text-xs text-orange-600">
-            ⟳ Checking for updates...
-          </p>
+          <p className="text-xs text-orange-600">⟳ Checking for updates...</p>
         )}
       </div>
     </div>

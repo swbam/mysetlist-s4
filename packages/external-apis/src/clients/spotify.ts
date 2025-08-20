@@ -1,5 +1,9 @@
-import { BaseAPIClient, APIClientConfig } from "./base";
-import type { SpotifyArtist, SpotifyTrack, SpotifySearchResult } from "../types/spotify";
+import type {
+  SpotifyArtist,
+  SpotifySearchResult,
+  SpotifyTrack,
+} from "../types/spotify";
+import { type APIClientConfig, BaseAPIClient } from "./base";
 
 export class SpotifyClient extends BaseAPIClient {
   private accessToken?: string;
@@ -155,12 +159,12 @@ export class SpotifyClient extends BaseAPIClient {
     let next = `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&limit=50&market=US`;
     const out: any[] = [];
     while (next) {
-      const data = await this.makeRequest(
+      const data = (await this.makeRequest(
         next.replace(this.baseURL, ""),
         {},
         `spotify:artist:${artistId}:albums:all:${next}`,
-        1800
-      ) as any;
+        1800,
+      )) as any;
       out.push(...((data as any)?.items ?? []));
       next = (data as any)?.next ?? null;
     }
@@ -171,12 +175,12 @@ export class SpotifyClient extends BaseAPIClient {
     let next = `https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`;
     const out: any[] = [];
     while (next) {
-      const data = await this.makeRequest(
+      const data = (await this.makeRequest(
         next.replace(this.baseURL, ""),
         {},
         `spotify:album:${albumId}:tracks:all:${next}`,
-        1800
-      ) as any;
+        1800,
+      )) as any;
       out.push(...((data as any)?.items ?? []));
       next = (data as any)?.next ?? null;
     }

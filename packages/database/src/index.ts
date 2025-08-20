@@ -3,7 +3,7 @@ import postgres from "postgres";
 import * as schema from "./schema";
 
 // Get database URL from environment variables
-const databaseUrl = process.env['DATABASE_URL'] || process.env['DIRECT_URL'];
+const databaseUrl = process.env["DATABASE_URL"] || process.env["DIRECT_URL"];
 
 // Ensure we have a database URL
 if (!databaseUrl) {
@@ -30,11 +30,11 @@ try {
       ssl: "require", // Always use SSL for Supabase
       prepare: false, // disable prepared statements for Supabase pooler
       connection: {
-        application_name: 'mysetlist_app', // better connection tracking
+        application_name: "mysetlist_app", // better connection tracking
       },
     });
 
-  if (process.env['NODE_ENV'] !== "production") {
+  if (process.env["NODE_ENV"] !== "production") {
     globalForDrizzle.client = client;
   }
 } catch (error) {
@@ -45,7 +45,7 @@ try {
 // Create drizzle instance
 export const db = globalForDrizzle.db ?? drizzle(client, { schema });
 
-if (process.env['NODE_ENV'] !== "production") globalForDrizzle.db = db;
+if (process.env["NODE_ENV"] !== "production") globalForDrizzle.db = db;
 
 // Export a function to test the connection
 export async function testConnection() {

@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * High-frequency cron job for artist data synchronization:
- * - Syncs existing artists that haven't been updated recently  
+ * - Syncs existing artists that haven't been updated recently
  * - Updates popularity metrics from Spotify
  * - Checks for new releases
  * - Lightweight sync suitable for frequent execution

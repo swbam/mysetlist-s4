@@ -128,17 +128,20 @@ export default function ShowsManagementPage() {
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(show =>
-        show.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        show.artist?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        show.venue?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        `${show.venue?.city}, ${show.venue?.state}`.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (show) =>
+          show.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          show.artist?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          show.venue?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          `${show.venue?.city}, ${show.venue?.state}`
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()),
       );
     }
 
     // Apply status filter
     if (statusFilter !== "all") {
-      filtered = filtered.filter(show => show.status === statusFilter);
+      filtered = filtered.filter((show) => show.status === statusFilter);
     }
 
     // Apply sorting
@@ -212,9 +215,10 @@ export default function ShowsManagementPage() {
       .from("setlists")
       .select("show_id")
       .not("show_id", "is", null);
-      
+
     const totalSetlists = setlistsData?.length || 0;
-    const avgSetlists = total && total > 0 ? Number((totalSetlists / total).toFixed(1)) : 0;
+    const avgSetlists =
+      total && total > 0 ? Number((totalSetlists / total).toFixed(1)) : 0;
 
     // Transform the data to match the expected structure
     const transformedShows = (showsData || []).map((show: any) => ({
@@ -235,64 +239,68 @@ export default function ShowsManagementPage() {
 
   const handleExportShows = async () => {
     try {
-      const response = await fetch('/api/admin/shows/export');
+      const response = await fetch("/api/admin/shows/export");
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = `shows-export-${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `shows-export-${new Date().toISOString().split("T")[0]}.csv`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        console.error('Export failed');
+        console.error("Export failed");
       }
     } catch (error) {
-      console.error('Export error:', error);
+      console.error("Export error:", error);
     }
   };
 
   const handleDeleteShow = async (showId: string, showTitle: string) => {
-    if (!confirm(`Are you sure you want to delete "${showTitle}"? This action cannot be undone.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${showTitle}"? This action cannot be undone.`,
+      )
+    ) {
       return;
     }
 
     try {
       const response = await fetch(`/api/admin/shows/${showId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
-      
+
       if (response.ok) {
         // Remove from local state
-        setShows(shows.filter(show => show.id !== showId));
-        alert('Show deleted successfully');
+        setShows(shows.filter((show) => show.id !== showId));
+        alert("Show deleted successfully");
       } else {
-        alert('Failed to delete show');
+        alert("Failed to delete show");
       }
     } catch (error) {
-      console.error('Delete error:', error);
-      alert('Error deleting show');
+      console.error("Delete error:", error);
+      alert("Error deleting show");
     }
   };
 
   const handleSyncShow = async (showId: string) => {
     try {
       const response = await fetch(`/api/admin/shows/${showId}/sync`, {
-        method: 'POST',
+        method: "POST",
       });
-      
+
       if (response.ok) {
         // Reload data to get updated information
         await loadData();
-        alert('Show synced successfully');
+        alert("Show synced successfully");
       } else {
-        alert('Failed to sync show');
+        alert("Failed to sync show");
       }
     } catch (error) {
-      console.error('Sync error:', error);
-      alert('Error syncing show');
+      console.error("Sync error:", error);
+      alert("Error syncing show");
     }
   };
 
@@ -311,7 +319,11 @@ export default function ShowsManagementPage() {
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
-          <Button variant="outline" className="w-full sm:w-auto" onClick={handleExportShows}>
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={handleExportShows}
+          >
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
@@ -440,131 +452,135 @@ export default function ShowsManagementPage() {
         <CardContent>
           <div className="overflow-x-auto">
             <Table className="min-w-[900px]">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Show</TableHead>
-                <TableHead>Date & Time</TableHead>
-                <TableHead>Venue</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Setlists</TableHead>
-                <TableHead>Attendees</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredShows.map((show) => {
-                const StatusIcon = getStatusIcon(show.status);
-                return (
-                  <TableRow key={show.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        {show.artist?.image_url ? (
-                          <img
-                            src={show.artist.image_url}
-                            alt={show.artist.name}
-                            className="h-10 w-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                            <Music className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div>
-                          <div className="font-medium">{show.title}</div>
-                          <div className="text-muted-foreground text-sm">
-                            {show.artist?.name}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">
-                          {new Date(show.date).toLocaleDateString()}
-                        </div>
-                        <div className="text-muted-foreground text-sm">
-                          {show.time || "Time TBA"}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{show.venue?.name}</div>
-                        <div className="text-muted-foreground text-sm">
-                          {show.venue?.city}, {show.venue?.state}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusColor(show.status)}>
-                        <StatusIcon className="mr-1 h-3 w-3" />
-                        {show.status.replace("_", " ")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-center">
-                        {show.setlists_count || 0}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-center">
-                        {show.attendees_count || 0}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/shows/${show.id}`}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Details
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/shows/${show.id}/edit`}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit Show
-                            </Link>
-                          </DropdownMenuItem>
-                          {show.ticket_url && (
-                            <DropdownMenuItem asChild>
-                              <a
-                                href={show.ticket_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <ExternalLink className="mr-2 h-4 w-4" />
-                                View Tickets
-                              </a>
-                            </DropdownMenuItem>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Show</TableHead>
+                  <TableHead>Date & Time</TableHead>
+                  <TableHead>Venue</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Setlists</TableHead>
+                  <TableHead>Attendees</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredShows.map((show) => {
+                  const StatusIcon = getStatusIcon(show.status);
+                  return (
+                    <TableRow key={show.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          {show.artist?.image_url ? (
+                            <img
+                              src={show.artist.image_url}
+                              alt={show.artist.name}
+                              className="h-10 w-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                              <Music className="h-5 w-5 text-muted-foreground" />
+                            </div>
                           )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleSyncShow(show.id)}>
-                            <RefreshCw className="mr-2 h-4 w-4" />
-                            Sync from Ticketmaster
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-destructive"
-                            onClick={() => handleDeleteShow(show.id, show.title)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete Show
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
+                          <div>
+                            <div className="font-medium">{show.title}</div>
+                            <div className="text-muted-foreground text-sm">
+                              {show.artist?.name}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">
+                            {new Date(show.date).toLocaleDateString()}
+                          </div>
+                          <div className="text-muted-foreground text-sm">
+                            {show.time || "Time TBA"}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{show.venue?.name}</div>
+                          <div className="text-muted-foreground text-sm">
+                            {show.venue?.city}, {show.venue?.state}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusColor(show.status)}>
+                          <StatusIcon className="mr-1 h-3 w-3" />
+                          {show.status.replace("_", " ")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-center">
+                          {show.setlists_count || 0}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-center">
+                          {show.attendees_count || 0}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/shows/${show.id}`}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/shows/${show.id}/edit`}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Show
+                              </Link>
+                            </DropdownMenuItem>
+                            {show.ticket_url && (
+                              <DropdownMenuItem asChild>
+                                <a
+                                  href={show.ticket_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <ExternalLink className="mr-2 h-4 w-4" />
+                                  View Tickets
+                                </a>
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => handleSyncShow(show.id)}
+                            >
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Sync from Ticketmaster
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() =>
+                                handleDeleteShow(show.id, show.title)
+                              }
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete Show
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
             </Table>
           </div>
         </CardContent>

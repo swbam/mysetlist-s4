@@ -10,15 +10,15 @@ import {
   sql,
   venues,
 } from "@repo/database";
-import { 
-  SpotifyClient, 
-  TicketmasterClient,
+import {
   ArtistSyncService,
   ShowSyncService,
-  VenueSyncService
+  SpotifyClient,
+  TicketmasterClient,
+  VenueSyncService,
 } from "@repo/external-apis";
-import { updateImportStatus } from "~/lib/import-status";
 import { ImportLogger } from "~/lib/import-logger";
+import { updateImportStatus } from "~/lib/import-status";
 
 // ================================
 // Types and Interfaces
@@ -129,12 +129,15 @@ export class ArtistImportOrchestrator {
   /**
    * Main orchestration method following the optimal timing strategy
    */
-  async importArtist(tmAttractionId: string, adminImport = false): Promise<ImportResult> {
+  async importArtist(
+    tmAttractionId: string,
+    adminImport = false,
+  ): Promise<ImportResult> {
     const startTime = Date.now();
     const stages: ImportProgress[] = [];
     let artistData: ArtistBasicData | null = null;
     const phase1StartTime = Date.now();
-    
+
     // Initialize logger for tracking (especially important for admin imports)
     // Use temp ID initially, will update with real artist ID after Phase 1
     const tempArtistId = `tmp_${tmAttractionId}`;
@@ -148,10 +151,14 @@ export class ArtistImportOrchestrator {
       // PHASE 1: Instant Artist Page Load (< 3 seconds)
       // ========================================
 
-      await logger.info("initializing", `Starting artist import for Ticketmaster ID: ${tmAttractionId}`, {
-        adminImport,
-        timestamp: new Date().toISOString(),
-      });
+      await logger.info(
+        "initializing",
+        `Starting artist import for Ticketmaster ID: ${tmAttractionId}`,
+        {
+          adminImport,
+          timestamp: new Date().toISOString(),
+        },
+      );
 
       await this.updateProgress({
         stage: "initializing",
@@ -162,7 +169,7 @@ export class ArtistImportOrchestrator {
 
       artistData = await this.processPhase1(tmAttractionId, logger);
       const phase1Duration = Date.now() - phase1StartTime;
-      
+
       // Update logger with real artist ID after Phase 1
       logger.updateArtistId(artistData.artistId);
 
@@ -290,7 +297,10 @@ export class ArtistImportOrchestrator {
    * Creates minimal artist record with Ticketmaster + basic Spotify data
    * Returns artistId + slug immediately for navigation
    */
-  async processPhase1(tmAttractionId: string, logger?: ImportLogger): Promise<ArtistBasicData> {
+  async processPhase1(
+    tmAttractionId: string,
+    logger?: ImportLogger,
+  ): Promise<ArtistBasicData> {
     const maxPhase1Time = 3000; // 3 seconds max
     const phaseStartTime = Date.now();
 

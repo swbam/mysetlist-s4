@@ -38,7 +38,7 @@ async function addPastShows() {
     `);
 
     console.log("Past shows added successfully!");
-    
+
     // Check the results
     const totalShows = await db.execute(sql`
       SELECT 
@@ -49,8 +49,9 @@ async function addPastShows() {
     `);
 
     const counts = totalShows[0];
-    console.log(`\nShow counts: ${counts.total} total (${counts.upcoming} upcoming, ${counts.past} past)`);
-
+    console.log(
+      `\nShow counts: ${counts.total} total (${counts.upcoming} upcoming, ${counts.past} past)`,
+    );
   } catch (error) {
     console.error("Error adding past shows:", error);
   } finally {

@@ -15,11 +15,15 @@ async function testTrendingArtistsQuery() {
       LIMIT 10
     `);
 
-    console.log(`Artists with trending_score > 0: ${artistsWithTrending.length}`);
+    console.log(
+      `Artists with trending_score > 0: ${artistsWithTrending.length}`,
+    );
     if (artistsWithTrending.length > 0) {
       console.log("Sample trending artists:");
       artistsWithTrending.forEach((artist, i) => {
-        console.log(`  ${i + 1}. ${artist.name} (trending: ${artist.trending_score}, popularity: ${artist.popularity})`);
+        console.log(
+          `  ${i + 1}. ${artist.name} (trending: ${artist.trending_score}, popularity: ${artist.popularity})`,
+        );
       });
     }
 
@@ -32,15 +36,22 @@ async function testTrendingArtistsQuery() {
       LIMIT 10
     `);
 
-    console.log(`\nFallback query (by popularity): ${artistsByPopularity.length} artists`);
+    console.log(
+      `\nFallback query (by popularity): ${artistsByPopularity.length} artists`,
+    );
     if (artistsByPopularity.length > 0) {
       console.log("Sample popular artists:");
       artistsByPopularity.forEach((artist, i) => {
-        console.log(`  ${i + 1}. ${artist.name} (popularity: ${artist.popularity}, trending: ${artist.trending_score})`);
+        console.log(
+          `  ${i + 1}. ${artist.name} (popularity: ${artist.popularity}, trending: ${artist.trending_score})`,
+        );
       });
     }
 
-    return { trending: artistsWithTrending.length, popular: artistsByPopularity.length };
+    return {
+      trending: artistsWithTrending.length,
+      popular: artistsByPopularity.length,
+    };
   } catch (error) {
     console.error("Error testing trending artists:", error);
     return { trending: 0, popular: 0 };
@@ -77,12 +88,12 @@ async function testArtistShowsQuery() {
 
     console.log(`Upcoming shows for ${artist.name}: ${upcomingShows.length}`);
     if (upcomingShows.length > 0) {
-      upcomingShows.forEach(show => {
+      upcomingShows.forEach((show) => {
         console.log(`  - ${show.name} at ${show.venue_name} on ${show.date}`);
       });
     }
 
-    // Test past shows  
+    // Test past shows
     const pastShows = await db.execute(sql`
       SELECT s.id, s.name, s.date, s.status, v.name as venue_name
       FROM shows s
@@ -95,7 +106,7 @@ async function testArtistShowsQuery() {
 
     console.log(`\nPast shows for ${artist.name}: ${pastShows.length}`);
     if (pastShows.length > 0) {
-      pastShows.slice(0, 3).forEach(show => {
+      pastShows.slice(0, 3).forEach((show) => {
         console.log(`  - ${show.name} at ${show.venue_name} on ${show.date}`);
       });
       if (pastShows.length > 3) {
@@ -117,12 +128,21 @@ async function main() {
   const showResults = await testArtistShowsQuery();
 
   console.log("\n=== SUMMARY ===");
-  console.log(`✅ Trending Artists: ${trendingResults.trending > 0 ? 'WORKING' : 'NEEDS FALLBACK'} (${trendingResults.trending} with trending scores)`);
-  console.log(`✅ Popular Artists Fallback: ${trendingResults.popular > 0 ? 'WORKING' : 'BROKEN'} (${trendingResults.popular} total)`);
-  console.log(`✅ Artist Shows: ${showResults.upcoming + showResults.past > 0 ? 'WORKING' : 'BROKEN'} (${showResults.upcoming} upcoming, ${showResults.past} past)`);
+  console.log(
+    `✅ Trending Artists: ${trendingResults.trending > 0 ? "WORKING" : "NEEDS FALLBACK"} (${trendingResults.trending} with trending scores)`,
+  );
+  console.log(
+    `✅ Popular Artists Fallback: ${trendingResults.popular > 0 ? "WORKING" : "BROKEN"} (${trendingResults.popular} total)`,
+  );
+  console.log(
+    `✅ Artist Shows: ${showResults.upcoming + showResults.past > 0 ? "WORKING" : "BROKEN"} (${showResults.upcoming} upcoming, ${showResults.past} past)`,
+  );
 
-  const allWorking = trendingResults.popular > 0 && (showResults.upcoming + showResults.past) > 0;
-  console.log(`\n🎯 Overall Status: ${allWorking ? 'ALL FIXES WORKING' : 'ISSUES REMAIN'}`);
+  const allWorking =
+    trendingResults.popular > 0 && showResults.upcoming + showResults.past > 0;
+  console.log(
+    `\n🎯 Overall Status: ${allWorking ? "ALL FIXES WORKING" : "ISSUES REMAIN"}`,
+  );
 
   if (allWorking) {
     console.log("\n📝 Next Steps:");

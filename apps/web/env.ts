@@ -14,7 +14,6 @@ export const env = createEnv({
 
     // External APIs
     TICKETMASTER_API_KEY: z.string().min(1),
-    SETLISTFM_API_KEY: z.string().min(1).optional(),
     SETLISTFM_API_KEY: z.string().min(1).optional(), // Handle both naming conventions
 
     // Security
@@ -131,7 +130,6 @@ export const env = createEnv({
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     TICKETMASTER_API_KEY: process.env.TICKETMASTER_API_KEY,
     SETLISTFM_API_KEY: process.env.SETLISTFM_API_KEY,
-    SETLISTFM_API_KEY: process.env.SETLISTFM_API_KEY,
     CRON_SECRET: process.env.CRON_SECRET,
     CSRF_SECRET: process.env.CSRF_SECRET,
     ADMIN_API_KEY: process.env.ADMIN_API_KEY,
@@ -212,7 +210,13 @@ export const getServerCacheConfig = () => ({
 
 // Client-safe API configuration (only using client-side variables)
 export const apiConfig = {
-  baseUrl: env.NEXT_PUBLIC_API_URL || env.NEXT_PUBLIC_APP_URL || env.NEXT_PUBLIC_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001'),
+  baseUrl:
+    env.NEXT_PUBLIC_API_URL ||
+    env.NEXT_PUBLIC_APP_URL ||
+    env.NEXT_PUBLIC_URL ||
+    (typeof window !== "undefined"
+      ? window.location.origin
+      : "http://localhost:3001"),
   timeout: isProduction ? 30000 : 60000, // 30s in prod, 60s in dev
   retries: isProduction ? 3 : 1,
 };

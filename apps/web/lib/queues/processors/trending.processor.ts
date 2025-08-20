@@ -1,7 +1,7 @@
-import type { SimpleJob } from "../types";
-import { db, artists, shows, votes } from "@repo/database";
+import { artists, db, shows, votes } from "@repo/database";
 import { sql } from "drizzle-orm";
 import { RedisCache } from "../redis-config";
+import type { SimpleJob } from "../types";
 
 let _cache: RedisCache | null = null;
 function getCache(): RedisCache {
@@ -10,19 +10,19 @@ function getCache(): RedisCache {
 }
 
 export interface TrendingCalcJobData {
-  timeframe: 'hourly' | 'daily' | 'weekly' | 'monthly';
+  timeframe: "hourly" | "daily" | "weekly" | "monthly";
   limit?: number;
 }
 
 export async function processTrendingCalc(job: SimpleJob<TrendingCalcJobData>) {
   const { timeframe, limit = 50 } = job.data;
-  
+
   try {
     await job.log(`Calculating ${timeframe} trending artists...`);
     await job.updateProgress(10);
-    
+
     const timeRange = getTimeRange(timeframe);
-    
+
     // Calculate trending based on multiple factors
     const trendingData = await db.execute(sql`
       WITH artist_metrics AS (
@@ -108,35 +108,39 @@ export async function processTrendingCalc(job: SimpleJob<TrendingCalcJobData>) {
       ORDER BY trending_score DESC
       LIMIT ${limit}
     `);
-    
+
     await job.updateProgress(50);
-    
+
     const trendingArtists = (trendingData as any).rows || [];
-    
+
     // Store in cache
     const cacheKey = `trending:${timeframe}`;
     await getCache().set(cacheKey, trendingArtists, getCacheTTL(timeframe));
-    
+
     // Store individual artist trending data
     for (const artist of trendingArtists) {
       const artistCacheKey = `trending:artist:${artist.id}:${timeframe}`;
-      await getCache().set(artistCacheKey, {
-        score: artist.trending_score,
-        rank: trendingArtists.indexOf(artist) + 1,
-        metrics: {
-          recentVotes: artist.recent_votes,
-          upcomingShows: artist.upcoming_shows,
-          spotifyPopularity: artist.spotify_popularity,
-          followers: artist.followers,
+      await getCache().set(
+        artistCacheKey,
+        {
+          score: artist.trending_score,
+          rank: trendingArtists.indexOf(artist) + 1,
+          metrics: {
+            recentVotes: artist.recent_votes,
+            upcomingShows: artist.upcoming_shows,
+            spotifyPopularity: artist.spotify_popularity,
+            followers: artist.followers,
+          },
         },
-      }, getCacheTTL(timeframe));
+        getCacheTTL(timeframe),
+      );
     }
-    
+
     await job.updateProgress(80);
-    
+
     // Update trending status in database
     const trendingIds = trendingArtists.map((a: any) => a.id);
-    
+
     if (trendingIds.length > 0) {
       // Mark as trending
       await db.execute(sql`
@@ -152,7 +156,7 @@ export async function processTrendingCalc(job: SimpleJob<TrendingCalcJobData>) {
         ) as subquery
         WHERE ${artists}.id = subquery.id
       `);
-      
+
       // Mark others as not trending
       await db.execute(sql`
         UPDATE ${artists}
@@ -161,10 +165,12 @@ export async function processTrendingCalc(job: SimpleJob<TrendingCalcJobData>) {
           AND is_trending = true
       `);
     }
-    
+
     await job.updateProgress(100);
-    await job.log(`Trending calculation completed: ${trendingArtists.length} artists identified`);
-    
+    await job.log(
+      `Trending calculation completed: ${trendingArtists.length} artists identified`,
+    );
+
     return {
       success: true,
       timeframe,
@@ -175,7 +181,6 @@ export async function processTrendingCalc(job: SimpleJob<TrendingCalcJobData>) {
         score: a.trending_score,
       })),
     };
-    
   } catch (error) {
     console.error("Trending calculation failed:", error);
     throw error;
@@ -184,15 +189,15 @@ export async function processTrendingCalc(job: SimpleJob<TrendingCalcJobData>) {
 
 function getTimeRange(timeframe: string): Date {
   const now = new Date();
-  
+
   switch (timeframe) {
-    case 'hourly':
+    case "hourly":
       return new Date(now.getTime() - 60 * 60 * 1000);
-    case 'daily':
+    case "daily":
       return new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    case 'weekly':
+    case "weekly":
       return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    case 'monthly':
+    case "monthly":
       return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     default:
       return new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -201,13 +206,13 @@ function getTimeRange(timeframe: string): Date {
 
 function getCacheTTL(timeframe: string): number {
   switch (timeframe) {
-    case 'hourly':
+    case "hourly":
       return 3600; // 1 hour
-    case 'daily':
+    case "daily":
       return 3600 * 6; // 6 hours
-    case 'weekly':
+    case "weekly":
       return 3600 * 24; // 24 hours
-    case 'monthly':
+    case "monthly":
       return 3600 * 24 * 3; // 3 days
     default:
       return 3600; // 1 hour

@@ -1,30 +1,43 @@
 import {
+  and,
+  db,
+  desc,
+  eq,
+  importLogs,
+  importStatus,
+  sql,
+} from "@repo/database";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
 import { format } from "date-fns";
 import {
+  Activity,
   AlertCircle,
+  AlertTriangle,
+  Calendar,
   CheckCircle,
   Clock,
   Info,
-  Search,
-  AlertTriangle,
-  Activity,
-  Music,
   MapPin,
-  Calendar,
+  Music,
+  Search,
 } from "lucide-react";
+import { createClient } from "~/lib/supabase/server";
 import { AdminSearchBar } from "./components/admin-search-bar";
 import { ImportLogsDisplay } from "./components/import-logs-display";
-import { createClient } from "~/lib/supabase/server";
-import { db, importStatus, importLogs, eq, desc, and, sql } from "@repo/database";
 
 export const dynamic = "force-dynamic";
 
@@ -109,9 +122,17 @@ function getLogLevelBadge(level: string) {
     case "error":
       return <Badge variant="destructive">{level}</Badge>;
     case "warning":
-      return <Badge variant="outline" className="border-yellow-500 text-yellow-700">{level}</Badge>;
+      return (
+        <Badge variant="outline" className="border-yellow-500 text-yellow-700">
+          {level}
+        </Badge>
+      );
     case "success":
-      return <Badge variant="outline" className="border-green-500 text-green-700">{level}</Badge>;
+      return (
+        <Badge variant="outline" className="border-green-500 text-green-700">
+          {level}
+        </Badge>
+      );
     case "info":
       return <Badge variant="secondary">{level}</Badge>;
     case "debug":
@@ -174,11 +195,14 @@ export default async function ImportLogsPage({
                     <div>
                       <p className="font-medium">{summary.artistName}</p>
                       <p className="text-sm text-muted-foreground">
-                        Last import: {summary.lastImport ? format(summary.lastImport, "MMM d, h:mm a") : "Never"}
+                        Last import:{" "}
+                        {summary.lastImport
+                          ? format(summary.lastImport, "MMM d, h:mm a")
+                          : "Never"}
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-6">
                     <div className="flex items-center gap-4 text-sm">
                       <div className="flex items-center gap-1">
@@ -194,18 +218,24 @@ export default async function ImportLogsPage({
                         <span>{summary.totalVenues}</span>
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-2">
                       <Badge variant="outline" className="text-xs">
                         {summary.totalImports} imports
                       </Badge>
                       {summary.successfulImports > 0 && (
-                        <Badge variant="outline" className="text-xs border-green-500 text-green-700">
+                        <Badge
+                          variant="outline"
+                          className="text-xs border-green-500 text-green-700"
+                        >
                           {summary.successfulImports} successful
                         </Badge>
                       )}
                       {summary.failedImports > 0 && (
-                        <Badge variant="outline" className="text-xs border-red-500 text-red-700">
+                        <Badge
+                          variant="outline"
+                          className="text-xs border-red-500 text-red-700"
+                        >
                           {summary.failedImports} failed
                         </Badge>
                       )}
@@ -213,10 +243,11 @@ export default async function ImportLogsPage({
                   </div>
                 </div>
               ))}
-              
+
               {summaries.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  No import activity found. Start by searching for an artist above.
+                  No import activity found. Start by searching for an artist
+                  above.
                 </div>
               )}
             </div>
@@ -249,7 +280,9 @@ export default async function ImportLogsPage({
                   </span>
                   <span className="flex-1">
                     {log.artistName && (
-                      <span className="font-semibold mr-2">{log.artistName}:</span>
+                      <span className="font-semibold mr-2">
+                        {log.artistName}:
+                      </span>
                     )}
                     {log.message}
                     {log.itemsProcessed !== null && log.itemsTotal !== null && (
@@ -265,7 +298,7 @@ export default async function ImportLogsPage({
                   </span>
                 </div>
               ))}
-              
+
               {recentLogs.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   No logs available yet.

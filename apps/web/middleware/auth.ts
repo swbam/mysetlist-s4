@@ -14,30 +14,33 @@ export async function updateSession(request: NextRequest) {
 
     // Check for auth-related paths that need protection
     const pathname = request.nextUrl.pathname;
-    const protectedPaths = ['/profile', '/admin', '/my-artists', '/settings'];
-    const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
-    
+    const protectedPaths = ["/profile", "/admin", "/my-artists", "/settings"];
+    const isProtectedPath = protectedPaths.some((path) =>
+      pathname.startsWith(path),
+    );
+
     if (isProtectedPath) {
       // Check for Supabase auth cookies (Edge-compatible check)
       const cookies = request.cookies.getAll();
-      const hasAuthToken = cookies.some(cookie => 
-        cookie.name.startsWith('sb-') && 
-        (cookie.name.includes('auth-token') || 
-         cookie.name.includes('access-token') ||
-         cookie.name.includes('access_token'))
+      const hasAuthToken = cookies.some(
+        (cookie) =>
+          cookie.name.startsWith("sb-") &&
+          (cookie.name.includes("auth-token") ||
+            cookie.name.includes("access-token") ||
+            cookie.name.includes("access_token")),
       );
-      
+
       if (!hasAuthToken) {
-        const signInUrl = new URL('/auth/sign-in', request.url);
-        signInUrl.searchParams.set('redirectTo', pathname);
+        const signInUrl = new URL("/auth/sign-in", request.url);
+        signInUrl.searchParams.set("redirectTo", pathname);
         return NextResponse.redirect(signInUrl);
       }
     }
 
     // For auth callback, ensure cookies are properly forwarded
-    if (pathname === '/auth/callback') {
+    if (pathname === "/auth/callback") {
       const cookiesToForward = request.cookies.getAll();
-      cookiesToForward.forEach(cookie => {
+      cookiesToForward.forEach((cookie) => {
         response.cookies.set(cookie.name, cookie.value);
       });
     }

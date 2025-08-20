@@ -1,6 +1,6 @@
+import { artistSongs, artists, db, eq, songs, sql } from "@repo/database";
 import { SpotifyClient } from "../clients/spotify";
-import { db, eq, sql, artists, songs, artistSongs } from "@repo/database";
-import { SyncServiceError } from "../utils/error-handler";
+// import { SyncServiceError } from "../utils/error-handler";
 
 export interface CatalogSyncResult {
   totalSongs: number;
@@ -184,7 +184,7 @@ export class SpotifyCompleteCatalog {
                     type: item.album_type || "album",
                     releaseDate: item.release_date || "",
                     totalTracks: item.total_tracks || 0,
-                  } as AlbumData),
+                  }) as AlbumData,
               ),
             );
             offset += response.items.length;
@@ -253,7 +253,10 @@ export class SpotifyCompleteCatalog {
             album: album,
           }));
         } catch (error) {
-          console.warn(`Failed to fetch tracks for album ${album.name}:`, error);
+          console.warn(
+            `Failed to fetch tracks for album ${album.name}:`,
+            error,
+          );
           return [];
         }
       });
@@ -562,7 +565,7 @@ export class SpotifyCompleteCatalog {
     const daysSinceSync = artist.songCatalogSyncedAt
       ? (Date.now() - artist.songCatalogSyncedAt.getTime()) /
         (1000 * 60 * 60 * 24)
-      : Infinity;
+      : Number.POSITIVE_INFINITY;
 
     return {
       synced: !!artist.songCatalogSyncedAt,

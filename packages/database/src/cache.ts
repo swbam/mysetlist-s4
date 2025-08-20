@@ -64,7 +64,7 @@ function getCache(type: string): SimpleCache<string, any> {
   if (!caches.has(type)) {
     const config = cacheConfigs[type] || cacheConfigs["default"];
     if (config) {
-    caches.set(type, new SimpleCache(config));
+      caches.set(type, new SimpleCache(config));
     } else {
       throw new Error(`No cache config found for type: ${type}`);
     }
@@ -105,10 +105,10 @@ export async function withCache<T>(
 
   // Check cache first unless force refresh is requested
   if (!options?.force) {
-  const cached = cache.get(cacheKey);
+    const cached = cache.get(cacheKey);
     if (cached !== undefined) {
       // Track cache hit for monitoring
-  if (process.env["NODE_ENV"] === "development") {
+      if (process.env["NODE_ENV"] === "development") {
       }
       return cached;
     }
@@ -119,16 +119,20 @@ export async function withCache<T>(
     const result = await queryFn();
 
     // Store in cache with custom TTL if provided
-  cache.set(cacheKey, result, options?.ttl ? { ttl: options.ttl } : undefined);
+    cache.set(
+      cacheKey,
+      result,
+      options?.ttl ? { ttl: options.ttl } : undefined,
+    );
 
     // Track cache miss for monitoring
-  if (process.env["NODE_ENV"] === "development") {
+    if (process.env["NODE_ENV"] === "development") {
     }
 
     return result;
   } catch (error) {
     // On error, try to return stale data if available
-  const staleData = cache.get(cacheKey, { allowStale: true } as any);
+    const staleData = cache.get(cacheKey, { allowStale: true } as any);
     if (staleData !== undefined) {
       return staleData;
     }

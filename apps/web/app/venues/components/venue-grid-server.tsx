@@ -22,9 +22,5 @@ export async function VenueGridServer({ searchParams }: VenueGridServerProps) {
     ...(searchParams.lng && { userLng: Number.parseFloat(searchParams.lng) }),
   });
 
-  return (
-    <VenueGridClient
-      venues={venues}
-    />
-  );
+  return <VenueGridClient venues={venues} />;
 }

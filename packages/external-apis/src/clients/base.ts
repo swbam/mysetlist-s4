@@ -3,13 +3,17 @@ import { Redis } from "@upstash/redis";
 export interface APIClientConfig {
   baseURL: string;
   apiKey?: string | undefined;
-  rateLimit?: {
-    requests: number;
-    window: number; // seconds
-  } | undefined;
-  cache?: {
-    defaultTTL: number; // seconds
-  } | undefined;
+  rateLimit?:
+    | {
+        requests: number;
+        window: number; // seconds
+      }
+    | undefined;
+  cache?:
+    | {
+        defaultTTL: number; // seconds
+      }
+    | undefined;
 }
 
 export abstract class BaseAPIClient {

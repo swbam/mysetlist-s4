@@ -13,7 +13,7 @@ export {
   reportComplete,
   type ProgressEvent,
   type ImportStage,
-} from './ProgressBus';
+} from "./ProgressBus";
 
 // Default export for convenience
-export { default } from './ProgressBus';
+export { default } from "./ProgressBus";

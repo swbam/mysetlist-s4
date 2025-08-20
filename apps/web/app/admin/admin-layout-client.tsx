@@ -1,25 +1,25 @@
 "use client";
 
-import {
-  AlertCircle,
-  Menu,
-  Shield,
-} from "lucide-react";
-import Link from "next/link";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@repo/design-system/components/ui/sheet";
-import { useEffect, useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@repo/design-system/components/ui/sheet";
+import { AlertCircle, Menu, Shield } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // Client component for mobile sidebar
-function MobileSidebar({ 
-  navigation, 
-  locale, 
-  isAdmin 
-}: { 
-  navigation: any[], 
-  locale: string, 
-  isAdmin: boolean 
+function MobileSidebar({
+  navigation,
+  locale,
+  isAdmin,
+}: {
+  navigation: any[];
+  locale: string;
+  isAdmin: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -141,7 +141,11 @@ export function AdminLayoutClient({
         <main className="flex-1 min-w-0">
           {/* Mobile Header */}
           <div className="md:hidden flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <MobileSidebar navigation={navigation} locale={locale} isAdmin={isAdmin} />
+            <MobileSidebar
+              navigation={navigation}
+              locale={locale}
+              isAdmin={isAdmin}
+            />
             <h1 className="font-semibold text-lg">Admin Panel</h1>
             <div className="w-10" /> {/* Spacer for centering */}
           </div>

@@ -1,5 +1,5 @@
-import { BaseAPIClient, APIClientConfig } from "./base";
-import { SetlistFmSetlist } from "../types/setlistfm";
+import type { SetlistFmSetlist } from "../types/setlistfm";
+import { type APIClientConfig, BaseAPIClient } from "./base";
 
 export class SetlistFmClient extends BaseAPIClient {
   constructor(config: Omit<APIClientConfig, "baseURL">) {

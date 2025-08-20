@@ -1,12 +1,14 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -45,7 +47,7 @@ export async function GET(request: NextRequest) {
     // Convert to CSV
     const csvHeaders = [
       "ID",
-      "Email", 
+      "Email",
       "Display Name",
       "Username",
       "Role",
@@ -53,21 +55,26 @@ export async function GET(request: NextRequest) {
       "Last Login",
       "Email Verified",
       "Is Banned",
-      "Warning Count"
+      "Warning Count",
     ].join(",");
 
-    const csvRows = users?.map(user => [
-      user.id,
-      user.email,
-      user.display_name || "",
-      user.username || "",
-      user.role,
-      user.created_at,
-      user.last_login_at || "",
-      user.email_verified ? "Yes" : "No",
-      user.is_banned ? "Yes" : "No",
-      user.warning_count || 0
-    ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")) || [];
+    const csvRows =
+      users?.map((user) =>
+        [
+          user.id,
+          user.email,
+          user.display_name || "",
+          user.username || "",
+          user.role,
+          user.created_at,
+          user.last_login_at || "",
+          user.email_verified ? "Yes" : "No",
+          user.is_banned ? "Yes" : "No",
+          user.warning_count || 0,
+        ]
+          .map((field) => `"${String(field).replace(/"/g, '""')}"`)
+          .join(","),
+      ) || [];
 
     const csvContent = [csvHeaders, ...csvRows].join("\n");
 
@@ -75,14 +82,14 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "text/csv",
-        "Content-Disposition": `attachment; filename="users-export-${new Date().toISOString().split('T')[0]}.csv"`,
+        "Content-Disposition": `attachment; filename="users-export-${new Date().toISOString().split("T")[0]}.csv"`,
       },
     });
   } catch (error) {
     console.error("Error exporting users:", error);
     return NextResponse.json(
       { error: "Failed to export users" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

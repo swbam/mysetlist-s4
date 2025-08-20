@@ -20,11 +20,7 @@ export default defineConfig({
       "__tests__/quality/**/*.test.{ts,tsx}",
       "__tests__/acceptance/**/*.test.{ts,tsx}",
     ],
-    exclude: [
-      "node_modules/",
-      ".next/",
-      "coverage/",
-    ],
+    exclude: ["node_modules/", ".next/", "coverage/"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html", "lcov"],
@@ -43,12 +39,7 @@ export default defineConfig({
         "test-results/",
         "playwright-report/",
       ],
-      include: [
-        "app/**",
-        "components/**", 
-        "lib/**",
-        "hooks/**"
-      ],
+      include: ["app/**", "components/**", "lib/**", "hooks/**"],
       thresholds: {
         global: {
           branches: 80,
@@ -74,7 +65,7 @@ export default defineConfig({
     // Extended timeouts for performance tests
     testTimeout: 60000, // 60 seconds for E2E and acceptance tests
     hookTimeout: 30000, // 30 seconds for setup/teardown
-    
+
     // Performance-optimized test execution
     pool: "threads",
     poolOptions: {
@@ -84,26 +75,26 @@ export default defineConfig({
         maxThreads: 4,
       },
     },
-    
+
     // Fail fast for CI environments
     bail: process.env.CI ? 1 : 0,
-    
+
     // Reporter configuration
-    reporter: process.env.CI 
+    reporter: process.env.CI
       ? ["verbose", "github-actions"]
       : ["verbose", "html"],
-    
+
     outputFile: {
       html: "./test-results/performance-report.html",
       json: "./test-results/performance-results.json",
     },
-    
+
     // Environment variables for tests
     env: {
       NODE_ENV: "test",
       VITEST_PERFORMANCE_MODE: "true",
     },
-    
+
     // Memory management for large tests
     isolate: true,
     sequence: {

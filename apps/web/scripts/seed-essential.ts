@@ -116,7 +116,6 @@ async function seedEssentialData() {
     `);
 
     console.log("\nSeeding completed successfully!");
-    
   } catch (error) {
     console.error("Error seeding data:", error);
   }

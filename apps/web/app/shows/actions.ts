@@ -267,7 +267,7 @@ export const fetchShows = cache(
         id: show.id,
         name: show.name || "Untitled Show",
         slug: show.slug || "untitled-show",
-        date: show.date || new Date().toISOString().split('T')[0]!,
+        date: show.date || new Date().toISOString().split("T")[0]!,
         startTime: show.startTime || null,
         doorsTime: show.doorsTime || null,
         status: show.status || "upcoming",

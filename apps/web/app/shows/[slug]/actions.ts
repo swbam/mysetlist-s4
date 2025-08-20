@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "~/lib/auth";
-import { createClient } from "~/lib/supabase/server";
 import { setlistPreseeder } from "~/lib/services/ingest/SetlistPreseeder";
+import { createClient } from "~/lib/supabase/server";
 
 export async function getShowDetails(slug: string) {
   const supabase = await createClient();
@@ -49,14 +49,19 @@ export async function getShowDetails(slug: string) {
       .select("id, type")
       .eq("show_id", show.id);
 
-    const hasPredicted = (existingSetlists || []).some((s: any) => s.type === "predicted");
+    const hasPredicted = (existingSetlists || []).some(
+      (s: any) => s.type === "predicted",
+    );
 
     if (!hasPredicted && show.headliner_artist?.id) {
-      const result = await setlistPreseeder.createInitialSetlistForShow(show.id, {
-        songsPerSetlist: 5,
-        weightByPopularity: true,
-        excludeLive: true,
-      });
+      const result = await setlistPreseeder.createInitialSetlistForShow(
+        show.id,
+        {
+          songsPerSetlist: 5,
+          weightByPopularity: true,
+          excludeLive: true,
+        },
+      );
 
       if (result?.success) {
         // Re-fetch show setlists after preseed
@@ -181,7 +186,9 @@ export async function createSetlist(
 
     if (artistSongsData && artistSongsData.length > 0) {
       // Filter out songs without full data and shuffle
-      const validSongs = artistSongsData.filter(item => item.songs && (item.songs as any).id);
+      const validSongs = artistSongsData.filter(
+        (item) => item.songs && (item.songs as any).id,
+      );
       const shuffled = validSongs.sort(() => 0.5 - Math.random());
       const selectedSongs = shuffled.slice(0, 5);
 

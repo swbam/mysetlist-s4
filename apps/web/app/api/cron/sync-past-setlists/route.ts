@@ -1,8 +1,15 @@
-import { NextResponse } from "next/server";
 import { db } from "@repo/database";
-import { shows, artists, venues, setlists, songs, setlistSongs } from "@repo/database";
-import { eq, and, gte, lte, sql } from "drizzle-orm";
+import {
+  artists,
+  setlistSongs,
+  setlists,
+  shows,
+  songs,
+  venues,
+} from "@repo/database";
 import { SetlistFmClient } from "@repo/external-apis/src/clients/setlistfm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { NextResponse } from "next/server";
 import { requireCronAuth } from "~/lib/api/auth-helpers";
 
 export async function GET(request: Request) {
@@ -15,15 +22,24 @@ export async function GET(request: Request) {
     const recentShows = await db
       .select()
       .from(shows)
-      .where(and(lte(shows.date, sql`'${now.toISOString().split("T")[0]}'` ), gte(shows.date, sql`'${sevenDaysAgo.toISOString().split("T")[0]}'`)));
+      .where(
+        and(
+          lte(shows.date, sql`'${now.toISOString().split("T")[0]}'`),
+          gte(shows.date, sql`'${sevenDaysAgo.toISOString().split("T")[0]}'`),
+        ),
+      );
 
     const setlistFmClient = new SetlistFmClient({
       apiKey: process.env.SETLISTFM_API_KEY!,
     });
 
     for (const show of recentShows) {
-      const artist = await db.query.artists.findFirst({ where: eq(artists.id, show.headlinerArtistId!) });
-      const venue = await db.query.venues.findFirst({ where: eq(venues.id, show.venueId!) });
+      const artist = await db.query.artists.findFirst({
+        where: eq(artists.id, show.headlinerArtistId!),
+      });
+      const venue = await db.query.venues.findFirst({
+        where: eq(venues.id, show.venueId!),
+      });
 
       if (!artist || !venue) {
         continue;
@@ -50,9 +66,14 @@ export async function GET(request: Request) {
         if (newSetlist) {
           for (const set of setlist.sets.set) {
             for (const song of set.song) {
-              let dbSong = await db.query.songs.findFirst({ where: eq(songs.name, song.name) });
+              let dbSong = await db.query.songs.findFirst({
+                where: eq(songs.name, song.name),
+              });
               if (!dbSong) {
-                [dbSong] = await db.insert(songs).values({ name: song.name, artist: artist.name }).returning();
+                [dbSong] = await db
+                  .insert(songs)
+                  .values({ name: song.name, artist: artist.name })
+                  .returning();
               }
 
               if (dbSong) {
@@ -73,7 +94,7 @@ export async function GET(request: Request) {
     console.error("Failed to sync past setlists:", error);
     return NextResponse.json(
       { error: "Failed to sync past setlists" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

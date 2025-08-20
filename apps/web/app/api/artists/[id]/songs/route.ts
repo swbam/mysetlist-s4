@@ -26,10 +26,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       .limit(1);
 
     if (artist.length === 0) {
-      return NextResponse.json(
-        { error: "Artist not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     // Build query conditions
@@ -70,7 +67,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       .where(and(...conditions));
 
     // Transform the response to match frontend expectations
-    const transformedSongs = artistSongsList.map(song => ({
+    const transformedSongs = artistSongsList.map((song) => ({
       id: song.id,
       spotifyId: song.spotify_id,
       title: song.title,
@@ -96,7 +93,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     console.error("Error fetching artist songs:", error);
     return NextResponse.json(
       { error: "Failed to fetch artist songs" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

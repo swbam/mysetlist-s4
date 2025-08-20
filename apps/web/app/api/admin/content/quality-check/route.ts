@@ -1,12 +1,14 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -39,7 +41,7 @@ export async function POST(request: NextRequest) {
       issues.push({
         type: "missing_artist_images",
         count: artistsWithoutImages,
-        description: "Artists missing profile images"
+        description: "Artists missing profile images",
       });
     }
 
@@ -47,8 +49,10 @@ export async function POST(request: NextRequest) {
     const { count: showsWithoutSetlists } = await supabase
       .from("shows")
       .select("*", { count: "exact", head: true })
-      .not("id", "in", 
-        `(${(await supabase.from("setlists").select("show_id")).data?.map(s => s.show_id).join(",") || "null"})`
+      .not(
+        "id",
+        "in",
+        `(${(await supabase.from("setlists").select("show_id")).data?.map((s) => s.show_id).join(",") || "null"})`,
       );
 
     if (showsWithoutSetlists && showsWithoutSetlists > 0) {
@@ -56,7 +60,7 @@ export async function POST(request: NextRequest) {
       issues.push({
         type: "missing_setlists",
         count: showsWithoutSetlists,
-        description: "Shows without setlists"
+        description: "Shows without setlists",
       });
     }
 
@@ -71,7 +75,7 @@ export async function POST(request: NextRequest) {
       issues.push({
         type: "missing_venue_location",
         count: venuesWithoutLocation,
-        description: "Venues missing location coordinates"
+        description: "Venues missing location coordinates",
       });
     }
 
@@ -86,7 +90,7 @@ export async function POST(request: NextRequest) {
       issues.push({
         type: "missing_venue_capacity",
         count: venuesWithoutCapacity,
-        description: "Venues missing capacity information"
+        description: "Venues missing capacity information",
       });
     }
 
@@ -100,21 +104,21 @@ export async function POST(request: NextRequest) {
       metadata: {
         total_issues: totalIssues,
         issues_found: issues,
-        check_timestamp: new Date().toISOString()
+        check_timestamp: new Date().toISOString(),
       },
     });
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: "Quality check completed",
       issues: totalIssues,
-      details: issues
+      details: issues,
     });
   } catch (error) {
     console.error("Error running quality check:", error);
     return NextResponse.json(
       { error: "Failed to run quality check" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

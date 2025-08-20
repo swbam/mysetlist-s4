@@ -365,11 +365,13 @@ export const ProductionMonitoringDashboard: React.FC = () => {
     },
   ];
 
-  const chartData = metrics.performanceData || Array.from({ length: 24 }, (_, i) => ({
-    timestamp: new Date(Date.now() - (23 - i) * 60 * 60 * 1000).toISOString(),
-    value: Math.random() * 100 + 50,
-    label: `${i}:00`,
-  }));
+  const chartData =
+    metrics.performanceData ||
+    Array.from({ length: 24 }, (_, i) => ({
+      timestamp: new Date(Date.now() - (23 - i) * 60 * 60 * 1000).toISOString(),
+      value: Math.random() * 100 + 50,
+      label: `${i}:00`,
+    }));
 
   if (isLoading) {
     return (
@@ -447,11 +449,7 @@ export const ProductionMonitoringDashboard: React.FC = () => {
       <div>
         <h2 className="mb-4 font-semibold text-xl">Performance Trends</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <PerformanceChart
-            data={chartData}
-            title="Response Time"
-            unit="ms"
-          />
+          <PerformanceChart data={chartData} title="Response Time" unit="ms" />
           <PerformanceChart data={chartData} title="Error Rate" unit="%" />
         </div>
       </div>

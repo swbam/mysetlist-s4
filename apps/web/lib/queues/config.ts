@@ -1,4 +1,4 @@
-import { Queue, Worker, QueueEvents, ConnectionOptions } from "bullmq";
+import { type ConnectionOptions, Queue, QueueEvents, Worker } from "bullmq";
 
 // Redis connection configuration (env-driven)
 const {
@@ -11,10 +11,14 @@ const {
 } = process.env as Record<string, string | undefined>;
 
 export const redisConnection: ConnectionOptions = CFG_REDIS_URL
-  ? { url: CFG_REDIS_URL, maxRetriesPerRequest: null as any, enableReadyCheck: false }
+  ? {
+      url: CFG_REDIS_URL,
+      maxRetriesPerRequest: null as any,
+      enableReadyCheck: false,
+    }
   : ({
       host: CFG_REDIS_HOST || "127.0.0.1",
-      port: CFG_REDIS_PORT ? parseInt(CFG_REDIS_PORT, 10) : 6379,
+      port: CFG_REDIS_PORT ? Number.parseInt(CFG_REDIS_PORT, 10) : 6379,
       username: CFG_REDIS_USERNAME,
       password: CFG_REDIS_PASSWORD,
       tls: CFG_REDIS_TLS === "true" ? {} : undefined,
@@ -101,7 +105,7 @@ export interface ArtistImportJob {
 export interface SpotifySyncJob {
   artistId: string;
   spotifyId: string;
-  syncType: 'profile' | 'albums' | 'tracks' | 'full';
+  syncType: "profile" | "albums" | "tracks" | "full";
   options?: {
     includeCompilations?: boolean;
     includeAppearsOn?: boolean;
@@ -112,7 +116,7 @@ export interface SpotifySyncJob {
 export interface TicketmasterSyncJob {
   artistId: string;
   tmAttractionId: string;
-  syncType: 'shows' | 'venues' | 'full';
+  syncType: "shows" | "venues" | "full";
   options?: {
     includePast?: boolean;
     maxShows?: number;
@@ -142,12 +146,12 @@ export interface CatalogSyncJob {
 }
 
 export interface TrendingCalcJob {
-  timeframe: 'daily' | 'weekly' | 'monthly';
+  timeframe: "daily" | "weekly" | "monthly";
   limit?: number;
 }
 
 export interface ScheduledSyncJob {
-  type: 'artist' | 'shows' | 'venues' | 'all';
+  type: "artist" | "shows" | "venues" | "all";
   targetIds?: string[];
   options?: any;
 }
@@ -158,8 +162,8 @@ export function createQueue<T>(name: QueueName): Queue<T> {
     connection: redisConnection,
     defaultJobOptions: {
       ...defaultJobOptions,
-      ...(rateLimits[name] && { 
-        rateLimiter: rateLimits[name] 
+      ...(rateLimits[name] && {
+        rateLimiter: rateLimits[name],
       }),
     },
   });
@@ -168,20 +172,18 @@ export function createQueue<T>(name: QueueName): Queue<T> {
 // Worker factory
 export function createWorker<T>(
   name: QueueName,
-  processor: (job: any) => Promise<any>
+  processor: (job: any) => Promise<any>,
 ): Worker<T> {
-  return new Worker<T>(
-    name,
-    processor,
-    {
-      connection: redisConnection,
-      concurrency: workerConcurrency[name] || 5,
-      limiter: rateLimits[name] ? {
-        max: rateLimits[name].max,
-        duration: rateLimits[name].duration,
-      } : undefined,
-    }
-  );
+  return new Worker<T>(name, processor, {
+    connection: redisConnection,
+    concurrency: workerConcurrency[name] || 5,
+    limiter: rateLimits[name]
+      ? {
+          max: rateLimits[name].max,
+          duration: rateLimits[name].duration,
+        }
+      : undefined,
+  });
 }
 
 // Queue events factory
@@ -198,11 +200,11 @@ export function getQueue<T = any>(name: QueueName): Queue<T> {
   if (!queues) {
     queues = new Map();
   }
-  
+
   if (!queues.has(name)) {
     queues.set(name, createQueue<T>(name));
   }
-  
+
   return queues.get(name)! as unknown as Queue<T>;
 }
 
@@ -210,7 +212,7 @@ export function getQueue<T = any>(name: QueueName): Queue<T> {
 export async function closeAllQueues(): Promise<void> {
   if (queues) {
     await Promise.all(
-      Array.from(queues.values()).map(queue => queue.close())
+      Array.from(queues.values()).map((queue) => queue.close()),
     );
     queues = null;
   }

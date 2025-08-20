@@ -1,15 +1,17 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -27,12 +29,15 @@ export async function GET(
     const userId = params.id;
 
     // Get user statistics
-    const [
-      setlistsResult,
-      votesResult
-    ] = await Promise.all([
-      supabase.from("setlists").select("id", { count: "exact" }).eq("user_id", userId),
-      supabase.from("votes").select("id", { count: "exact" }).eq("user_id", userId)
+    const [setlistsResult, votesResult] = await Promise.all([
+      supabase
+        .from("setlists")
+        .select("id", { count: "exact" })
+        .eq("user_id", userId),
+      supabase
+        .from("votes")
+        .select("id", { count: "exact" })
+        .eq("user_id", userId),
     ]);
 
     const stats = {
@@ -45,7 +50,7 @@ export async function GET(
     console.error("Error fetching user stats:", error);
     return NextResponse.json(
       { error: "Failed to fetch user stats" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

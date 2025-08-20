@@ -1,8 +1,8 @@
+import { db } from "@repo/database";
+import { sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "~/lib/supabase/server";
 import { rateLimitMiddleware } from "~/middleware/rate-limit";
-import { db } from "@repo/database";
-import { sql } from "drizzle-orm";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -47,7 +47,7 @@ async function getTrendingArtistsFromDB(limit: number) {
       const { data: artistsRetry } = await supabase
         .from("artists")
         .select(
-          `id,name,slug,image_url,popularity,followers,follower_count,trending_score,genres,total_shows,upcoming_shows,previous_followers,previous_popularity,created_at,updated_at`,
+          "id,name,slug,image_url,popularity,followers,follower_count,trending_score,genres,total_shows,upcoming_shows,previous_followers,previous_popularity,created_at,updated_at",
         )
         .gt("trending_score", 0)
         .order("trending_score", { ascending: false })
@@ -69,15 +69,19 @@ function transformArtist(artist: any) {
   // Calculate weekly growth based on previous data
   const currentFollowers = artist.followers || artist.follower_count || 0;
   const previousFollowers = artist.previous_followers || currentFollowers;
-  const weeklyGrowth = previousFollowers > 0 
-    ? ((currentFollowers - previousFollowers) / previousFollowers) * 100
-    : 0;
+  const weeklyGrowth =
+    previousFollowers > 0
+      ? ((currentFollowers - previousFollowers) / previousFollowers) * 100
+      : 0;
 
   // Parse genres from JSON string
   let genres: string[] = [];
   if (artist.genres) {
     try {
-      genres = typeof artist.genres === 'string' ? JSON.parse(artist.genres) : artist.genres;
+      genres =
+        typeof artist.genres === "string"
+          ? JSON.parse(artist.genres)
+          : artist.genres;
     } catch {
       genres = [];
     }

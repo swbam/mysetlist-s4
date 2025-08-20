@@ -97,14 +97,16 @@ export function ImportButton({
   compact = false,
 }: ImportButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<ImportMethod>(IMPORT_METHODS[0] || { 
-    id: 'ticketmaster-id', 
-    name: 'Ticketmaster ID', 
-    description: 'Direct import using Ticketmaster attraction ID',
-    icon: <Download className="h-4 w-4" />,
-    placeholder: 'Enter Ticketmaster Attraction ID',
-    example: 'K8vZ917G7x7'
-  });
+  const [selectedMethod, setSelectedMethod] = useState<ImportMethod>(
+    IMPORT_METHODS[0] || {
+      id: "ticketmaster-id",
+      name: "Ticketmaster ID",
+      description: "Direct import using Ticketmaster attraction ID",
+      icon: <Download className="h-4 w-4" />,
+      placeholder: "Enter Ticketmaster Attraction ID",
+      example: "K8vZ917G7x7",
+    },
+  );
   const [inputValue, setInputValue] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -113,26 +115,26 @@ export function ImportButton({
   // Extract Ticketmaster ID from URL or direct ID
   const extractTicketmasterId = (input: string): string | null => {
     const trimmed = input.trim();
-    
+
     // Direct ID format (alphanumeric)
     if (/^[A-Za-z0-9]{10,}$/.test(trimmed)) {
       return trimmed;
     }
-    
+
     // URL format - extract ID from various Ticketmaster URL patterns
     const urlPatterns = [
       /ticketmaster\.com\/.*\/artist\/([A-Za-z0-9]+)/,
       /ticketmaster\.com\/.*attraction\/([A-Za-z0-9]+)/,
       /tm\.com\/.*\/artist\/([A-Za-z0-9]+)/,
     ];
-    
+
     for (const pattern of urlPatterns) {
       const match = trimmed.match(pattern);
-      if (match && match[1]) {
+      if (match?.[1]) {
         return match[1];
       }
     }
-    
+
     return null;
   };
 
@@ -149,7 +151,10 @@ export function ImportButton({
     try {
       let tmAttractionId: string | null = null;
 
-      if (selectedMethod.id === "ticketmaster-id" || selectedMethod.id === "ticketmaster-url") {
+      if (
+        selectedMethod.id === "ticketmaster-id" ||
+        selectedMethod.id === "ticketmaster-url"
+      ) {
         tmAttractionId = extractTicketmasterId(inputValue);
         if (!tmAttractionId) {
           throw new Error("Invalid Ticketmaster ID or URL format");
@@ -157,7 +162,9 @@ export function ImportButton({
       } else if (selectedMethod.id === "artist-name") {
         // For artist name search, we'll need to implement search first
         // For now, show a helpful error
-        throw new Error("Artist name search not yet implemented. Please use Ticketmaster ID or URL.");
+        throw new Error(
+          "Artist name search not yet implemented. Please use Ticketmaster ID or URL.",
+        );
       }
 
       if (!tmAttractionId) {
@@ -181,15 +188,14 @@ export function ImportButton({
       }
 
       const result = await response.json();
-      
+
       // Close dialog and notify parent
       setIsDialogOpen(false);
       setInputValue("");
       onImportStart?.(result.artistId, result.slug);
-      
+
       // Navigate to the artist page to show progress
       router.push(`/artists/${result.slug}`);
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Import failed";
       setError(errorMessage);
@@ -206,14 +212,16 @@ export function ImportButton({
     if (!open) {
       setInputValue("");
       setError(null);
-      setSelectedMethod(IMPORT_METHODS[0] || { 
-        id: 'ticketmaster-id', 
-        name: 'Ticketmaster ID', 
-        description: 'Direct import using Ticketmaster attraction ID',
-        icon: <Download className="h-4 w-4" />,
-        placeholder: 'Enter Ticketmaster Attraction ID',
-        example: 'K8vZ917G7x7'
-      });
+      setSelectedMethod(
+        IMPORT_METHODS[0] || {
+          id: "ticketmaster-id",
+          name: "Ticketmaster ID",
+          description: "Direct import using Ticketmaster attraction ID",
+          icon: <Download className="h-4 w-4" />,
+          placeholder: "Enter Ticketmaster Attraction ID",
+          example: "K8vZ917G7x7",
+        },
+      );
     }
   };
 
@@ -293,7 +301,8 @@ export function ImportButton({
               Import New Artist
             </DialogTitle>
             <DialogDescription>
-              Add a new artist to the platform. This will import their shows, songs, and venue information.
+              Add a new artist to the platform. This will import their shows,
+              songs, and venue information.
             </DialogDescription>
           </DialogHeader>
 

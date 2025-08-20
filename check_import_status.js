@@ -1,6 +1,7 @@
-const postgres = require('postgres');
+const postgres = require("postgres");
 
-const connectionString = "postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require";
+const connectionString =
+  "postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require";
 const sql = postgres(connectionString);
 
 async function checkImportStatus() {
@@ -12,11 +13,13 @@ async function checkImportStatus() {
       ORDER BY updated_at DESC
       LIMIT 10
     `;
-    
-    console.log('Recent import statuses:', importStatuses.length);
+
+    console.log("Recent import statuses:", importStatuses.length);
     if (importStatuses.length > 0) {
-      importStatuses.forEach(status => {
-        console.log(`  - Artist ID: ${status.artist_id}, Stage: ${status.stage}, Progress: ${status.percentage}%, Message: ${status.message}`);
+      importStatuses.forEach((status) => {
+        console.log(
+          `  - Artist ID: ${status.artist_id}, Stage: ${status.stage}, Progress: ${status.percentage}%, Message: ${status.message}`,
+        );
         if (status.error) console.log(`    Error: ${status.error}`);
       });
     }
@@ -28,18 +31,20 @@ async function checkImportStatus() {
       WHERE message ILIKE '%our last night%' OR artist_id::text LIKE '%tmp_K8vZ917GtG0%'
       ORDER BY updated_at DESC
     `;
-    
-    console.log('\nOur Last Night import statuses:', ourLastNightStatus.length);
+
+    console.log("\nOur Last Night import statuses:", ourLastNightStatus.length);
     if (ourLastNightStatus.length > 0) {
-      ourLastNightStatus.forEach(status => {
-        console.log(`  - Artist ID: ${status.artist_id}, Stage: ${status.stage}, Progress: ${status.percentage}%, Message: ${status.message}`);
+      ourLastNightStatus.forEach((status) => {
+        console.log(
+          `  - Artist ID: ${status.artist_id}, Stage: ${status.stage}, Progress: ${status.percentage}%, Message: ${status.message}`,
+        );
         if (status.error) console.log(`    Error: ${status.error}`);
       });
     }
 
     await sql.end();
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
     process.exit(1);
   }
 }

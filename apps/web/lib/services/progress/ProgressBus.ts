@@ -3,12 +3,12 @@
  * Implements GROK.md specifications for real-time progress tracking via SSE
  */
 
-import { EventEmitter } from 'events';
-import { db } from '@repo/database';
-import { importStatus } from '@repo/database';
+import { EventEmitter } from "node:events";
+import { db } from "@repo/database";
+import { importStatus } from "@repo/database";
 
 type InsertImportStatus = typeof importStatus.$inferInsert;
-import { eq, or, inArray } from 'drizzle-orm';
+import { eq, inArray, or } from "drizzle-orm";
 
 export interface ProgressEvent {
   stage: string;
@@ -20,14 +20,14 @@ export interface ProgressEvent {
   metadata?: Record<string, any>;
 }
 
-export type ImportStage = 
-  | 'initializing'
-  | 'syncing-identifiers'
-  | 'importing-songs'
-  | 'importing-shows'
-  | 'creating-setlists'
-  | 'completed'
-  | 'failed';
+export type ImportStage =
+  | "initializing"
+  | "syncing-identifiers"
+  | "importing-songs"
+  | "importing-shows"
+  | "creating-setlists"
+  | "completed"
+  | "failed";
 
 /**
  * Global EventEmitter instance for progress events
@@ -35,7 +35,10 @@ export type ImportStage =
  */
 class ProgressBusInstance extends EventEmitter {
   private phaseTimers: Map<string, Record<string, number>> = new Map();
-  private listenerMap: WeakMap<(...args: any[]) => void, (...args: any[]) => void> = new WeakMap();
+  private listenerMap: WeakMap<
+    (...args: any[]) => void,
+    (...args: any[]) => void
+  > = new WeakMap();
 
   constructor() {
     super();
@@ -56,7 +59,7 @@ class ProgressBusInstance extends EventEmitter {
       metadata?: Record<string, any>;
       artistName?: string;
       jobId?: string;
-    } = {}
+    } = {},
   ): Promise<void> {
     const timestamp = new Date().toISOString();
     const { error, metadata, artistName, jobId } = options;
@@ -85,29 +88,40 @@ class ProgressBusInstance extends EventEmitter {
         artistName: artistName || null,
         jobId: jobId || null,
         phaseTimings: phaseTimings ? JSON.stringify(phaseTimings) : null,
-        startedAt: stage === 'initializing' ? new Date() : undefined,
-        completedAt: stage === 'completed' || stage === 'failed' ? new Date() : undefined,
+        startedAt: stage === "initializing" ? new Date() : undefined,
+        completedAt:
+          stage === "completed" || stage === "failed" ? new Date() : undefined,
       });
 
       // Emit real-time event with error handling
       try {
         this.emit(artistId, progressEvent);
-        this.emit('global', { artistId, ...progressEvent });
+        this.emit("global", { artistId, ...progressEvent });
       } catch (emitError) {
-        console.error(`[ProgressBus] Error emitting progress for artist ${artistId}:`, emitError);
+        console.error(
+          `[ProgressBus] Error emitting progress for artist ${artistId}:`,
+          emitError,
+        );
       }
 
       // Log for debugging
-      console.log(`[ProgressBus] ${artistId}: ${stage} - ${progress}% - ${message}`);
-
+      console.log(
+        `[ProgressBus] ${artistId}: ${stage} - ${progress}% - ${message}`,
+      );
     } catch (dbError) {
-      console.error(`[ProgressBus] Failed to persist progress for artist ${artistId}:`, dbError);
+      console.error(
+        `[ProgressBus] Failed to persist progress for artist ${artistId}:`,
+        dbError,
+      );
       // Still emit the event even if database write fails
       try {
         this.emit(artistId, progressEvent);
-        this.emit('global', { artistId, ...progressEvent });
+        this.emit("global", { artistId, ...progressEvent });
       } catch (emitError) {
-        console.error(`[ProgressBus] Error emitting progress after DB failure for artist ${artistId}:`, emitError);
+        console.error(
+          `[ProgressBus] Error emitting progress after DB failure for artist ${artistId}:`,
+          emitError,
+        );
       }
     }
   }
@@ -121,10 +135,13 @@ class ProgressBusInstance extends EventEmitter {
       try {
         await listener(event);
       } catch (error) {
-        console.error(`[ProgressBus] Error in progress listener for artist ${artistId}:`, error);
+        console.error(
+          `[ProgressBus] Error in progress listener for artist ${artistId}:`,
+          error,
+        );
       }
     };
-    
+
     // Store the mapping so we can remove the correct listener later
     this.listenerMap.set(listener, safeListener);
     this.on(artistId, safeListener);
@@ -133,7 +150,10 @@ class ProgressBusInstance extends EventEmitter {
   /**
    * Unsubscribe from progress events for a specific artist
    */
-  offProgress(artistId: string, listener: (event: ProgressEvent) => void): void {
+  offProgress(
+    artistId: string,
+    listener: (event: ProgressEvent) => void,
+  ): void {
     // Get the wrapped listener from our mapping
     const safeListener = this.listenerMap.get(listener);
     if (safeListener) {
@@ -148,8 +168,10 @@ class ProgressBusInstance extends EventEmitter {
   /**
    * Subscribe to all progress events
    */
-  onGlobalProgress(listener: (event: ProgressEvent & { artistId: string }) => void): void {
-    this.on('global', listener);
+  onGlobalProgress(
+    listener: (event: ProgressEvent & { artistId: string }) => void,
+  ): void {
+    this.on("global", listener);
   }
 
   /**
@@ -168,13 +190,15 @@ class ProgressBusInstance extends EventEmitter {
       return {
         stage: status.stage,
         progress: status.percentage || 0,
-        message: status.message || 'Processing...',
+        message: status.message || "Processing...",
         at: status.updatedAt.toISOString(),
         error: status.error || undefined,
-        phaseTimings: status.phaseTimings ? JSON.parse(status.phaseTimings as string) : undefined,
+        phaseTimings: status.phaseTimings
+          ? JSON.parse(status.phaseTimings as string)
+          : undefined,
       };
     } catch (error) {
-      console.error('Failed to get progress status:', error);
+      console.error("Failed to get progress status:", error);
       return null;
     }
   }
@@ -217,17 +241,29 @@ class ProgressBusInstance extends EventEmitter {
   /**
    * Update phase timings and return current state
    */
-  private updatePhaseTimings(artistId: string, stage: ImportStage): Record<string, number> | undefined {
+  private updatePhaseTimings(
+    artistId: string,
+    stage: ImportStage,
+  ): Record<string, number> | undefined {
     const timings = this.phaseTimers.get(artistId);
     if (!timings) return undefined;
 
     // Auto-end previous phase and start current phase
-    const phases = ['initializing', 'syncing-identifiers', 'importing-songs', 'importing-shows', 'creating-setlists'];
+    const phases = [
+      "initializing",
+      "syncing-identifiers",
+      "importing-songs",
+      "importing-shows",
+      "creating-setlists",
+    ];
     const currentPhaseIndex = phases.indexOf(stage);
-    
+
     if (currentPhaseIndex > 0) {
       const previousPhase = phases[currentPhaseIndex - 1];
-      if (timings[`${previousPhase}_start`] && !timings[`${previousPhase}_end`]) {
+      if (
+        timings[`${previousPhase}_start`] &&
+        !timings[`${previousPhase}_end`]
+      ) {
         this.endPhase(artistId, previousPhase!);
       }
     }
@@ -244,18 +280,25 @@ class ProgressBusInstance extends EventEmitter {
    */
   private async persistProgress(
     artistId: string,
-    data: Partial<InsertImportStatus> & { 
+    data: Partial<InsertImportStatus> & {
       artistId: string;
-      stage: 'initializing' | 'syncing-identifiers' | 'importing-songs' | 'importing-shows' | 'creating-setlists' | 'completed' | 'failed';
+      stage:
+        | "initializing"
+        | "syncing-identifiers"
+        | "importing-songs"
+        | "importing-shows"
+        | "creating-setlists"
+        | "completed"
+        | "failed";
       progress: number;
-    }
+    },
   ): Promise<void> {
     try {
       await db
         .insert(importStatus)
         .values({
           ...data,
-          percentage: data.progress
+          percentage: data.progress,
         })
         .onConflictDoUpdate({
           target: importStatus.artistId,
@@ -271,7 +314,10 @@ class ProgressBusInstance extends EventEmitter {
           },
         });
     } catch (dbError) {
-      console.error(`[ProgressBus] Database error persisting progress for artist ${artistId}:`, dbError);
+      console.error(
+        `[ProgressBus] Database error persisting progress for artist ${artistId}:`,
+        dbError,
+      );
       throw dbError; // Re-throw to be handled by caller
     }
   }
@@ -286,15 +332,18 @@ class ProgressBusInstance extends EventEmitter {
     options: {
       artistName?: string;
       jobId?: string;
-    } = {}
+    } = {},
   ): Promise<void> {
     try {
-      await this.report(artistId, 'failed', 0, `Error: ${error.message}`, {
+      await this.report(artistId, "failed", 0, `Error: ${error.message}`, {
         error: error.stack || error.message,
         ...options,
       });
     } catch (reportError) {
-      console.error(`[ProgressBus] Failed to report error for artist ${artistId}:`, reportError);
+      console.error(
+        `[ProgressBus] Failed to report error for artist ${artistId}:`,
+        reportError,
+      );
       // Don't throw here to avoid masking the original error
     }
   }
@@ -304,23 +353,29 @@ class ProgressBusInstance extends EventEmitter {
    */
   async reportComplete(
     artistId: string,
-    message = 'Import completed successfully',
+    message = "Import completed successfully",
     options: {
       artistName?: string;
       jobId?: string;
       metadata?: Record<string, any>;
-    } = {}
+    } = {},
   ): Promise<void> {
     try {
-      await this.report(artistId, 'completed', 100, message, options);
+      await this.report(artistId, "completed", 100, message, options);
     } catch (reportError) {
-      console.error(`[ProgressBus] Failed to report completion for artist ${artistId}:`, reportError);
+      console.error(
+        `[ProgressBus] Failed to report completion for artist ${artistId}:`,
+        reportError,
+      );
       // Still try to cleanup timers even if report failed
     } finally {
       try {
         this.cleanupTimers(artistId);
       } catch (cleanupError) {
-        console.error(`[ProgressBus] Failed to cleanup timers for artist ${artistId}:`, cleanupError);
+        console.error(
+          `[ProgressBus] Failed to cleanup timers for artist ${artistId}:`,
+          cleanupError,
+        );
       }
     }
   }
@@ -328,38 +383,40 @@ class ProgressBusInstance extends EventEmitter {
   /**
    * Get all active imports
    */
-  async getActiveImports(): Promise<Array<{
-    artistId: string;
-    stage: string;
-    progress: number;
-    message: string;
-    startedAt: Date;
-    artistName?: string;
-  }>> {
+  async getActiveImports(): Promise<
+    Array<{
+      artistId: string;
+      stage: string;
+      progress: number;
+      message: string;
+      startedAt: Date;
+      artistName?: string;
+    }>
+  > {
     try {
       const activeStatuses = await db
         .select()
         .from(importStatus)
         .where(
           inArray(importStatus.stage, [
-            'initializing',
-            'syncing-identifiers', 
-            'importing-songs',
-            'importing-shows',
-            'creating-setlists'
-          ])
+            "initializing",
+            "syncing-identifiers",
+            "importing-songs",
+            "importing-shows",
+            "creating-setlists",
+          ]),
         );
 
-      return activeStatuses.map(status => ({
+      return activeStatuses.map((status) => ({
         artistId: status.artistId,
         stage: status.stage,
         progress: status.percentage || 0,
-        message: status.message || 'Processing...',
+        message: status.message || "Processing...",
         startedAt: status.startedAt || status.createdAt,
         artistName: status.artistName || undefined,
       }));
     } catch (error) {
-      console.error('Failed to get active imports:', error);
+      console.error("Failed to get active imports:", error);
       return [];
     }
   }
@@ -367,19 +424,31 @@ class ProgressBusInstance extends EventEmitter {
   /**
    * Create a scoped progress reporter for a specific import
    */
-  createReporter(artistId: string, options: { artistName?: string; jobId?: string } = {}) {
+  createReporter(
+    artistId: string,
+    options: { artistName?: string; jobId?: string } = {},
+  ) {
     const { artistName, jobId } = options;
 
     return {
-      report: (stage: ImportStage, progress: number, message: string, metadata?: Record<string, any>) =>
-        this.report(artistId, stage, progress, message, { artistName, jobId, metadata }),
-      
+      report: (
+        stage: ImportStage,
+        progress: number,
+        message: string,
+        metadata?: Record<string, any>,
+      ) =>
+        this.report(artistId, stage, progress, message, {
+          artistName,
+          jobId,
+          metadata,
+        }),
+
       reportError: (error: Error, stage: ImportStage) =>
         this.reportError(artistId, error, stage, { artistName, jobId }),
-      
+
       reportComplete: (message?: string, metadata?: Record<string, any>) =>
         this.reportComplete(artistId, message, { artistName, jobId, metadata }),
-      
+
       startPhase: (phase: string) => this.startPhase(artistId, phase),
       endPhase: (phase: string) => this.endPhase(artistId, phase),
     };

@@ -54,11 +54,10 @@ export async function POST(request: NextRequest) {
 
     // 4. Clear stale artist caches (> 24 hours)
     try {
-      const staleKeys = await CacheManager.clearStalePatterns([
-        'artist:*',
-        'trending:*',
-        'shows:*'
-      ], 24 * 60 * 60 * 1000); // 24 hours
+      const staleKeys = await CacheManager.clearStalePatterns(
+        ["artist:*", "trending:*", "shows:*"],
+        24 * 60 * 60 * 1000,
+      ); // 24 hours
       results.redisKeysCleared += staleKeys;
       results.operationsCompleted++;
     } catch (error) {
@@ -73,13 +72,12 @@ export async function POST(request: NextRequest) {
       processingTime,
       status: results.errors.length === 0 ? "success" : "partial_success",
     });
-
   } catch (error) {
     console.error("Cache cleanup error:", error);
     return createErrorResponse(
       "Cache cleanup failed",
       500,
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }

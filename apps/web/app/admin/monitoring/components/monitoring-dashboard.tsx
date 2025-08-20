@@ -252,7 +252,9 @@ export function MonitoringDashboard({
                   ([endpoint, stats]: [string, any]) => (
                     <div key={endpoint} className="space-y-2">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="font-medium text-sm break-words">{endpoint}</span>
+                        <span className="font-medium text-sm break-words">
+                          {endpoint}
+                        </span>
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge
                             variant={
@@ -295,7 +297,9 @@ export function MonitoringDashboard({
                         {format(new Date(error.created_at), "MMM d, HH:mm:ss")}
                       </span>
                     </div>
-                    <p className="font-medium text-sm break-words">{error.message}</p>
+                    <p className="font-medium text-sm break-words">
+                      {error.message}
+                    </p>
                     {error.endpoint && (
                       <p className="text-muted-foreground text-xs break-words">
                         Endpoint: {error.endpoint}
