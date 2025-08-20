@@ -1,13 +1,19 @@
-// Redis/Upstash cache implementation (optional - not used in this project)
+// Redis/Upstash cache implementation - ACTIVATED for production performance
 export class CacheClient {
   private static instance: CacheClient;
   private baseUrl: string;
   private token: string;
 
   private constructor() {
-    // Since we don't use Redis/Upstash, these will be empty
-    this.baseUrl = "";
-    this.token = "";
+    // Configure Redis/Upstash from environment variables
+    this.baseUrl = process.env["UPSTASH_REDIS_REST_URL"] || "";
+    this.token = process.env["UPSTASH_REDIS_REST_TOKEN"] || "";
+    
+    if (this.baseUrl && this.token) {
+      console.log("✅ Redis caching ACTIVATED - performance boost enabled");
+    } else {
+      console.warn("⚠️ Redis caching DISABLED - missing UPSTASH_REDIS_REST_URL/TOKEN");
+    }
   }
 
   static getInstance(): CacheClient {

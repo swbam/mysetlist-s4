@@ -42,11 +42,10 @@ export const createRedisClient = () => {
 // BullMQ connection configuration (derived from same env)
 export const bullMQConnection: ConnectionOptions = REDIS_URL
   ? {
-      host: "present-guinea-37462.upstash.io",
-      port: 6380,
-      password:
-        "AZJWAAIncDE5ODdhYmJiZGQ3MGM0MTE2OTRlZTYzMWQyYThjYjc1NXAxMzc0NjI",
-      tls: {},
+      host: process.env["REDIS_HOST"] || "127.0.0.1",
+      port: parsedPort || 6379,
+      password: process.env["REDIS_PASSWORD"],
+      tls: REDIS_TLS === "true" ? {} : undefined,
       connectTimeout: 30000,
       lazyConnect: true,
       keepAlive: 10000,
