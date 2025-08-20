@@ -26,16 +26,11 @@
         "UPSTASH_REDIS_REST_TOKEN",
         "NEXTAUTH_SECRET",
         "CRON_SECRET",
-<<<<<<< Current (Your changes)
-        "NEXT_PUBLIC_*",
-        "NODE_ENV"
-=======
         "NEXT_PUBLIC_APP_URL",
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
         "NEXT_PUBLIC_POSTHOG_KEY",
         "NEXT_PUBLIC_POSTHOG_HOST"
->>>>>>> Incoming (Background Agent changes)
       ]
     },
     "dev": {

@@ -2,7 +2,10 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { ChevronRight, Music } from "lucide-react";
 import Link from "next/link";
 <<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
 import { Suspense } from "react";
+=======
+>>>>>>> Incoming (Background Agent changes)
 =======
 >>>>>>> Incoming (Background Agent changes)
 import { LiteSearch } from "./components/lite-search";

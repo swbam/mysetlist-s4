@@ -4,8 +4,6 @@ export * from "./services/progress/ProgressBus";
 export * from "./clients/setlistfm";
 export * from "./services";
 export * from "./clients";
-<<<<<<< Current (Your changes)
-=======
 
 // Lazy, singleton client proxies for convenient imports like `import { spotify } from "@repo/external-apis"`
 import { SetlistFmClient } from "./clients/setlistfm";
@@ -46,4 +44,3 @@ export const setlistfm = new Proxy({} as SetlistFmClient, {
     return (_setlistfm as any)[prop];
   },
 });
->>>>>>> Incoming (Background Agent changes)

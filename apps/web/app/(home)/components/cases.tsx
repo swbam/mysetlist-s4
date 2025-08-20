@@ -134,7 +134,12 @@ export const Cases = () => {
           <Carousel setApi={setApi} className="w-full">
             <CarouselContent>
 <<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
             {artists.map((artist) => (                <CarouselItem
+=======
+              {artists.map((artist) => (
+                <CarouselItem
+>>>>>>> Incoming (Background Agent changes)
 =======
               {artists.map((artist) => (
                 <CarouselItem
