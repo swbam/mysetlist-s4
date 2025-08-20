@@ -86,7 +86,6 @@ export default async function AdminLayout({
   return (
     <AdminLayoutClient
       navigation={visibleNavigation}
-      locale={locale}
       isAdmin={isAdmin}
     >
       {children}

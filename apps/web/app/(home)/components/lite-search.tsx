@@ -27,7 +27,7 @@ export function LiteSearch({
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  // removed unused hasSearched state
 
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -42,7 +42,7 @@ export function LiteSearch({
     } else {
       setResults([]);
       setIsOpen(false);
-      setHasSearched(false);
+      // no-op
     }
   }, [debouncedQuery]);
 
@@ -88,7 +88,7 @@ export function LiteSearch({
 
   const performSearch = useCallback(async (searchQuery: string) => {
     setIsLoading(true);
-    setHasSearched(false);
+    // no-op
 
     try {
       const response = await fetch(
@@ -121,11 +121,9 @@ export function LiteSearch({
 
       setResults(searchResults);
       setIsOpen(true);
-      setHasSearched(true);
     } catch (error) {
       console.error("Search error:", error);
       setResults([]);
-      setHasSearched(true);
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +133,6 @@ export function LiteSearch({
     setQuery("");
     setResults([]);
     setIsOpen(false);
-    setHasSearched(false);
     inputRef.current?.focus();
   };
 
@@ -173,7 +170,6 @@ export function LiteSearch({
     setQuery("");
     setResults([]);
     setIsOpen(false);
-    setHasSearched(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

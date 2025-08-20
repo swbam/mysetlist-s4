@@ -3,7 +3,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { motion } from "framer-motion";
 import { ChevronRight, Music, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import React, { memo } from "react";
+import React from "react";
 import { SearchBar } from "~/components/search-bar";
 
 function HomeHero() {

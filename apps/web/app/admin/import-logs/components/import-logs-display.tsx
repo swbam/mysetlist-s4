@@ -342,10 +342,10 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
                           )}
                         </div>
                         <p className="text-sm">{log.message}</p>
-                        {log.itemsProcessed !== null && log.itemsTotal !== null && (
+                        {typeof log.itemsProcessed === 'number' && typeof log.itemsTotal === 'number' && log.itemsTotal > 0 && (
                           <div className="flex items-center gap-2">
                             <Progress
-                              value={(log.itemsProcessed / log.itemsTotal) * 100}
+                              value={Math.min(100, Math.max(0, (log.itemsProcessed / log.itemsTotal) * 100))}
                               className="w-[100px] h-2"
                             />
                             <span className="text-xs text-muted-foreground">

@@ -521,7 +521,7 @@ class EmailAutomationEngine {
           const emailResult = await sendWelcomeEmail({
             to: [{ email: user.email, name: personalizedData.userName }],
             name: personalizedData.userName,
-            appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://mysetlist.app",
+            appUrl: process.env['NEXT_PUBLIC_APP_URL'] || "https://theset.live",
           });
 
           if (emailResult.success) {

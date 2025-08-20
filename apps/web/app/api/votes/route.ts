@@ -1,4 +1,4 @@
-import { getUser } from "@repo/auth";
+import { getUser } from "@repo/auth/server";
 import { db, votes } from "@repo/database";
 import { and, eq, sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";

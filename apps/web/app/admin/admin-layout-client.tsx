@@ -14,11 +14,9 @@ import { usePathname } from "next/navigation";
 // Client component for mobile sidebar
 function MobileSidebar({ 
   navigation, 
-  locale, 
   isAdmin 
 }: { 
   navigation: any[], 
-  locale: string, 
   isAdmin: boolean 
 }) {
   const [open, setOpen] = useState(false);
@@ -86,12 +84,10 @@ function MobileSidebar({
 export function AdminLayoutClient({
   children,
   navigation,
-  locale,
   isAdmin,
 }: {
   children: React.ReactNode;
   navigation: any[];
-  locale: string;
   isAdmin: boolean;
 }) {
   return (
@@ -141,7 +137,7 @@ export function AdminLayoutClient({
         <main className="flex-1 min-w-0">
           {/* Mobile Header */}
           <div className="md:hidden flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <MobileSidebar navigation={navigation} locale={locale} isAdmin={isAdmin} />
+            <MobileSidebar navigation={navigation} isAdmin={isAdmin} />
             <h1 className="font-semibold text-lg">Admin Panel</h1>
             <div className="w-10" /> {/* Spacer for centering */}
           </div>

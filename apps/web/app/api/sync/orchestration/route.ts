@@ -1,20 +1,10 @@
-import {
-  artistSongs,
-  artists,
-  db,
-  eq,
-  setlistSongs,
-  setlists,
-  shows,
-  songs,
-  sql,
-} from "@repo/database";
+import { artists, db, eq } from "@repo/database";
 import {
   ArtistSyncService,
   SetlistSyncService,
   ShowSyncService,
-  spotify,
 } from "@repo/external-apis";
+import { spotify } from "@repo/external-apis";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
