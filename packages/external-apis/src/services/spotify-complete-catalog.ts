@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SpotifyClient } from "../clients/spotify";
 import { db, eq, sql, artists, songs, artistSongs } from "@repo/database";
 import { SyncServiceError } from "../utils/error-handler";

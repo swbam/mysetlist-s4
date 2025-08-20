@@ -1,4 +1,4 @@
-import { createServiceClient } from "../../server";
+import { createClient } from "../../client";
 import type {
   EmailPreferences,
   PrivacySettings,
@@ -11,8 +11,8 @@ import type {
 } from "../types/auth";
 
 export class UserService {
-  private async getSupabase() {
-    return await createServiceClient();
+  private getSupabase() {
+    return createClient();
   }
 
   /**

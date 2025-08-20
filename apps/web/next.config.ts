@@ -32,6 +32,26 @@ const nextConfig = {
       use: ['@svgr/webpack'],
     });
 
+    // Add Node.js core module fallbacks for browser build
+    config.resolve = config.resolve || {};
+    config.resolve.fallback = {
+      ...(config.resolve.fallback || {}),
+      crypto: false,
+      net: false,
+      tls: false,
+      fs: false,
+      perf_hooks: false,
+    };
+
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "node:crypto": false,
+      "node:fs": false,
+      "node:net": false,
+      "node:tls": false,
+      "node:perf_hooks": false,
+    };
+
     return config;
   },
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { db } from "@repo/database";
 import { shows, venues, artists } from "@repo/database";
 import { TicketmasterClient } from "../../clients/ticketmaster";

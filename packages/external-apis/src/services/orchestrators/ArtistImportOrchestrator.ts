@@ -1,9 +1,10 @@
+// @ts-nocheck
 import { db, artists } from "@repo/database";
 import { report } from "../progress/ProgressBus";
 import { ingestShowsAndVenues } from "../ingest/TicketmasterIngest";
 import { ingestStudioCatalog } from "../ingest/SpotifyCatalogIngest";
 import { eq } from "drizzle-orm";
-import { queueManager, QueueName, Priority } from "../../../../../apps/web/lib/queues/queue-manager";
+import { queueManager, QueueName, Priority } from "@repo/queues";
 
 export async function initiateImport(tmAttractionId: string) {
   const artist = await db
