@@ -1,17 +1,14 @@
 # TheSet - API Integrations & External Services
 
-## ✅ **STATUS: FULLY IMPLEMENTED**
+## ✅ **STATUS: IMPLEMENTATION IN PROGRESS**
 
-**Current Implementation Status**: The complete artist import system has been implemented with 5 specialized subagents working simultaneously to deliver all components from the comprehensive plan.
+**Current Implementation Status**: The external APIs package is partially implemented. The core API clients are in place, but the synchronization services are not yet fully integrated with the application logic.
 
-**Implementation Highlights**: 
-- **Infrastructure Setup**: Redis/BullMQ queues, progress tracking, and concurrency control
-- **External API Clients**: Spotify, Ticketmaster, and SetlistFM with retry logic and rate limiting
-- **Data Ingestion Services**: Complete orchestration with studio-only filtering and ISRC deduplication
-- **Real-time Features**: SSE streams, progress tracking, and frontend integration
-- **Database Operations**: Optimized queries with caching and comprehensive testing
+**Root Cause of Issues**: 
+- The `ArtistImportOrchestrator` is not yet fully integrated with the frontend.
+- The cron jobs for background sync are not yet implemented.
 
-**Result**: Fully functional concert setlist voting system with robust data import capabilities.
+**Solution**: Complete the implementation of the external APIs package as specified in this document.
 
 ## Table of Contents
 
@@ -28,49 +25,33 @@
 
 ## Current Implementation Gaps
 
-### ✅ **Fully Implemented Components**
+### ✅ **Implemented Components**
 
-All components have been fully implemented across multiple packages and the web app:
+The following components have been implemented in the `packages/external-apis/` package:
 
 ```typescript
-// ✅ INFRASTRUCTURE - ALL IMPLEMENTED
-import { queueManager, QueueName, Priority } from "@web/lib/queues/queue-manager";
-import { createRedisClient, cache } from "@web/lib/queues/redis-config";
-import { progressBus } from "@web/lib/services/progress/progress-bus";
-
-// ✅ API CLIENTS - ALL IMPLEMENTED
-import { SpotifyClient } from "@web/lib/services/adapters/spotify-client";
-import { TicketmasterClient } from "@web/lib/services/adapters/ticketmaster-client"; 
-import { SetlistFMClient } from "@web/lib/services/adapters/setlistfm-client";
-import { BaseAPIClient } from "@web/lib/services/adapters/base-client";
-
-// ✅ DATA INGESTION - ALL IMPLEMENTED
-import { ingestShowsAndVenues } from "@web/lib/services/ingest/ticketmaster-ingest";
-import { ingestStudioCatalog } from "@web/lib/services/ingest/spotify-catalog-ingest";
-import { ArtistImportOrchestrator } from "@web/lib/services/orchestrators/artist-import-orchestrator";
-
-// ✅ REAL-TIME & JOBS - ALL IMPLEMENTED
-import { processArtistImport, processTrendingCalc } from "@web/lib/jobs/processors";
-import { calculateTrending } from "@web/lib/jobs/trending-calculator";
-import { syncActiveArtists } from "@web/lib/jobs/sync-active-artists";
+// ✅ THESE IMPORTS NOW WORK
+import { SpotifyClient } from "@repo/external-apis/src/clients/spotify";
+import { TicketmasterClient } from "@repo/external-apis/src/clients/ticketmaster"; 
+import { SetlistFmClient } from "@repo/external-apis/src/clients/setlistfm";
+import { ArtistImportOrchestrator } from "@repo/external-apis/src/services/orchestrators/ArtistImportOrchestrator";
 ```
 
-### 📋 **Complete Implementation Status**
+### 📋 **Implementation Status**
 
-| Component | Status | Implementation Location | Key Features |
-|-----------|---------|----------------------|-------------|
-| **Redis & Queue Infrastructure** | ✅ Complete | `apps/web/lib/queues/` | BullMQ with 8 queue types, rate limiting, retry logic |
-| **Progress Tracking System** | ✅ Complete | `apps/web/lib/services/progress/` | Real-time SSE streams, database persistence |
-| **External API Clients** | ✅ Complete | `apps/web/lib/services/adapters/` | Retry logic, rate limiting, circuit breakers |
-| **Data Ingestion Services** | ✅ Complete | `apps/web/lib/services/ingest/` | Studio-only filtering, ISRC deduplication |
-| **Import Orchestration** | ✅ Complete | `apps/web/lib/services/orchestrators/` | 5-phase import, progress reporting, error recovery |
-| **Background Job System** | ✅ Complete | `apps/web/lib/jobs/` | Trending calc, active sync, scheduled operations |
-| **Real-time SSE Endpoints** | ✅ Complete | `apps/web/app/api/artists/` | Live progress streams, status monitoring |
-| **Frontend Integration** | ✅ Complete | `apps/web/components/artist/` | Import progress components, hooks |
-| **Database Operations** | ✅ Complete | `apps/web/lib/db/` | Prisma wrapper, optimized queries, caching |
-| **Testing Infrastructure** | ✅ Complete | `apps/web/scripts/` & `apps/web/__tests__/` | Redis tests, API tests, E2E flows |
+| Component | Status | Priority | Impact |
+|-----------|---------|----------|---------|
+| **SpotifyClient** | ✅ Implemented | Critical | Artist data and song catalog are now available. |
+| **TicketmasterClient** | ✅ Implemented | Critical | Shows and venues can now be imported. |
+| **SetlistFMClient** | ✅ Implemented | High | Real setlists can now be imported. |
+| **ArtistSyncService** | ✅ Implemented | Critical | Catalog sync is now functional. |
+| **ShowSyncService** | ✅ Implemented | Critical | Show import is now functional. |
+| **VenueSyncService** | ✅ Implemented | High | Venue creation is now functional. |
+| **BaseAPIClient** | ✅ Implemented | Critical | Rate limiting and caching are now available. |
+| **SSE Progress Routes** | ✅ Implemented | Medium | Import progress is now streamed to the client. |
+| **Cron Jobs** | ⚠️ Partial | Medium | The cron job routes are implemented, but the jobs are not yet scheduled. |
 
-### ✅ **Core Features Now Working**
+### ✅ **What's Actually Working**
 
 - Database schema is complete and well-designed
 - ArtistImportOrchestrator has perfect architecture 

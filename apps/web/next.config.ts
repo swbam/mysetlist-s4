@@ -69,6 +69,11 @@ const nextConfig = {
       ...config.resolve.alias,
       '~': __dirname,
       '@': __dirname,
+      "node:crypto": false,
+      "node:fs": false,
+      "node:net": false,
+      "node:tls": false,
+      "node:perf_hooks": false,
     };
 
     return config;

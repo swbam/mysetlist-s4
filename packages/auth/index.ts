@@ -2,14 +2,8 @@
 export { createClient as createBrowserClient } from "./client";
 export type { Session, User } from "./client";
 
-// Server-side utilities
-export {
-  createClient as createServerClient,
-  createServiceClient,
-  getUser,
-  getUserFromRequest,
-  getSession,
-} from "./server";
+// Server-side utilities are exported from "@repo/auth/server" to avoid bundling in client builds
+// import { createClient as createServerClient, createServiceClient, getUser, getUserFromRequest, getSession } from "./server";
 
 // Main AuthProvider from use-auth hook (preferred)
 export { AuthProvider, useAuth } from "./src/hooks/use-auth";

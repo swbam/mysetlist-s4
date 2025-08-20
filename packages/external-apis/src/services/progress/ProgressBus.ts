@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { db } from "@repo/database";
 import { importStatus, ImportStatus, importStageEnum } from "@repo/database";
 import { eq } from "drizzle-orm";

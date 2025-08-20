@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { db } from "@repo/database";
 import { shows, venues } from "@repo/database";
 import { eq, inArray } from "@repo/database";

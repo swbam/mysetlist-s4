@@ -7,6 +7,7 @@
   "dependencies": {
     "@react-email/components": "^0.5.1",
     "resend": "^4.6.0",
-    "zod": "^3.25.28"
+    "zod": "^3.25.28",
+    "@react-email/components": "^0.0.3"
   }
 }

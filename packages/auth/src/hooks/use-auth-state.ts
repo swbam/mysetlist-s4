@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "../../client";
-import { UnifiedAuthProvider } from "../providers/unified-auth";
-import type { AuthSession, AuthUser } from "../types/auth";
+import type { Session as AuthSession, User as AuthUser } from "@supabase/supabase-js";
 
 export function useAuthState() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -12,18 +11,18 @@ export function useAuthState() {
   const [error, setError] = useState<string | null>(null);
 
   const supabase = createClient();
-  const authProvider = new UnifiedAuthProvider();
 
   useEffect(() => {
     let mounted = true;
 
     const getInitialSession = async () => {
       try {
-        const currentSession = await authProvider.getCurrentSession();
+        const { data } = await supabase.auth.getSession();
+        const currentSession = data.session as AuthSession | null;
 
         if (mounted) {
           setSession(currentSession);
-          setUser(currentSession?.user || null);
+          setUser(currentSession?.user ?? null);
           setError(null);
         }
       } catch (err) {
@@ -45,24 +44,15 @@ export function useAuthState() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, _supabaseSession) => {
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
       if (!mounted) return;
 
-      try {
-        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-          const enrichedSession = await authProvider.getCurrentSession();
-          setSession(enrichedSession);
-          setUser(enrichedSession?.user || null);
-          setError(null);
-        } else if (event === "SIGNED_OUT") {
-          setSession(null);
-          setUser(null);
-          setError(null);
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Auth state change error",
-        );
+      if (newSession?.session) {
+        setSession(newSession.session as AuthSession);
+        setUser(newSession.session?.user ?? null);
+      } else {
+        setSession(null);
+        setUser(null);
       }
     });
 
@@ -75,9 +65,9 @@ export function useAuthState() {
   const refreshSession = async () => {
     try {
       setLoading(true);
-      const currentSession = await authProvider.getCurrentSession();
-      setSession(currentSession);
-      setUser(currentSession?.user || null);
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session as AuthSession | null);
+      setUser(data.session?.user ?? null);
       setError(null);
     } catch (err) {
       setError(

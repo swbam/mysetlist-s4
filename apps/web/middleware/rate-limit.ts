@@ -1,126 +1,39 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { RedisRateLimiter } from "~/lib/cache/redis";
+import { NextRequest, NextResponse } from "next/server";
+import { createRateLimiter } from "@repo/rate-limit";
 
-export interface RateLimitConfig {
-  maxRequests: number;
-  windowSeconds: number;
-  keyGenerator?: (req: NextRequest) => string;
-  skipAuth?: boolean;
-  customHeaders?: boolean;
-}
-
-const defaultConfigs: Record<string, RateLimitConfig> = {
-  // Public endpoints
-  "/api/trending": { maxRequests: 100, windowSeconds: 60 },
-  "/api/artists/search": { maxRequests: 50, windowSeconds: 60 },
-  "/api/shows/search": { maxRequests: 50, windowSeconds: 60 },
-  "/api/venues/search": { maxRequests: 50, windowSeconds: 60 },
-
-  // Auth endpoints - stricter limits
-  "/api/auth/sign-in": { maxRequests: 5, windowSeconds: 300 }, // 5 per 5 min
-  "/api/auth/sign-up": { maxRequests: 3, windowSeconds: 600 }, // 3 per 10 min
-  "/api/auth/reset-password": { maxRequests: 3, windowSeconds: 900 }, // 3 per 15 min
-
-  // Sync endpoints - very limited
-  "/api/sync": { maxRequests: 10, windowSeconds: 3600 }, // 10 per hour
-  "/api/admin": { maxRequests: 20, windowSeconds: 60, skipAuth: false },
-
-  // Default for unspecified endpoints
-  default: { maxRequests: 60, windowSeconds: 60 },
-};
+// Simple rate limiter instance (60 req/min per IP by default)
+const limiter = createRateLimiter({ limit: 60, window: "1 m" });
 
 export async function rateLimitMiddleware(
   request: NextRequest,
-  config?: RateLimitConfig,
-): Promise<NextResponse | null> {
-  // Skip rate limiting in development
-  if (process.env.NODE_ENV === "development") {
-    return null;
-  }
+  opts?: { maxRequests?: number; windowSeconds?: number },
+) {
+  const ip =
+    request.ip ||
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "anonymous";
 
-  const pathname = request.nextUrl.pathname;
+  const { limit, success, remaining, reset } = await limiter.limit(ip);
 
-  // Find matching config
-  const matchingConfig = Object.entries(defaultConfigs).find(([path]) =>
-    pathname.startsWith(path),
-  );
-
-  const finalConfig = config || matchingConfig?.[1] || defaultConfigs.default!;
-
-  // Generate rate limit key
-  const keyGenerator =
-    finalConfig.keyGenerator ||
-    ((req) => {
-      // Try to get user ID from various sources
-      const userId =
-        req.headers.get("x-user-id") || req.cookies.get("user-id")?.value;
-
-      if (userId && !finalConfig.skipAuth) {
-        return `rate:user:${userId}:${pathname}`;
-      }
-
-      // Fall back to IP address
-      const ip =
-        req.headers.get("x-forwarded-for")?.split(",")[0] ||
-        req.headers.get("x-real-ip") ||
-        "unknown";
-
-      return `rate:ip:${ip}:${pathname}`;
-    });
-
-  const key = keyGenerator(request);
-  const rateLimiter = new RedisRateLimiter();
-
-  try {
-    const result = await rateLimiter.checkLimit(
-      key,
-      finalConfig.maxRequests,
-      finalConfig.windowSeconds,
+  if (!success) {
+    return NextResponse.json(
+      {
+        error: "Rate limit exceeded",
+        limit,
+        remaining,
+        reset,
+      },
+      { status: 429 },
     );
-
-    // Create response with rate limit headers
-    const headers = new Headers({
-      "X-RateLimit-Limit": finalConfig.maxRequests.toString(),
-      "X-RateLimit-Remaining": result.remaining.toString(),
-      "X-RateLimit-Reset": new Date(result.resetAt).toISOString(),
-    });
-
-    if (!result.allowed) {
-      // Calculate retry after
-      const retryAfter = Math.ceil((result.resetAt - Date.now()) / 1000);
-      headers.set("Retry-After", retryAfter.toString());
-
-      return NextResponse.json(
-        {
-          error: "Too Many Requests",
-          message: `Rate limit exceeded. Try again in ${retryAfter} seconds.`,
-          retryAfter,
-          reset: new Date(result.resetAt).toISOString(),
-        },
-        {
-          status: 429,
-          headers,
-        },
-      );
-    }
-
-    // Add rate limit headers to successful requests if configured
-    if (finalConfig.customHeaders) {
-      return NextResponse.next({
-        headers,
-      });
-    }
-
-    return null; // Continue to endpoint
-  } catch (_error) {
-    return null;
   }
+
+  return null; // continue
 }
 
 // Helper function for API routes
 export function withRateLimit(
   handler: (req: NextRequest) => Promise<NextResponse>,
-  config?: RateLimitConfig,
+  config?: { maxRequests?: number; windowSeconds?: number },
 ) {
   return async (req: NextRequest): Promise<NextResponse> => {
     const rateLimitResponse = await rateLimitMiddleware(req, config);

@@ -9,13 +9,15 @@
       "@/lib/*": ["./lib/*"],
       "@/app/*": ["./app/*"],
       "@/hooks/*": ["./hooks/*"],
-      "~/*": ["./*"],
+      "@repo/*": ["../../packages/*"],
       "~/components/*": ["./components/*"],
       "~/lib/*": ["./lib/*"],
       "~/app/*": ["./app/*"],
       "~/hooks/*": ["./hooks/*"],
       "~/types/*": ["./types/*"],
-      "@repo/*": ["../../packages/*"]
+      "~/actions/*": ["./actions/*"],
+      "~/middleware/*": ["./middleware/*"],
+      "~/*": ["./*"]
     }
   },
   "include": [

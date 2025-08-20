@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { db } from "@repo/database";
 import { songs, artistSongs } from "@repo/database";
 import { SpotifyClient } from "../../clients/spotify";

@@ -1,62 +1,12 @@
 /**
  * External API Adapters & Clients
  * 
- * Comprehensive API client library implementing robust retry logic, rate limiting,
- * and circuit breaker patterns for external service integration:
- * 
- * - BaseApiClient: Foundation client with advanced error handling
- * - SpotifyApiClient: Enhanced Spotify Web API with OAuth token management
- * - TicketmasterApiClient: Ticketmaster Discovery API with pagination
- * - SetlistFmClient: Setlist.fm API for concert setlist data
+ * Barrel exports for all external API clients implementing GROK.md specifications:
+ * - TicketmasterClient: Paginated event fetching with async generators
+ * - SpotifyClient: OAuth token management and batch API operations
  */
 
-// Base API Client
-export {
-  BaseApiClient,
-  type ApiClientConfig,
-  type ApiResponse,
-  type RateLimitInfo,
-  type ApiHealthCheck,
-} from './base-client';
-
-// Enhanced Spotify Web API Client
-export {
-  SpotifyApiClient,
-  type SpotifyTokenResponse,
-  type SpotifyArtist,
-  type SpotifyAlbum,
-  type SpotifyTrack,
-  type SpotifyAudioFeatures,
-  type SpotifyPaginatedResponse,
-} from './spotify-client';
-
-// Enhanced Ticketmaster Discovery API Client
-export {
-  TicketmasterApiClient,
-  type TicketmasterEvent,
-  type TicketmasterVenue,
-  type TicketmasterAttraction,
-  type TicketmasterPage,
-  type TicketmasterResponse,
-  type TicketmasterEventsResponse,
-  type TicketmasterAttractionsResponse,
-  type TicketmasterVenuesResponse,
-} from './ticketmaster-client';
-
-// Setlist.fm API Client
-export {
-  SetlistFmClient,
-  type SetlistFmArtist,
-  type SetlistFmVenue,
-  type SetlistFmSetlist,
-  type SetlistFmSong,
-  type SetlistFmSet,
-  type SetlistFmSearchResult,
-  type SetlistFmCity,
-  type SetlistFmUser,
-} from './setlistfm-client';
-
-// Legacy Clients (for backward compatibility)
+// Ticketmaster API Client
 export {
   // Core functions
   iterateEventsByAttraction,
@@ -67,9 +17,14 @@ export {
   testApiConnection as testTicketmasterConnection,
   
   // Types
+  type TicketmasterEvent,
+  type TicketmasterVenue,
+  type TicketmasterPage,
+  type TicketmasterResponse,
   type TicketmasterError,
 } from './TicketmasterClient';
 
+// Spotify Web API Client
 export {
   // Core functions
   getAccessToken,
@@ -90,17 +45,14 @@ export {
   getTokenCacheStatus,
   
   // Types
+  type SpotifyTokenResponse,
+  type SpotifyArtist,
+  type SpotifyAlbum,
+  type SpotifyTrack,
+  type SpotifyAudioFeatures,
+  type SpotifyPaginatedResponse,
   type SpotifyError,
 } from './SpotifyClient';
-
-// Test Suite
-export {
-  runApiTests,
-  testServiceIntegrations,
-  testSpotifyClient,
-  testTicketmasterClient,
-  testSetlistFmClient,
-} from './test-api-connections';
 
 // Re-export HTTP utilities for convenience
 export {
