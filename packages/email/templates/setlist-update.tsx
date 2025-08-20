@@ -87,7 +87,7 @@ export const SetlistUpdateTemplate = ({
       <Html>
         <Head />
         <Preview>
-          {getSubjectText()} - {show.artistName} at {show.venue}
+          {`${getSubjectText()} - ${show.artistName} at ${show.venue}`}
         </Preview>
         <Body className="bg-zinc-50 font-sans">
           <Container className="mx-auto py-12">

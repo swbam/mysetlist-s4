@@ -76,7 +76,7 @@ export const LiveShowAlertTemplate = ({
       <Html>
         <Head />
         <Preview>
-          {content.emoji} {content.message}
+          {`${content.emoji} ${content.message}`}
         </Preview>
         <Body className="bg-zinc-50 font-sans">
           <Container className="mx-auto py-12">

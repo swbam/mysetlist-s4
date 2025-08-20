@@ -7,7 +7,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { db } from '@repo/database';
 import { artists, venues, shows, songs, artistSongs } from '@repo/database';
-import { eq, count } from 'drizzle-orm';
+import { eq, count, isNull } from 'drizzle-orm';
 
 // Import services
 import { ArtistImportOrchestrator } from '../../lib/services/orchestrators/ArtistImportOrchestrator';
@@ -296,11 +296,14 @@ describe('Acceptance Tests - Realistic Artist Scenarios', () => {
       expect(importResult.success).toBe(true);
 
       // Verify SLOs based on artist type
-      expect(identityDuration).toBeLessThan(SLO_TARGETS.IDENTITY_PHASE.threshold);
+      expect(identityDuration).toBeLessThan(SLO_TARGETS['IDENTITY_PHASE']?.threshold || 10000);
 
-      // Adjust SLO expectations based on data volume
-      const showsExpectedTime = Math.min(scenario.expectedShows * 30, SLO_TARGETS.SHOWS_PHASE.threshold);
-      const catalogExpectedTime = Math.min(scenario.expectedTracks * 20, SLO_TARGETS.CATALOG_PHASE.threshold);
+      // Adjust SLO expectations based on data volume (used for context only)
+      const showsExpectedTime = Math.min(scenario.expectedShows * 30, SLO_TARGETS['SHOWS_PHASE']?.threshold || 30000);
+      const catalogExpectedTime = Math.min(scenario.expectedTracks * 20, SLO_TARGETS['CATALOG_PHASE']?.threshold || 60000);
+      
+      // Log expectations for debugging
+      console.log(`SLO Expectations - Shows: ${showsExpectedTime}ms, Catalog: ${catalogExpectedTime}ms`);
 
       // For prolific artists, we allow slightly higher thresholds
       if (scenario.type === 'prolific') {
@@ -323,26 +326,29 @@ describe('Acceptance Tests - Realistic Artist Scenarios', () => {
       await orchestrator.runFullImport(testArtistId);
 
       // Verify show count
-      const [{ count: showCount }] = await db
+      const showCountResult = await db
         .select({ count: count() })
         .from(shows)
         .where(eq(shows.headlinerArtistId, testArtistId));
+      const showCount = showCountResult[0]?.count || 0;
 
       expect(showCount).toBe(scenario.expectedShows);
 
       // Verify unique venues created (should be less than shows due to multi-night runs)
-      const [{ count: venueCount }] = await db
+      const venueCountResult = await db
         .select({ count: count() })
         .from(venues);
+      const venueCount = venueCountResult[0]?.count || 0;
 
       expect(venueCount).toBeGreaterThan(0);
       expect(venueCount).toBeLessThanOrEqual(scenario.expectedShows);
 
       // Verify track count (should be less than expected due to live filtering)
-      const [{ count: trackCount }] = await db
+      const trackCountResult = await db
         .select({ count: count() })
         .from(artistSongs)
         .where(eq(artistSongs.artistId, testArtistId));
+      const trackCount = trackCountResult[0]?.count || 0;
 
       // Allow for filtering - expect 70-90% of tracks to pass filtering
       const minExpected = Math.floor(scenario.expectedTracks * 0.7);
@@ -415,6 +421,9 @@ describe('Acceptance Tests - Realistic Artist Scenarios', () => {
       const config = {
         concurrency: concurrencyConfig[scenario.type]
       };
+      
+      // Log configuration for debugging
+      console.log(`Using concurrency config for ${scenario.type}:`, config);
 
       const identityResult = await orchestrator.initiateImport(scenario.tmAttractionId);
       testArtistId = identityResult.artistId;
@@ -422,13 +431,15 @@ describe('Acceptance Tests - Realistic Artist Scenarios', () => {
       await orchestrator.runFullImport(testArtistId);
 
       // Verify appropriate handling based on artist type
-      const dbArtist = await db
+      const dbArtistResult = await db
         .select()
         .from(artists)
         .where(eq(artists.id, testArtistId))
         .limit(1);
 
-      expect(dbArtist[0]).toMatchObject({
+      const dbArtist = dbArtistResult[0];
+      expect(dbArtist).toBeDefined();
+      expect(dbArtist).toMatchObject({
         name: scenario.name,
         tmAttractionId: scenario.tmAttractionId,
         spotifyId: scenario.spotifyId,
@@ -438,12 +449,12 @@ describe('Acceptance Tests - Realistic Artist Scenarios', () => {
       // Type-specific validations
       if (scenario.type === 'sparse') {
         // Sparse artists should complete very quickly
-        expect(dbArtist[0].showsSyncedAt).toBeTruthy();
-        expect(dbArtist[0].songCatalogSyncedAt).toBeTruthy();
+        expect(dbArtist.showsSyncedAt).toBeTruthy();
+        expect(dbArtist.songCatalogSyncedAt).toBeTruthy();
       } else if (scenario.type === 'prolific') {
         // Prolific artists should have comprehensive data
-        expect(dbArtist[0].totalSongs).toBeGreaterThan(200);
-        expect(dbArtist[0].followers).toBeGreaterThan(1000000);
+        expect(dbArtist.totalSongs).toBeGreaterThan(200);
+        expect(dbArtist.followers).toBeGreaterThan(1000000);
       }
     });
 
@@ -492,11 +503,13 @@ describe('Acceptance Tests - Realistic Artist Scenarios', () => {
         .select({ id: venues.id })
         .from(venues)
         .leftJoin(shows, eq(venues.id, shows.venueId))
-        .where(eq(shows.id, null));
+        .where(isNull(shows.id));
         
       if (orphanedVenues.length > 0) {
         const venueIds = orphanedVenues.map(v => v.id);
-        await db.delete(venues).where(eq(venues.id, venueIds[0]));
+        for (const venueId of venueIds) {
+          await db.delete(venues).where(eq(venues.id, venueId));
+        }
       }
     };
   });

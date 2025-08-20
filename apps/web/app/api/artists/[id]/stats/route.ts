@@ -4,12 +4,13 @@ import { eq, count, sql } from "drizzle-orm";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     // First verify the artist exists
     const artist = await db.query.artists.findFirst({
-      where: eq(artists.id, params.id),
+      where: eq(artists.id, id),
     });
 
     if (!artist) {
@@ -29,14 +30,14 @@ export async function GET(
       db
         .select({ count: count() })
         .from(showArtists)
-        .where(eq(showArtists.artistId, params.id))
+        .where(eq(showArtists.artistId, id))
         .then(result => result[0]?.count || 0),
       
       // Count unique songs
       db
         .select({ count: count() })
         .from(artistSongs)
-        .where(eq(artistSongs.artistId, params.id))
+        .where(eq(artistSongs.artistId, id))
         .then(result => result[0]?.count || 0),
       
       // Count setlists
@@ -45,7 +46,7 @@ export async function GET(
         .from(setlists)
         .innerJoin(shows, eq(setlists.showId, shows.id))
         .innerJoin(showArtists, eq(shows.id, showArtists.showId))
-        .where(eq(showArtists.artistId, params.id))
+        .where(eq(showArtists.artistId, id))
         .then(result => result[0]?.count || 0),
     ]);
 
@@ -54,7 +55,7 @@ export async function GET(
       .select({ date: shows.date })
       .from(shows)
       .innerJoin(showArtists, eq(shows.id, showArtists.showId))
-      .where(eq(showArtists.artistId, params.id))
+      .where(eq(showArtists.artistId, id))
       .orderBy(sql`${shows.date} desc`)
       .limit(1);
 

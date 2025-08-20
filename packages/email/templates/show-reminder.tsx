@@ -47,7 +47,7 @@ export const ShowReminderTemplate = ({
       <Html>
         <Head />
         <Preview>
-          🎵 {show.artistName} is performing {timeText}!
+          {`🎵 ${show.artistName} is performing ${timeText}!`}
         </Preview>
         <Body className="bg-zinc-50 font-sans">
           <Container className="mx-auto py-12">

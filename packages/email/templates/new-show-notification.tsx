@@ -37,7 +37,7 @@ export const NewShowNotificationTemplate = ({
   <Tailwind>
     <Html>
       <Head />
-      <Preview>🎵 {show.artistName} just announced a new show!</Preview>
+      <Preview>{`🎵 ${show.artistName} just announced a new show!`}</Preview>
       <Body className="bg-zinc-50 font-sans">
         <Container className="mx-auto py-12">
           <Section className="mt-8 rounded-md bg-zinc-200 p-px">

@@ -73,7 +73,7 @@ export const env = createEnv({
     RESEND_API_KEY: process.env['RESEND_API_KEY'],
     CRON_SECRET: process.env['CRON_SECRET'],
     JWT_SECRET: process.env['JWT_SECRET'],
-    NODE_ENV: process.env.NODE_ENV,
+    NODE_ENV: process.env['NODE_ENV'],
 
     // Client
     NEXT_PUBLIC_URL: process.env['NEXT_PUBLIC_URL'],

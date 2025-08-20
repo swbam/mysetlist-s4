@@ -4,12 +4,13 @@ import { eq, desc } from "drizzle-orm";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     // First verify the artist exists
     const artist = await db.query.artists.findFirst({
-      where: eq(artists.id, params.id),
+      where: eq(artists.id, id),
     });
 
     if (!artist) {
@@ -36,7 +37,7 @@ export async function GET(
       .from(shows)
       .innerJoin(showArtists, eq(shows.id, showArtists.showId))
       .innerJoin(venues, eq(shows.venueId, venues.id))
-      .where(eq(showArtists.artistId, params.id))
+      .where(eq(showArtists.artistId, id))
       .orderBy(desc(shows.date))
       .limit(100); // Reasonable limit to prevent huge responses
 

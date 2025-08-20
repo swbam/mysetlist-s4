@@ -4,11 +4,12 @@ import { eq } from "drizzle-orm";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const artist = await db.query.artists.findFirst({
-      where: eq(artists.id, params.id),
+      where: eq(artists.id, id),
     });
 
     if (!artist) {

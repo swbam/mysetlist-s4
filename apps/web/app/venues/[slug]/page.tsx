@@ -30,10 +30,10 @@ import { createVenueMetadata } from "~/lib/seo-metadata";
 import { getNearbyVenues, getVenueBySlug, getVenueShows } from "./actions";
 
 type VenuePageProps = {
-  params: {
+  params: Promise<{
     locale: string;
     slug: string;
-  };
+  }>;
 };
 
 export const generateMetadata = async ({
@@ -63,8 +63,8 @@ export const generateMetadata = async ({
   });
 };
 
-const VenuePage = async ({ params }: any) => {
-  const { slug } = params?.slug ? params : { slug: params?.slug };
+const VenuePage = async ({ params }: VenuePageProps) => {
+  const { slug } = await params;
   const venue = await getVenueBySlug(slug);
 
   if (!venue) {

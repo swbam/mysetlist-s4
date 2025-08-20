@@ -9,9 +9,9 @@ import { EnhancedSetlistViewer } from "./components/enhanced-setlist-viewer";
 import { ShowInfo } from "./components/show-info";
 
 type SetlistPageProps = {
-  params: {
+  params: Promise<{
     showId: string;
-  };
+  }>;
 };
 
 export const generateMetadata = async ({
@@ -47,8 +47,8 @@ export const generateMetadata = async ({
   });
 };
 
-const SetlistPage = async ({ params }: any) => {
-  const { showId } = params?.showId ? params : { showId: params?.showId };
+const SetlistPage = async ({ params }: SetlistPageProps) => {
+  const { showId } = await params;
 
   // Fetch show data with setlists
   const show = await db

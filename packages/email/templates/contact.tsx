@@ -24,7 +24,7 @@ export const ContactTemplate = ({
   <Tailwind>
     <Html>
       <Head />
-      <Preview>New email from {name}</Preview>
+      <Preview>{`New email from ${name}`}</Preview>
       <Body className="bg-zinc-50 font-sans">
         <Container className="mx-auto py-12">
           <Section className="mt-8 rounded-md bg-zinc-200 p-px">
