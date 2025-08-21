@@ -208,7 +208,7 @@ serve(async (req) => {
         min_price: minPrice,
         max_price: maxPrice,
         currency: priceRange?.currency || "USD",
-        ticketmaster_id: event.id,
+        tm_event_id: event.id,
         status:
           new Date(event.dates.start.localDate) > new Date()
             ? "upcoming"
