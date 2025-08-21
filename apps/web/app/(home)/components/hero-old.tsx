@@ -3,15 +3,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { motion } from "framer-motion";
 import { ChevronRight, Music, TrendingUp } from "lucide-react";
 import Link from "next/link";
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
 import React, { memo } from "react";
-=======
-import React from "react";
->>>>>>> Incoming (Background Agent changes)
-=======
-import React from "react";
->>>>>>> Incoming (Background Agent changes)
 import { SearchBar } from "~/components/search-bar";
 
 function HomeHero() {

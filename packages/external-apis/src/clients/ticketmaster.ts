@@ -19,6 +19,7 @@ export class TicketmasterClient extends BaseAPIClient {
 
   async searchEvents(options: {
     keyword?: string;
+    attractionId?: string;
     city?: string;
     stateCode?: string;
     countryCode?: string;
@@ -90,6 +91,7 @@ export class TicketmasterClient extends BaseAPIClient {
     keyword?: string;
     size?: number;
     classificationName?: string;
+    classificationId?: string;
   }): Promise<{ _embedded?: { attractions: any[] }; page: any }> {
     const params = new URLSearchParams();
 
@@ -105,5 +107,25 @@ export class TicketmasterClient extends BaseAPIClient {
       `ticketmaster:attractions:${params.toString()}`,
       3600,
     );
+  }
+
+  async getAttraction(attractionId: string): Promise<any> {
+    // Use direct fetch to bypass BaseAPIClient issues
+    const apiKey = this.apiKey || process.env["TICKETMASTER_API_KEY"];
+    if (!apiKey) {
+      throw new Error("Ticketmaster API key not configured");
+    }
+
+    const url = `https://app.ticketmaster.com/discovery/v2/attractions/${attractionId}.json?apikey=${apiKey}`;
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error(`Attraction not found: ${attractionId}`);
+      }
+      throw new Error(`Ticketmaster API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
   }
 }

@@ -79,10 +79,14 @@ export const generateMetadata = async ({ params }: any): Promise<Metadata> => {
   }
 };
 
-const ArtistPage = async ({ params, searchParams }: any) => {
+const ArtistPage = async ({ params, searchParams }: { 
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tmAttractionId?: string }>;
+}) => {
   try {
   const { slug } = await params;
-  const tmAttractionId = searchParams?.tmAttractionId as string;
+  const searchParamsResolved = await searchParams;
+  const tmAttractionId = searchParamsResolved?.tmAttractionId as string;
 
     // Validate slug parameter
     if (!slug || typeof slug !== "string") {

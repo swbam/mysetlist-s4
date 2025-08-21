@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { onProgress, offProgress, report } from "@repo/external-apis/src/services/progress/ProgressBus";
-import { runFullImport } from "@repo/external-apis/src/services/orchestrators/ArtistImportOrchestrator";
+import { onProgress, offProgress, report, runFullImport } from "@repo/external-apis";
 
 export async function GET(_: Request, { params }: any) {
   const { readable, writable } = new TransformStream();
@@ -11,18 +10,19 @@ export async function GET(_: Request, { params }: any) {
   const listener = (p: any) => write(p);
   onProgress(params.id, listener);
 
-  // Kick off work tied to this open stream
+  // Kick off work tied to this open stream (GROK.md approach)
   queueMicrotask(async () => {
     try {
       await runFullImport(params.id);
-    } catch {}
+    } catch (error) {
+      console.error("Import failed in SSE route:", error);
+    }
   });
 
   // Send initial hello
   await report(params.id, "initializing", 0, "Streaming progress…");
 
   // Clean-up when client disconnects
-  // (Router runtime will GC writer; optional: offProgress in a try/finally)
   return new Response(readable, {
     headers: {
       "Content-Type": "text/event-stream",

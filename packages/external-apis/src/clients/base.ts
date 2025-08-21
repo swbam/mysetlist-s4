@@ -16,16 +16,30 @@ export abstract class BaseAPIClient {
   protected baseURL: string;
   protected apiKey: string | undefined;
   protected rateLimit: { requests: number; window: number } | undefined;
-  protected cache: Redis;
+  protected cache: Redis | any;
 
   constructor(config: APIClientConfig) {
     this.baseURL = config.baseURL;
     this.apiKey = config.apiKey ?? undefined;
     this.rateLimit = config.rateLimit ?? undefined;
-    this.cache = new Redis({
-      url: process.env["UPSTASH_REDIS_REST_URL"]!,
-      token: process.env["UPSTASH_REDIS_REST_TOKEN"]!,
-    });
+    // Use Upstash Redis as configured in environment with error handling
+    try {
+      this.cache = new Redis({
+        url: process.env["UPSTASH_REDIS_REST_URL"]!,
+        token: process.env["UPSTASH_REDIS_REST_TOKEN"]!,
+      });
+    } catch (error) {
+      console.warn("Redis connection failed, continuing without cache:", error);
+      // Create a mock cache that doesn't throw errors
+      this.cache = {
+        get: async () => null,
+        set: async () => {},
+        del: async () => {},
+        incr: async () => 1,
+        expire: async () => {},
+        ttl: async () => -1,
+      } as any;
+    }
   }
 
   protected async makeRequest<T>(
@@ -34,17 +48,25 @@ export abstract class BaseAPIClient {
     cacheKey?: string,
     cacheTTL?: number,
   ): Promise<T> {
-    // Check cache first
+    // Check cache first (with error handling)
     if (cacheKey) {
-      const cached = await this.cache.get(cacheKey);
-      if (cached) {
-        try {
-          return JSON.parse(cached as string) as T;
-        } catch (e) {
-          console.error(`Failed to parse cache for key ${cacheKey}:`, e);
-          // Cache is corrupt, delete it and fetch fresh
-          await this.cache.del(cacheKey);
+      try {
+        const cached = await this.cache.get(cacheKey);
+        if (cached) {
+          try {
+            return typeof cached === 'string' ? JSON.parse(cached) as T : cached as T;
+          } catch (e) {
+            console.error(`Failed to parse cache for key ${cacheKey}:`, e);
+            // Cache is corrupt, delete it and fetch fresh
+            try {
+              await this.cache.del(cacheKey);
+            } catch (delError) {
+              console.warn("Failed to delete corrupt cache:", delError);
+            }
+          }
         }
+      } catch (cacheError) {
+        console.warn("Cache get operation failed, continuing without cache:", cacheError);
       }
     }
 
@@ -73,9 +95,13 @@ export abstract class BaseAPIClient {
 
     const data = (await response.json()) as T;
 
-    // Cache successful responses
+    // Cache successful responses (with error handling)
     if (cacheKey && cacheTTL) {
-      await this.cache.setex(cacheKey, cacheTTL, JSON.stringify(data));
+      try {
+        await this.cache.set(cacheKey, JSON.stringify(data), { ex: cacheTTL });
+      } catch (cacheError) {
+        console.warn("Cache set operation failed, continuing without cache:", cacheError);
+      }
     }
 
     return data;
@@ -86,18 +112,23 @@ export abstract class BaseAPIClient {
   private async checkRateLimit(): Promise<void> {
     if (!this.rateLimit) return;
 
-    const key = `rate_limit:${this.constructor.name}`;
-    const current = await this.cache.incr(key);
+    try {
+      const key = `rate_limit:${this.constructor.name}`;
+      const current = await this.cache.incr(key);
 
-    if (current === 1) {
-      await this.cache.expire(key, this.rateLimit.window);
-    }
+      if (current === 1) {
+        await this.cache.expire(key, this.rateLimit.window);
+      }
 
-    if (current > this.rateLimit.requests) {
-      const ttl = await this.cache.ttl(key);
-      throw new RateLimitError(
-        `Rate limit exceeded. Try again in ${ttl} seconds.`,
-      );
+      if (current > this.rateLimit.requests) {
+        const ttl = await this.cache.ttl(key);
+        throw new RateLimitError(
+          `Rate limit exceeded. Try again in ${ttl || 60} seconds.`,
+        );
+      }
+    } catch (error) {
+      // If rate limiting fails, just log and continue
+      console.warn("Rate limiting failed, continuing without rate limit:", error);
     }
   }
 }

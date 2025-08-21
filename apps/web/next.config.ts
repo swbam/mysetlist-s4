@@ -10,6 +10,7 @@ const nextConfig = {
     '@repo/database',
     '@repo/design-system',
     '@repo/email',
+    '@repo/external-apis',
     '@repo/feature-flags',
     '@repo/internationalization',
     '@repo/next-config',

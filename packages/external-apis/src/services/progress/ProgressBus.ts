@@ -1,6 +1,4 @@
-// @ts-nocheck
-import { db } from "@repo/database";
-import { importStatus, ImportStatus, importStageEnum } from "@repo/database";
+import { db, importStatus } from "@repo/database";
 import { eq } from "drizzle-orm";
 import { EventEmitter } from "events";
 
@@ -16,7 +14,7 @@ export function offProgress(artistId: string, fn: (p: any) => void) {
 
 export async function report(
   artistId: string,
-  stage: typeof importStageEnum.enumValues[number],
+  stage: "initializing" | "syncing-identifiers" | "importing-songs" | "importing-shows" | "creating-setlists" | "completed" | "failed",
   progress: number,
   message: string
 ) {
@@ -30,11 +28,18 @@ export async function report(
     .insert(importStatus)
     .values({
       artistId,
-      ...payload,
+      stage: payload.stage,
+      percentage: payload.percentage,
+      message: payload.message,
     })
     .onConflictDoUpdate({
       target: importStatus.artistId,
-      set: payload,
+      set: {
+        stage: payload.stage,
+        percentage: payload.percentage,
+        message: payload.message,
+        updatedAt: new Date(),
+      },
     });
 
   bus.emit(artistId, payload);

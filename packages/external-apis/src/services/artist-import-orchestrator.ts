@@ -76,10 +76,10 @@ export class ArtistImportOrchestrator {
 
       // Get artist from Ticketmaster
       const tmArtist = await this.errorHandler.withRetry(
-        () => this.ticketmasterClient.getEvent(tmAttractionId),
+        () => this.ticketmasterClient.getAttraction(tmAttractionId),
         {
           service: "ArtistImportOrchestrator",
-          operation: "getEvent",
+          operation: "getAttraction",
           context: { tmAttractionId },
         },
       );
@@ -122,41 +122,42 @@ export class ArtistImportOrchestrator {
       }
 
       if (!spotifyArtist) {
-        throw new SyncServiceError(
-          `No Spotify match found for ${tmArtist.name}`,
-          "ArtistImportOrchestrator",
-          "searchArtists",
-        );
+        console.warn(`No Spotify match found for ${tmArtist.name}, continuing without Spotify data`);
+        await this.updateProgress({
+          stage: "syncing-identifiers",
+          progress: 25,
+          message: `${tmArtist.name} - No Spotify match found, using Ticketmaster data only`,
+        });
       }
 
       // Create minimal artist record for instant page load
-      slug = this.generateSlug(spotifyArtist.name);
+      slug = this.generateSlug(spotifyArtist?.name || tmArtist.name);
 
       const [newArtist] = await db
         .insert(artists)
         .values({
-          spotifyId: spotifyArtist.id,
+          spotifyId: spotifyArtist?.id || null,
           tmAttractionId: tmAttractionId,
-          name: spotifyArtist.name,
+          name: spotifyArtist?.name || tmArtist.name,
           slug,
-          imageUrl: spotifyArtist.images[0]?.url || null,
-          smallImageUrl: spotifyArtist.images[2]?.url || null,
-          genres: JSON.stringify(spotifyArtist.genres || []),
-          popularity: spotifyArtist.popularity || 0,
-          followers: spotifyArtist.followers?.total || 0,
-          externalUrls: JSON.stringify(spotifyArtist.external_urls || {}),
+          imageUrl: spotifyArtist?.images?.[0]?.url || tmArtist.images?.[0]?.url || null,
+          smallImageUrl: spotifyArtist?.images?.[2]?.url || null,
+          genres: JSON.stringify(spotifyArtist?.genres || []),
+          popularity: spotifyArtist?.popularity || 0,
+          followers: spotifyArtist?.followers?.total || 0,
+          externalUrls: JSON.stringify(spotifyArtist?.external_urls || {}),
           verified: false,
           lastSyncedAt: new Date(),
         })
         .onConflictDoUpdate({
-          target: artists.spotifyId,
+          target: artists.tmAttractionId,
           set: {
             tmAttractionId: tmAttractionId,
-            name: spotifyArtist.name,
-            imageUrl: spotifyArtist.images[0]?.url || null,
-            smallImageUrl: spotifyArtist.images[2]?.url || null,
-            popularity: spotifyArtist.popularity || 0,
-            followers: spotifyArtist.followers?.total || 0,
+            name: spotifyArtist?.name || tmArtist.name,
+            imageUrl: spotifyArtist?.images?.[0]?.url || tmArtist.images?.[0]?.url || null,
+            smallImageUrl: spotifyArtist?.images?.[2]?.url || null,
+            popularity: spotifyArtist?.popularity || 0,
+            followers: spotifyArtist?.followers?.total || 0,
             lastSyncedAt: new Date(),
           },
         })

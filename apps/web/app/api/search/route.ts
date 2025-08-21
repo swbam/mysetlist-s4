@@ -1,14 +1,8 @@
-import { TicketmasterClient } from "@repo/external-apis";
 import { type NextRequest, NextResponse } from "next/server";
 import { rateLimitMiddleware } from "~/middleware/rate-limit";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
-
-const ticketmaster = new TicketmasterClient({
-  apiKey:
-    process.env.TICKETMASTER_API_KEY || "k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b",
-});
 
 interface SearchResult {
   id: string;
@@ -73,16 +67,21 @@ export async function GET(request: NextRequest) {
     try {
       console.log(`Searching Ticketmaster for: ${query}, limit: ${limit}`);
 
-      // Delegate to artists-specific search endpoint for minimal payload
-      const ticketmasterResponse = await ticketmaster.searchAttractions({
-        keyword: query,
-        size: limit,
-        classificationName: "music",
-        sort: "relevance,desc",
-      });
+      // Direct API call to bypass client issues
+      const apiKey = process.env.TICKETMASTER_API_KEY;
+      if (!apiKey) {
+        throw new Error("Ticketmaster API key not configured");
+      }
 
-      const ticketmasterArtists =
-        ticketmasterResponse._embedded?.attractions || [];
+      const tmUrl = `https://app.ticketmaster.com/discovery/v2/attractions.json?keyword=${encodeURIComponent(query)}&size=${limit}&apikey=${apiKey}`;
+      
+      const ticketmasterResponse = await fetch(tmUrl);
+      if (!ticketmasterResponse.ok) {
+        throw new Error(`Ticketmaster API error: ${ticketmasterResponse.status}`);
+      }
+
+      const tmData = await ticketmasterResponse.json();
+      const ticketmasterArtists = tmData._embedded?.attractions || [];
 
       results = ticketmasterArtists.map((attraction: any) => ({
         id: `tm_${attraction.id}`,

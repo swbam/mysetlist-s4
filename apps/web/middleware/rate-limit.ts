@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createRateLimiter } from "@repo/rate-limit";
 
-// Simple rate limiter instance (60 req/min per IP by default)
-const limiter = createRateLimiter({ limit: 60, window: "1 m" });
+// Development rate limiter instance (higher limit for testing)
+const limiter = createRateLimiter({ limit: 1000, window: "1 m" });
 
 export async function rateLimitMiddleware(
   request: NextRequest,

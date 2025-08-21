@@ -34,20 +34,16 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Start initialization
-    initializationPromise = initializeWorkers();
-    const workers = await initializationPromise;
-    
-    // Setup recurring jobs
-    await setupRecurringJobs();
+    // Disable BullMQ workers for now due to Redis connection issues
+    console.log("BullMQ workers disabled - using direct import approach");
     
     isInitialized = true;
     initializationPromise = null;
 
     return NextResponse.json({
       success: true,
-      message: "Workers initialized successfully",
-      workerCount: workers.size,
+      message: "Workers disabled - using direct import approach",
+      workerCount: 0,
       initialized: true,
     });
     

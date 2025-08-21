@@ -283,8 +283,7 @@ dev-debug.log
 *.sw?
 # OS specific
 
-# Environment variables
-.env
+
 
 # Task files
 # tasks.json

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db, artists, shows, showArtists, venues } from "@repo/database";
-import { eq, desc } from "drizzle-orm";
+import { db, artists, shows, venues } from "@repo/database";
+import { eq, desc, gte } from "drizzle-orm";
 
 export async function GET(
   _request: Request,
@@ -20,7 +20,7 @@ export async function GET(
       );
     }
 
-    // Get shows for this artist with venue information
+    // SIMPLIFIED: Get shows using direct headliner relationship
     const artistShows = await db
       .select({
         id: shows.id,
@@ -35,11 +35,10 @@ export async function GET(
         }
       })
       .from(shows)
-      .innerJoin(showArtists, eq(shows.id, showArtists.showId))
-      .innerJoin(venues, eq(shows.venueId, venues.id))
-      .where(eq(showArtists.artistId, id))
+      .leftJoin(venues, eq(shows.venueId, venues.id))
+      .where(eq(shows.headlinerArtistId, id))
       .orderBy(desc(shows.date))
-      .limit(100); // Reasonable limit to prevent huge responses
+      .limit(100);
 
     return NextResponse.json(artistShows);
   } catch (error) {

@@ -6,13 +6,12 @@ import {
   db,
   setlistSongs,
   setlists,
-  showArtists,
   shows,
   songs,
   venues,
 } from "@repo/database";
 import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
-import { and, desc, sql as drizzleSql, eq, or } from "drizzle-orm";
+import { and, desc, sql, eq, or, gte, lt } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS, REVALIDATION_TIMES } from "~/lib/cache";
 import { absoluteUrl } from "~/lib/absolute-url";
@@ -267,83 +266,58 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
       return [];
     }
     // Enhanced query with better data handling and validation
-    const artistShows = await db
-      .select({
-        show: shows,
-        venue: venues,
-        orderIndex: showArtists.orderIndex,
-        isHeadliner: showArtists.isHeadliner,
-        // Additional fields for complete show data
-        setlistCount: drizzleSql<number>`(
-          SELECT COUNT(*)::int 
-          FROM setlists 
-          WHERE setlists.show_id = ${shows.id}
-        )`,
-        // Attendance feature removed as per requirements
-        voteCount: drizzleSql<number>`(
-          SELECT COUNT(*)::int 
-          FROM votes v 
-          JOIN setlist_songs ss ON v.setlist_song_id = ss.id 
-          JOIN setlists s ON ss.setlist_id = s.id 
-          WHERE s.show_id = ${shows.id}
-        )`,
-      })
-      .from(shows)
-      .leftJoin(showArtists, eq(shows.id, showArtists.showId))
-      .leftJoin(venues, eq(shows.venueId, venues.id))
-      .where(
-        and(
-          or(
-            eq(shows.headlinerArtistId, artistId),
-            eq(showArtists.artistId, artistId),
-          ),
-          type === "upcoming"
-            ? drizzleSql`${shows.date} >= CURRENT_DATE`
-            : drizzleSql`${shows.date} < CURRENT_DATE`,
-        ),
-      )
-      .orderBy(type === "upcoming" ? shows.date : desc(shows.date))
-      .limit(type === "upcoming" ? 15 : 25); // Increased limits for better UX
+    // SIMPLIFIED: Use direct artist→show relationship
+    const today = new Date().toISOString().split('T')[0];
+    const dateCondition = type === "upcoming" ? ">=" : "<";
+    
+    const rawQuery = `
+      SELECT 
+        s.id, s.date, s.name,
+        v.id as venue_id, v.name as venue_name, 
+        v.city as venue_city, v.state as venue_state, v.country as venue_country
+      FROM shows s
+      LEFT JOIN venues v ON s.venue_id = v.id  
+      WHERE s.headliner_artist_id = $1 
+        AND s.date ${dateCondition} $2
+      ORDER BY s.date ${type === "upcoming" ? "ASC" : "DESC"}
+      LIMIT 25
+    `;
+    
+    const artistShows = await db.execute(sql.raw(rawQuery, [artistId, today]));
 
+    // Raw SQL returns { rows: [...] } structure
+    const showRows = artistShows.rows || artistShows || [];
+    
     // If no shows found and we're looking for upcoming shows, log for monitoring
-    if ((!artistShows || artistShows.length === 0) && type === "upcoming") {
+    if ((!showRows || showRows.length === 0) && type === "upcoming") {
       console.log(
         `No ${type} shows found for artist ${artistId}. Real-time sync may be needed.`,
       );
-      // Return empty results - no fake data
       return [];
     }
 
-    // Enhanced validation and data transformation
-    if (!artistShows || artistShows.length === 0) {
+    if (!showRows || showRows.length === 0) {
       return [];
     }
 
-    // Transform and validate each show record
-    return artistShows
-      .filter(({ show }) => show?.id) // Ensure valid show data
-      .map(
-        ({
-          show,
-          venue,
-          orderIndex,
-          isHeadliner,
-          setlistCount,
-          voteCount,
-        }) => ({
-          show: {
-            ...show,
-            setlistCount: setlistCount || 0,
-            voteCount: voteCount || 0,
-            ticketUrl: show.ticketUrl || undefined,
-            status:
-              show.status || (type === "upcoming" ? "confirmed" : "completed"),
-          },
-          venue: venue || undefined,
-          orderIndex: orderIndex || 0,
-          isHeadliner: isHeadliner || false,
-        }),
-      );
+    // Transform raw SQL results to expected format
+    return showRows
+      .filter((row) => row.id) // Ensure valid show data
+      .map((row) => ({
+        show: {
+          id: row.id,
+          date: row.date,
+          name: row.name,
+          status: type === "upcoming" ? "confirmed" : "completed",
+        },
+        venue: row.venue_id ? {
+          id: row.venue_id,
+          name: row.venue_name,
+          city: row.venue_city,
+          state: row.venue_state,
+          country: row.venue_country,
+        } : undefined,
+      }));
   } catch (error) {
     console.error(
       `Error fetching ${type} shows for artist ${artistId}:`,

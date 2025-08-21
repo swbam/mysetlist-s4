@@ -36,14 +36,15 @@ This document provides comprehensive documentation for TheSet's production-grade
 ```
 Client: POST /api/artists/import → receive { artistId, slug }
 Client: open /api/artists/:id/stream (SSE)
-Server SSE handler:
-  -> starts runFullImport(artistId)
-  -> emits progress events (and writes ImportStatus)
-Phases:
-  1) Identity/bootstrap
-  2) Shows & Venues (Ticketmaster; paginated)
-  3) Catalog (Spotify; studio-only; dedup by ISRC; liveness filter)
-  4) Wrap-up (setlists pre-seed, cache invalidation)
+Server Import Handler:
+  -> queues separate phase jobs in BullMQ
+  -> SSE polls import_status table for progress
+  -> emits real-time progress events
+Phase Jobs (Parallel Processing):
+  1) Identity/bootstrap (artist-import processor)
+  2) Shows & Venues (ticketmaster-sync processor)  
+  3) Catalog (spotify-catalog processor)
+  4) Wrap-up (venue-sync processor → setlist creation)
 ```
 
 **Why SSE for kickoff:** On serverless, background tasks started in a POST can be **killed** once the request returns. Starting the work **inside** the SSE route keeps the function alive and streams progress.

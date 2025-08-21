@@ -1,6 +1,4 @@
-// @ts-nocheck
-import { db } from "@repo/database";
-import { songs, artistSongs } from "@repo/database";
+import { db, songs, artistSongs } from "@repo/database";
 import { SpotifyClient } from "../../clients/spotify";
 import type { SpotifyTrack } from "../../types/spotify";
 
@@ -23,8 +21,21 @@ export async function ingestStudioCatalog(artistId: string, spotifyArtistId: str
   const allAlbums = await spotifyClient.getArtistAlbums(spotifyArtistId);
   const albums = allAlbums.items.filter((a: any) => !isLikelyLiveAlbum(a?.name));
 
+  // Get tracks from each album using the SpotifyClient properly
   const albumTrackArrays = await Promise.allSettled(
-    albums.map((a: any) => spotifyClient.getArtistAlbums(a.id))
+    albums.map(async (album: any) => {
+      try {
+        // Use a simple fetch since we need album tracks, not artist albums
+        const albumTracksResponse = await fetch(`https://api.spotify.com/v1/albums/${album.id}/tracks?limit=50`, {
+          headers: { Authorization: `Bearer ${spotifyClient.accessToken}` }
+        });
+        if (!albumTracksResponse.ok) return { items: [] };
+        return albumTracksResponse.json();
+      } catch (error) {
+        console.error(`Failed to get tracks for album ${album.id}:`, error);
+        return { items: [] };
+      }
+    })
   );
 
   const roughTracks = albumTrackArrays.flatMap((r: any) =>

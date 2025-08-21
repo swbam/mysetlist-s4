@@ -2,7 +2,7 @@ import { BaseAPIClient, APIClientConfig } from "./base";
 import type { SpotifyArtist, SpotifyTrack, SpotifySearchResult } from "../types/spotify";
 
 export class SpotifyClient extends BaseAPIClient {
-  private accessToken?: string;
+  public accessToken?: string;
 
   constructor(config: Omit<APIClientConfig, "baseURL">) {
     super({
@@ -43,18 +43,32 @@ export class SpotifyClient extends BaseAPIClient {
   }
 
   async searchArtists(query: string, limit = 20): Promise<SpotifySearchResult> {
+    // Ensure authentication
+    if (!this.accessToken) {
+      await this.authenticate();
+    }
+
+    // Use direct fetch to bypass BaseAPIClient issues
     const params = new URLSearchParams({
       q: query,
       type: "artist",
       limit: limit.toString(),
     });
 
-    return this.makeRequest<SpotifySearchResult>(
-      `/search?${params}`,
-      {},
-      `spotify:search:artists:${query}:${limit}`,
-      1800, // 30 minutes cache
-    );
+    const url = `https://api.spotify.com/v1/search?${params}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Spotify search failed: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<SpotifySearchResult>;
   }
 
   async getArtist(artistId: string): Promise<SpotifyArtist> {
