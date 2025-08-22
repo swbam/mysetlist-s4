@@ -92,6 +92,7 @@ Deno.serve(async (req: Request) => {
                 ),
                 capacity: tmVenue.capacity ?? null,
                 website: tmVenue.url ?? null,
+                tm_venue_id: tmVenue.id,
               })
               .select("id")
               .single();
@@ -114,7 +115,7 @@ Deno.serve(async (req: Request) => {
             date: date.toISOString().split("T")[0],
             status: date > new Date() ? "upcoming" : "completed",
             ticket_url: event.url,
-            ticketmaster_id: event.id,
+            tm_event_id: event.id,
             venue_id: venueId,
           },
           { onConflict: "slug", ignoreDuplicates: false, returnHead: true },

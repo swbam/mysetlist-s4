@@ -265,7 +265,7 @@ export async function POST(request: NextRequest) {
       SELECT 
         (SELECT COUNT(*) FROM artists) as total_artists,
         (SELECT COUNT(*) FROM artists WHERE spotify_id IS NOT NULL) as has_spotify,
-        (SELECT COUNT(*) FROM artists WHERE ticketmaster_id IS NOT NULL) as has_ticketmaster,
+        (SELECT COUNT(*) FROM artists WHERE tm_attraction_id IS NOT NULL) as has_ticketmaster,
         (SELECT COUNT(*) FROM shows) as total_shows,
         (SELECT COUNT(*) FROM shows WHERE date >= CURRENT_DATE) as upcoming_shows,
         (SELECT COUNT(*) FROM setlists) as total_setlists,
@@ -299,7 +299,7 @@ export async function GET(request: NextRequest) {
       SELECT 
         (SELECT COUNT(*) FROM artists) as total_artists,
         (SELECT COUNT(*) FROM artists WHERE spotify_id IS NOT NULL) as has_spotify,
-        (SELECT COUNT(*) FROM artists WHERE ticketmaster_id IS NOT NULL) as has_ticketmaster,
+        (SELECT COUNT(*) FROM artists WHERE tm_attraction_id IS NOT NULL) as has_ticketmaster,
         (SELECT COUNT(*) FROM artists WHERE image_url IS NOT NULL) as has_image,
         (SELECT COUNT(*) FROM shows) as total_shows,
         (SELECT COUNT(*) FROM shows WHERE date >= CURRENT_DATE) as upcoming_shows,

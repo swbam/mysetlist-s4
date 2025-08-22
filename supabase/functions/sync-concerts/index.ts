@@ -145,7 +145,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 await supabase
                   .from("venues")
                   .select("id")
-                  .eq("ticketmaster_id", venue.id)
+                  .eq("tm_venue_id", venue.id)
                   .single();
 
               if (venueSelectError && venueSelectError.code !== "PGRST116") {
@@ -164,7 +164,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                       city: venue.city?.name,
                       state: venue.state?.stateCode,
                       country: venue.country?.countryCode,
-                      ticketmaster_id: venue.id,
+                      tm_venue_id: venue.id,
                       ticketmaster_data: venue,
                     })
                     .select("id")
@@ -188,7 +188,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               await supabase
                 .from("shows")
                 .select("id")
-                .eq("ticketmaster_id", event.id)
+                .eq("tm_event_id", event.id)
                 .single();
 
             if (showSelectError && showSelectError.code !== "PGRST116") {
@@ -206,7 +206,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                   time: event.dates?.start?.localTime,
                   artist_id: artist.id,
                   venue_id: venueId,
-                  ticketmaster_id: event.id,
+                  tm_event_id: event.id,
                   ticketmaster_data: event,
                   status: "upcoming",
                 });
