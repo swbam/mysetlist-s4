@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { rateLimitMiddleware } from "~/middleware/rate-limit";
+import { db, artists } from "@repo/database";
+import { inArray } from "drizzle-orm";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -138,6 +140,36 @@ export async function GET(request: NextRequest) {
       // Finally alphabetical order
       return a.name.localeCompare(b.name);
     });
+
+    // Enrich results with existing artists in database to provide slug/popularity
+    try {
+      const tmIds = results.map(r => r.metadata?.externalId).filter(Boolean);
+      if (tmIds.length > 0) {
+        const existing = await db
+          .select({ tmAttractionId: artists.tmAttractionId, slug: artists.slug, popularity: artists.popularity })
+          .from(artists)
+          .where(inArray(artists.tmAttractionId, tmIds));
+
+        const slugMap = new Map(existing.map(e => [e.tmAttractionId, e]));
+        results = results.map(r => {
+          const info = slugMap.get(r.metadata?.externalId || "");
+          if (info) {
+            return {
+              ...r,
+              metadata: {
+                ...r.metadata,
+                slug: info.slug,
+                popularity: info.popularity,
+                source: "database",
+              },
+            } as typeof r;
+          }
+          return r;
+        });
+      }
+    } catch(dbErr) {
+      console.error("Failed to enrich search results from DB", dbErr);
+    }
 
     console.log(
       `Returning ${results.length} total artists, search relevance optimized`,

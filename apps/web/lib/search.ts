@@ -40,7 +40,22 @@ export async function searchContent(
       throw new Error(`Search failed: ${response.status}`);
     }
 
-    return await response.json();
+    // Map raw API results to SearchResult objects expected by the UI
+    const raw = await response.json();
+    const mappedResults: SearchResult[] = (raw.results || []).map((r: any) => ({
+      id: r.id,
+      type: "artist",
+      title: r.name,
+      subtitle: r.description,
+      meta: undefined,
+      imageUrl: r.imageUrl,
+      slug: r.metadata?.slug,
+      source: r.metadata?.source || "database",
+      requiresSync: r.metadata?.source === "ticketmaster",
+      tmAttractionId: r.metadata?.externalId,
+    }));
+
+    return { results: mappedResults };
   } catch (_error) {
     return { results: [] };
   }
