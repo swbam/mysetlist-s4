@@ -1,5 +1,19 @@
+// MySetlist-S4 Complete Queue Manager Implementation
+// File: apps/web/lib/queues/queue-manager.ts
+// Production-ready queue management with all processors
+
 import { Queue, Worker, QueueEvents, Job, JobsOptions, RepeatOptions } from "bullmq";
-import { bullMQConnection } from "./redis-config";
+import { connection, defaultJobOptions } from "./redis-config";
+import { db, sql } from "@repo/database";
+
+// Import processors (to be created)
+import ArtistImportProcessor from "./processors/artist-import.processor";
+import SpotifySyncProcessor from "./processors/spotify-sync.processor";
+import TicketmasterSyncProcessor from "./processors/ticketmaster-sync.processor";
+import VenueSyncProcessor from "./processors/venue-sync.processor";
+import TrendingCalcProcessor from "./processors/trending-calc.processor";
+import ScheduledSyncProcessor from "./processors/scheduled-sync.processor";
+import CleanupProcessor from "./processors/cleanup.processor";
 
 // Queue names with purpose
 export enum QueueName {
@@ -37,6 +51,33 @@ export enum Priority {
   BACKGROUND = 50, // Analytics, cleanup
 }
 
+// Job data types
+export interface ArtistImportJobData {
+  tmAttractionId: string;
+  artistId?: string;
+  priority?: Priority;
+  adminImport?: boolean;
+  userId?: string;
+  phase1Complete?: boolean;
+  syncOnly?: boolean;
+}
+
+export interface SpotifySyncJobData {
+  artistId: string;
+  spotifyId: string;
+  syncType: 'profile' | 'albums' | 'tracks' | 'full';
+  options?: {
+    includeCompilations?: boolean;
+    includeAppearsOn?: boolean;
+    skipLive?: boolean;
+  };
+}
+
+export interface ScheduledSyncJobData {
+  syncType: 'active-artists' | 'trending' | 'complete-catalog';
+  options?: Record<string, any>;
+}
+
 // Queue configurations with optimal settings
 export const queueConfigs: Record<QueueName, {
   concurrency: number;
@@ -49,7 +90,7 @@ export const queueConfigs: Record<QueueName, {
       attempts: 3,
       backoff: { type: "exponential", delay: 2000 },
       removeOnComplete: { age: 3600, count: 100 },
-      removeOnFail: { age: 86400 },
+      removeOnFail: { age: 86400, count: 200 },
     },
   },
   [QueueName.ARTIST_QUICK_SYNC]: {
@@ -150,222 +191,379 @@ export const queueConfigs: Record<QueueName, {
   },
 };
 
-// Queue manager singleton
-export class QueueManager {
-  private static instance: QueueManager;
+// Queue Manager singleton class
+class QueueManager {
   private queues: Map<QueueName, Queue> = new Map();
   private workers: Map<QueueName, Worker> = new Map();
-  private events: Map<QueueName, QueueEvents> = new Map();
+  private queueEvents: Map<QueueName, QueueEvents> = new Map();
+  private isInitialized = false;
+  private shutdownPromise?: Promise<void>;
 
-  private constructor() {}
-
-  static getInstance(): QueueManager {
-    if (!QueueManager.instance) {
-      QueueManager.instance = new QueueManager();
+  async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      console.log("QueueManager already initialized");
+      return;
     }
-    return QueueManager.instance;
+
+    console.log("🚀 Initializing Queue Manager...");
+
+    try {
+      // Create all queues
+      for (const queueName of Object.values(QueueName)) {
+        await this.createQueue(queueName as QueueName);
+      }
+
+      // Create workers for specific queues
+      await this.createWorker(QueueName.ARTIST_IMPORT);
+      await this.createWorker(QueueName.SPOTIFY_SYNC);
+      await this.createWorker(QueueName.SPOTIFY_CATALOG);
+      await this.createWorker(QueueName.TICKETMASTER_SYNC);
+      await this.createWorker(QueueName.VENUE_SYNC);
+      await this.createWorker(QueueName.TRENDING_CALC);
+      await this.createWorker(QueueName.SCHEDULED_SYNC);
+      await this.createWorker(QueueName.CLEANUP);
+
+      // Set up event monitoring
+      this.setupEventMonitoring();
+
+      this.isInitialized = true;
+      console.log("✅ Queue Manager initialized successfully");
+
+    } catch (error) {
+      console.error("❌ Failed to initialize Queue Manager:", error);
+      throw error;
+    }
   }
 
-  // Get or create a queue
-  getQueue(name: QueueName): Queue {
-    if (!this.queues.has(name)) {
-      const config = queueConfigs[name];
-      const queue = new Queue(name, {
-        connection: bullMQConnection,
-        defaultJobOptions: config.defaultJobOptions || {
-          attempts: 3,
-          backoff: { type: "exponential", delay: 2000 },
-          removeOnComplete: { age: 3600 },
-          removeOnFail: { age: 86400 },
-        },
-      });
-      this.queues.set(name, queue);
-    }
-    return this.queues.get(name)!;
-  }
-
-  // Create a worker for a queue
-  createWorker(
-    name: QueueName,
-    processor: (job: Job) => Promise<any>
-  ): Worker {
-    if (this.workers.has(name)) {
-      console.warn(`Worker for queue ${name} already exists`);
-      return this.workers.get(name)!;
-    }
+  private async createQueue(name: QueueName): Promise<void> {
+    if (this.queues.has(name)) return;
 
     const config = queueConfigs[name];
-    const workerOptions = {
-      connection: bullMQConnection,
-      concurrency: config.concurrency,
-      ...(config.rateLimit ? { limiter: config.rateLimit } : {})
-    };
-    const worker = new Worker(name, processor, workerOptions);
-
-    // Add error handling
-    worker.on("failed", (job: Job | undefined, err: Error) => {
-      if (job) {
-        console.error(`Job ${job.id} in queue ${name} failed:`, err);
-      }
+    const queue = new Queue(name, {
+      connection,
+      defaultJobOptions: {
+        ...defaultJobOptions,
+        ...config.defaultJobOptions,
+      },
     });
 
-    worker.on("error", (err: Error) => {
-      console.error(`Worker error in queue ${name}:`, err);
+    // Set up queue events
+    const queueEvents = new QueueEvents(name, { connection });
+    
+    queueEvents.on('waiting', ({ jobId }) => {
+      console.log(`Job ${jobId} waiting in ${name}`);
+    });
+
+    queueEvents.on('completed', ({ jobId, returnvalue }) => {
+      console.log(`Job ${jobId} completed in ${name}`);
+      this.logJobToDatabase(jobId, name, 'completed', returnvalue);
+    });
+
+    queueEvents.on('failed', ({ jobId, failedReason }) => {
+      console.error(`Job ${jobId} failed in ${name}: ${failedReason}`);
+      this.logJobToDatabase(jobId, name, 'failed', { error: failedReason });
+    });
+
+    this.queues.set(name, queue);
+    this.queueEvents.set(name, queueEvents);
+  }
+
+  private async createWorker(name: QueueName): Promise<void> {
+    if (this.workers.has(name)) return;
+
+    const config = queueConfigs[name];
+    const processor = this.getProcessor(name);
+
+    if (!processor) {
+      console.warn(`No processor found for queue ${name}`);
+      return;
+    }
+
+    const worker = new Worker(name, processor, {
+      connection,
+      concurrency: config.concurrency,
+      ...(config.rateLimit && { limiter: config.rateLimit }),
+    });
+
+    // Worker event handlers
+    worker.on('completed', (job) => {
+      console.log(`Worker completed job ${job.id} in ${name}`);
+    });
+
+    worker.on('failed', (job, err) => {
+      console.error(`Worker failed job ${job?.id} in ${name}:`, err);
+    });
+
+    worker.on('error', (err) => {
+      console.error(`Worker error in ${name}:`, err);
     });
 
     this.workers.set(name, worker);
-    return worker;
   }
 
-  // Get queue events for monitoring
-  getQueueEvents(name: QueueName): QueueEvents {
-    if (!this.events.has(name)) {
-      const events = new QueueEvents(name, {
-        connection: bullMQConnection,
-      });
-      this.events.set(name, events);
+  private getProcessor(queueName: QueueName): any {
+    switch (queueName) {
+      case QueueName.ARTIST_IMPORT:
+        return ArtistImportProcessor.process;
+      case QueueName.SPOTIFY_SYNC:
+      case QueueName.SPOTIFY_CATALOG:
+        return SpotifySyncProcessor.process;
+      case QueueName.TICKETMASTER_SYNC:
+        return TicketmasterSyncProcessor.process;
+      case QueueName.VENUE_SYNC:
+        return VenueSyncProcessor.process;
+      case QueueName.TRENDING_CALC:
+        return TrendingCalcProcessor.process;
+      case QueueName.SCHEDULED_SYNC:
+        return ScheduledSyncProcessor.process;
+      case QueueName.CLEANUP:
+        return CleanupProcessor.process;
+      default:
+        return null;
     }
-    return this.events.get(name)!;
   }
 
-  // Add a job to a queue
-  async addJob<T = any>(
+  private async logJobToDatabase(jobId: string, queueName: string, status: string, result?: any): Promise<void> {
+    try {
+      await db.execute(sql`
+        INSERT INTO queue_jobs (job_id, queue_name, status, job_data, completed_at)
+        VALUES (${jobId}, ${queueName}, ${status}, ${JSON.stringify(result)}, NOW())
+        ON CONFLICT (job_id) DO UPDATE SET
+          status = ${status},
+          job_data = ${JSON.stringify(result)},
+          completed_at = NOW()
+      `);
+    } catch (error) {
+      console.error("Failed to log job to database:", error);
+    }
+  }
+
+  async addJob<T>(
     queueName: QueueName,
     jobName: string,
     data: T,
     options?: JobsOptions
-  ): Promise<Job<T>> {
-    const queue = this.getQueue(queueName);
-    return await queue.add(jobName, data, options);
+  ): Promise<Job> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+
+    const queue = this.queues.get(queueName);
+    if (!queue) {
+      throw new Error(`Queue ${queueName} not found`);
+    }
+
+    const job = await queue.add(jobName, data, {
+      ...queueConfigs[queueName].defaultJobOptions,
+      ...options,
+    });
+
+    console.log(`Added job ${job.id} to ${queueName}`);
+    return job;
   }
 
-  // Add bulk jobs
-  async addBulkJobs<T = any>(
+  async addBulkJobs<T>(
     queueName: QueueName,
     jobs: Array<{ name: string; data: T; opts?: JobsOptions }>
-  ): Promise<Job<T>[]> {
-    const queue = this.getQueue(queueName);
+  ): Promise<Job[]> {
+    const queue = this.queues.get(queueName);
+    if (!queue) {
+      throw new Error(`Queue ${queueName} not found`);
+    }
+
     return await queue.addBulk(jobs);
   }
 
-  // Schedule a recurring job
-  async scheduleRecurringJob(
-    queueName: QueueName,
-    jobName: string,
-    data: any,
-    repeatOptions: RepeatOptions,
-    jobOptions?: JobsOptions
-  ): Promise<Job> {
-    const queue = this.getQueue(queueName);
-    return await queue.add(jobName, data, {
-      ...jobOptions,
-      repeat: repeatOptions,
+  async getQueueStats(queueName: QueueName) {
+    const queue = this.queues.get(queueName);
+    if (!queue) {
+      throw new Error(`Queue ${queueName} not found`);
+    }
+
+    const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
+      queue.getWaitingCount(),
+      queue.getActiveCount(),
+      queue.getCompletedCount(),
+      queue.getFailedCount(),
+      queue.getDelayedCount(),
+      queue.isPaused(),
+    ]);
+
+    return {
+      name: queueName,
+      waiting,
+      active,
+      completed,
+      failed,
+      delayed,
+      paused,
+    };
+  }
+
+  async getAllStats() {
+    const stats: any[] = [];
+    for (const queueName of this.queues.keys()) {
+      const queueStats = await this.getQueueStats(queueName);
+      stats.push(queueStats);
+    }
+    return stats;
+  }
+
+  async getHealthStatus(): Promise<{
+    healthy: boolean;
+    initialized: boolean;
+    queues: number;
+    workers: number;
+    redis: boolean;
+    errors: string[];
+  }> {
+    const errors: string[] = [];
+    let redisHealthy = false;
+
+    try {
+      // Check Redis connection
+      const testQueue = this.queues.values().next().value;
+      if (testQueue) {
+        await testQueue.client.ping();
+        redisHealthy = true;
+      }
+    } catch (error) {
+      errors.push(`Redis connection error: ${error}`);
+    }
+
+    // Check for stalled workers
+    for (const [name, worker] of this.workers) {
+      if (await worker.isPaused()) {
+        errors.push(`Worker ${name} is paused`);
+      }
+    }
+
+    return {
+      healthy: errors.length === 0 && redisHealthy,
+      initialized: this.isInitialized,
+      queues: this.queues.size,
+      workers: this.workers.size,
+      redis: redisHealthy,
+      errors,
+    };
+  }
+
+  async pauseQueue(queueName: QueueName): Promise<void> {
+    const queue = this.queues.get(queueName);
+    if (queue) {
+      await queue.pause();
+      console.log(`Queue ${queueName} paused`);
+    }
+  }
+
+  async resumeQueue(queueName: QueueName): Promise<void> {
+    const queue = this.queues.get(queueName);
+    if (queue) {
+      await queue.resume();
+      console.log(`Queue ${queueName} resumed`);
+    }
+  }
+
+  async cleanQueue(queueName: QueueName, grace: number = 1000): Promise<void> {
+    const queue = this.queues.get(queueName);
+    if (queue) {
+      await queue.clean(grace, 1000, 'completed');
+      await queue.clean(grace, 1000, 'failed');
+      console.log(`Queue ${queueName} cleaned`);
+    }
+  }
+
+  async shutdown(): Promise<void> {
+    if (this.shutdownPromise) {
+      return this.shutdownPromise;
+    }
+
+    this.shutdownPromise = this._performShutdown();
+    return this.shutdownPromise;
+  }
+
+  private async _performShutdown(): Promise<void> {
+    console.log("🛑 Shutting down Queue Manager...");
+
+    try {
+      // Close workers first
+      for (const [name, worker] of this.workers) {
+        console.log(`Closing worker for ${name}`);
+        await worker.close();
+      }
+
+      // Close queue events
+      for (const [name, events] of this.queueEvents) {
+        console.log(`Closing events for ${name}`);
+        await events.close();
+      }
+
+      // Close queues
+      for (const [name, queue] of this.queues) {
+        console.log(`Closing queue ${name}`);
+        await queue.close();
+      }
+
+      this.workers.clear();
+      this.queueEvents.clear();
+      this.queues.clear();
+      this.isInitialized = false;
+
+      console.log("✅ Queue Manager shut down successfully");
+    } catch (error) {
+      console.error("Error during shutdown:", error);
+      throw error;
+    }
+  }
+
+  // Convenience methods for specific job types
+  async addArtistImportJob(data: ArtistImportJobData, options?: JobsOptions): Promise<Job> {
+    return this.addJob(QueueName.ARTIST_IMPORT, 'import-artist', data, {
+      priority: data.priority || Priority.NORMAL,
+      ...options,
     });
   }
 
-  // Get job counts
-  async getJobCounts(queueName: QueueName): Promise<{
-    waiting: number;
-    active: number;
-    completed: number;
-    failed: number;
-    delayed: number;
-  }> {
-    const queue = this.getQueue(queueName);
-    const counts = await queue.getJobCounts() as Record<string, number>;
-    return {
-      waiting: counts["waiting"] || 0,
-      active: counts["active"] || 0,
-      completed: counts["completed"] || 0,
-      failed: counts["failed"] || 0,
-      delayed: counts["delayed"] || 0,
-    };
+  async addSpotifySyncJob(data: SpotifySyncJobData, options?: JobsOptions): Promise<Job> {
+    return this.addJob(QueueName.SPOTIFY_SYNC, 'sync-spotify', data, {
+      priority: Priority.NORMAL,
+      ...options,
+    });
   }
 
-  // Clean old jobs
-  async cleanQueue(
-    queueName: QueueName,
-    grace: number = 0,
-    limit: number = 1000,
-    status?: "completed" | "failed"
-  ): Promise<string[]> {
-    const queue = this.getQueue(queueName);
-    if (status) {
-      return await queue.clean(grace, limit, status);
-    }
-    const completed = await queue.clean(grace, limit, "completed");
-    const failed = await queue.clean(grace, limit, "failed");
-    return [...completed, ...failed];
+  async addScheduledSyncJob(data: ScheduledSyncJobData, options?: JobsOptions): Promise<Job> {
+    return this.addJob(QueueName.SCHEDULED_SYNC, 'scheduled-sync', data, {
+      priority: Priority.LOW,
+      ...options,
+    });
   }
 
-  // Pause a queue
-  async pauseQueue(queueName: QueueName): Promise<void> {
-    const queue = this.getQueue(queueName);
-    await queue.pause();
-  }
-
-  // Resume a queue
-  async resumeQueue(queueName: QueueName): Promise<void> {
-    const queue = this.getQueue(queueName);
-    await queue.resume();
-  }
-
-  // Close all connections
-  async closeAll(): Promise<void> {
-    const promises: Promise<void>[] = [];
-    
-    // Close workers first
-    for (const worker of this.workers.values()) {
-      promises.push(worker.close());
-    }
-    
-    // Then close events
-    for (const events of this.events.values()) {
-      promises.push(events.close());
-    }
-    
-    // Finally close queues
-    for (const queue of this.queues.values()) {
-      promises.push(queue.close());
-    }
-    
-    await Promise.all(promises);
-    
-    this.workers.clear();
-    this.events.clear();
-    this.queues.clear();
-  }
-
-  // Get queue metrics
-  async getQueueMetrics(queueName: QueueName): Promise<{
-    name: string;
-    counts: any;
-    isPaused: boolean;
-    workersCount: number;
-  }> {
-    const queue = this.getQueue(queueName);
-    const counts = await queue.getJobCounts();
-    const isPaused = await queue.isPaused();
-    const worker = this.workers.get(queueName);
-    
-    return {
-      name: queueName,
-      counts,
-      isPaused,
-      workersCount: worker ? 1 : 0,
-    };
-  }
-
-  // Get all metrics
-  async getAllMetrics(): Promise<any[]> {
-    const metrics: any[] = [];
-    for (const queueName of Object.values(QueueName)) {
-      const metric = await this.getQueueMetrics(queueName as QueueName);
-      metrics.push(metric);
-    }
-    return metrics;
+  private setupEventMonitoring(): void {
+    // Set up periodic health checks
+    setInterval(async () => {
+      const health = await this.getHealthStatus();
+      if (!health.healthy) {
+        console.error("Queue system unhealthy:", health.errors);
+      }
+    }, 60000); // Every minute
   }
 }
 
 // Export singleton instance
-export const queueManager = QueueManager.getInstance();
+const queueManagerInstance = new QueueManager();
+
+// Handle graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down queue manager...');
+  await queueManagerInstance.shutdown();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, shutting down queue manager...');
+  await queueManagerInstance.shutdown();
+  process.exit(0);
+});
+
+export const queueManager = queueManagerInstance;
+export default queueManagerInstance;

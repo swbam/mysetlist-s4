@@ -1,308 +1,572 @@
+// MySetlist-S4 Spotify Sync Processor
+// File: apps/web/lib/queues/processors/spotify-sync.processor.ts
+// NEW FILE - Spotify data synchronization processor
+
 import { Job } from "bullmq";
-import { SpotifyCompleteCatalog } from "@repo/external-apis/src/services/spotify-complete-catalog";
-import { SpotifyClient } from "@repo/external-apis";
-import { db, artists, songs, artistSongs } from "@repo/database";
 import { eq, sql } from "drizzle-orm";
-import { updateImportStatus } from "../../import-status";
-import { RedisCache } from "../redis-config";
+import { 
+  db, 
+  artists, 
+  songs,
+  artistSongs
+} from "@repo/database";
+import { SpotifyClient } from "@repo/external-apis";
+import { spotifyCircuitBreaker } from "~/lib/services/circuit-breaker";
+import { redisCache } from "~/lib/redis/production-redis-config";
+import { ImportLogger } from "~/lib/import-logger";
 
-let _cache: RedisCache | null = null;
-function getCache() {
-  if (!_cache) _cache = new RedisCache();
-  return _cache;
-}
-
-export interface SpotifySyncJobData {
+interface SpotifySyncJobData {
   artistId: string;
   spotifyId: string;
-  syncType: 'profile' | 'albums' | 'tracks' | 'full';
-  parentJobId?: string;
+  syncType: 'profile' | 'albums' | 'tracks' | 'full' | 'features';
   options?: {
-    includeCompilations?: boolean;
-    includeAppearsOn?: boolean;
-    skipLive?: boolean;
-    skipRemixes?: boolean;
+    forceRefresh?: boolean;
+    includeFeatures?: boolean;
+    maxAlbums?: number;
+    maxTracks?: number;
   };
 }
 
-export async function processSpotifySync(job: Job<SpotifySyncJobData>) {
-  const { artistId, spotifyId, syncType, parentJobId, options } = job.data;
-  const jobId = job.id || `spotify_${artistId}_${Date.now()}`;
-  
-  try {
-    await job.log(`Starting Spotify ${syncType} sync for artist ${artistId}`);
-    await job.updateProgress(10);
-    
-    const spotify = new SpotifyClient({});
-    await spotify.authenticate();
-    
+interface SpotifySyncResult {
+  success: boolean;
+  syncType: string;
+  artistId: string;
+  artistName: string;
+  results: {
+    profileUpdated?: boolean;
+    albumsProcessed?: number;
+    tracksAdded?: number;
+    tracksUpdated?: number;
+    featuresUpdated?: number;
+  };
+  errors: string[];
+  duration: number;
+}
+
+export class SpotifySyncProcessor {
+  private static spotifyClient = new SpotifyClient();
+  private static logger = new ImportLogger("spotify-sync");
+
+  static async process(job: Job<SpotifySyncJobData>): Promise<SpotifySyncResult> {
+    const { artistId, spotifyId, syncType, options = {} } = job.data;
+    const startTime = Date.now();
+    const errors: string[] = [];
+    const result: SpotifySyncResult = {
+      success: false,
+      syncType,
+      artistId,
+      artistName: '',
+      results: {},
+      errors,
+      duration: 0,
+    };
+
+    try {
+      this.logger.info(`Starting ${syncType} sync for artist ${artistId}`, { spotifyId, options });
+      await job.updateProgress(0);
+
+      // Get artist from database
+      const artist = await db
+        .select()
+        .from(artists)
+        .where(eq(artists.id, artistId))
+        .get();
+
+      if (!artist) {
+        throw new Error(`Artist not found: ${artistId}`);
+      }
+
+      result.artistName = artist.name;
+
+      // Check cache if not forcing refresh
+      if (!options.forceRefresh) {
+        const cacheKey = `spotify:sync:${artistId}:${syncType}`;
+        const cached = await redisCache.get(cacheKey);
+        if (cached) {
+          this.logger.info(`Using cached data for ${syncType} sync`);
+          return JSON.parse(cached);
+        }
+      }
+
+      // Execute sync based on type
     switch (syncType) {
       case 'profile':
-        return await syncProfile(spotify, artistId, spotifyId, job);
-      
+          await this.syncArtistProfile(artist, spotifyId, job, result);
+          break;
       case 'albums':
-        return await syncAlbums(spotify, artistId, spotifyId, job);
-      
+          await this.syncArtistAlbums(artist, spotifyId, job, result, options);
+          break;
       case 'tracks':
-        return await syncTracks(artistId, spotifyId, job, options);
-      
+          await this.syncArtistTopTracks(artist, spotifyId, job, result);
+          break;
       case 'full':
-        return await syncFull(spotify, artistId, spotifyId, job, options);
-      
+          await this.syncFullCatalog(artist, spotifyId, job, result, options);
+          break;
+        case 'features':
+          await this.syncAudioFeatures(artist, spotifyId, job, result);
+          break;
       default:
         throw new Error(`Unknown sync type: ${syncType}`);
     }
     
-  } catch (error) {
-    console.error(`Spotify sync failed for ${artistId}:`, error);
+      result.success = true;
+      result.duration = Date.now() - startTime;
+
+      // Cache successful results
+      const cacheKey = `spotify:sync:${artistId}:${syncType}`;
+      await redisCache.setex(cacheKey, 3600, JSON.stringify(result)); // 1 hour TTL
+
+      this.logger.success(`${syncType} sync completed`, result);
+      await job.updateProgress(100);
+
+      return result;
     
-    if (parentJobId) {
-      await updateImportStatus(parentJobId, {
-        stage: "importing-songs",
-        progress: 50,
-        message: `Spotify sync failed: ${error.message}`,
-        error: error.message,
-      });
-    }
+  } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`${syncType} sync failed`, { error: errorMessage, artistId, spotifyId });
+      
+      result.errors.push(errorMessage);
+      result.success = false;
+      result.duration = Date.now() - startTime;
     
     throw error;
   }
 }
 
-async function syncProfile(
-  spotify: SpotifyClient,
-  artistId: string,
+  private static async syncArtistProfile(
+    artist: any, 
   spotifyId: string,
-  job: Job
-) {
-  await job.updateProgress(30);
-  
-  // Check cache
-  const cacheKey = `spotify:profile:${spotifyId}`;
-  let artistData = await getCache().get<any>(cacheKey);
-  
-  if (!artistData) {
-    artistData = await spotify.getArtist(spotifyId);
-    
-    if (!artistData) {
-      throw new Error(`Spotify artist not found: ${spotifyId}`);
+    job: Job, 
+    result: SpotifySyncResult
+  ): Promise<void> {
+    await job.updateProgress(10);
+
+    // Fetch artist profile from Spotify
+    const spotifyArtist = await spotifyCircuitBreaker.execute(async () => {
+      return await this.spotifyClient.getArtist(spotifyId);
+    });
+
+    if (!spotifyArtist) {
+      throw new Error('Failed to fetch artist profile from Spotify');
     }
-    
-    // Cache for 1 hour
-    await getCache().set(cacheKey, artistData, 3600);
-  }
-  
-  await job.updateProgress(60);
+
+    await job.updateProgress(50);
   
   // Update artist profile
-  const updateData = {
-    name: artistData.name,
-    imageUrl: artistData.images?.[0]?.url || null,
-    smallImageUrl: artistData.images?.[2]?.url || null,
-    genres: JSON.stringify(artistData.genres || []),
-    popularity: artistData.popularity || 0,
-    followers: artistData.followers?.total || 0,
-    externalUrls: JSON.stringify(artistData.external_urls || {}),
-    spotifyData: JSON.stringify(artistData),
-    lastSyncedAt: new Date(),
-  };
-  
   await db
     .update(artists)
-    .set(updateData)
-    .where(eq(artists.id, artistId));
+      .set({
+        name: spotifyArtist.name,
+        imageUrl: spotifyArtist.images[0]?.url || artist.imageUrl,
+        smallImageUrl: spotifyArtist.images[1]?.url || artist.smallImageUrl,
+        genres: JSON.stringify(spotifyArtist.genres),
+        popularity: spotifyArtist.popularity,
+        followers: spotifyArtist.followers.total,
+        externalUrls: JSON.stringify(spotifyArtist.external_urls),
+        lastSyncedAt: new Date(),
+      })
+      .where(eq(artists.id, artist.id));
+
+    result.results.profileUpdated = true;
+  await job.updateProgress(100);
+  }
+
+  private static async syncArtistAlbums(
+    artist: any, 
+  spotifyId: string,
+    job: Job, 
+    result: SpotifySyncResult,
+    options: any
+  ): Promise<void> {
+    await job.updateProgress(10);
+
+    const maxAlbums = options.maxAlbums || 50;
+    
+    // Fetch albums from Spotify
+    const spotifyAlbums = await spotifyCircuitBreaker.execute(async () => {
+      return await this.spotifyClient.getArtistAlbums(spotifyId, {
+        include_groups: ['album', 'single', 'compilation'],
+        market: 'US',
+        limit: maxAlbums,
+      });
+    });
+
+    if (!spotifyAlbums || spotifyAlbums.length === 0) {
+      result.results.albumsProcessed = 0;
+      return;
+    }
+
+    await job.updateProgress(30);
+
+    let albumsProcessed = 0;
+    let tracksAdded = 0;
+    let tracksUpdated = 0;
+
+    // Process albums in batches
+    const batchSize = 5;
+    for (let i = 0; i < spotifyAlbums.length; i += batchSize) {
+      const albumBatch = spotifyAlbums.slice(i, i + batchSize);
+      
+      for (const spotifyAlbum of albumBatch) {
+        try {
+          // Create or update album record
+          const [album] = await db
+            .insert(albums)
+            .values({
+              spotifyId: spotifyAlbum.id,
+              name: spotifyAlbum.name,
+              albumType: spotifyAlbum.album_type,
+              totalTracks: spotifyAlbum.total_tracks,
+              releaseDate: spotifyAlbum.release_date,
+              releaseDatePrecision: spotifyAlbum.release_date_precision,
+              imageUrl: spotifyAlbum.images[0]?.url,
+              externalUrls: JSON.stringify(spotifyAlbum.external_urls),
+              markets: JSON.stringify(spotifyAlbum.available_markets),
+            })
+            .onConflictDoUpdate({
+              target: albums.spotifyId,
+              set: {
+                name: spotifyAlbum.name,
+                totalTracks: spotifyAlbum.total_tracks,
+                imageUrl: spotifyAlbum.images[0]?.url,
+                updatedAt: new Date(),
+              },
+            })
+            .returning();
+
+          // Link album to artist
+          await db
+            .insert(artistAlbums)
+            .values({
+              artistId: artist.id,
+              albumId: album.id,
+              isPrimaryArtist: true,
+            })
+            .onConflictDoNothing();
+
+          // Get album tracks
+          const tracks = await this.spotifyClient.getAlbumTracks(spotifyAlbum.id);
+          
+          for (const track of tracks) {
+            const songResult = await this.createOrUpdateSong(track, spotifyAlbum, artist);
+            if (songResult.created) tracksAdded++;
+            if (songResult.updated) tracksUpdated++;
+          }
+
+          albumsProcessed++;
+
+        } catch (error) {
+          this.logger.warn(`Failed to process album ${spotifyAlbum.name}`, { error });
+          result.errors.push(`Album ${spotifyAlbum.name}: ${error}`);
+        }
+      }
+
+      // Update progress
+      const progress = 30 + Math.floor((i / spotifyAlbums.length) * 60);
+      await job.updateProgress(Math.min(progress, 90));
+    }
+
+    result.results.albumsProcessed = albumsProcessed;
+    result.results.tracksAdded = tracksAdded;
+    result.results.tracksUpdated = tracksUpdated;
+
+    // Update artist catalog stats
+    await this.updateArtistSongStats(artist.id);
+  await job.updateProgress(100);
+  }
+
+  private static async syncArtistTopTracks(
+    artist: any, 
+  spotifyId: string,
+  job: Job,
+    result: SpotifySyncResult
+  ): Promise<void> {
+  await job.updateProgress(10);
+
+    // Fetch top tracks from Spotify
+    const topTracks = await spotifyCircuitBreaker.execute(async () => {
+      return await this.spotifyClient.getArtistTopTracks(spotifyId, 'US');
+    });
+
+    if (!topTracks || topTracks.length === 0) {
+      result.results.tracksAdded = 0;
+      return;
+    }
+
+    await job.updateProgress(30);
+
+    let tracksAdded = 0;
+    let tracksUpdated = 0;
+
+    // Process tracks
+    for (const track of topTracks) {
+      try {
+        // Find album info
+        const albumInfo = track.album || {
+          id: 'unknown',
+          name: 'Unknown Album',
+          images: [],
+          release_date: null,
+          album_type: 'single',
+        };
+
+        const songResult = await this.createOrUpdateSong(track, albumInfo, artist);
+        if (songResult.created) tracksAdded++;
+        if (songResult.updated) tracksUpdated++;
+
+      } catch (error) {
+        this.logger.warn(`Failed to process track ${track.name}`, { error });
+        result.errors.push(`Track ${track.name}: ${error}`);
+      }
+    }
+
+    result.results.tracksAdded = tracksAdded;
+    result.results.tracksUpdated = tracksUpdated;
   
   await job.updateProgress(100);
-  await job.log(`Profile sync completed for ${artistData.name}`);
-  
-  return {
-    success: true,
-    artistId,
-    spotifyId,
-    name: artistData.name,
-    popularity: artistData.popularity,
-    followers: artistData.followers?.total,
-  };
-}
+  }
 
-async function syncAlbums(
-  spotify: SpotifyClient,
-  artistId: string,
+  private static async syncFullCatalog(
+    artist: any, 
   spotifyId: string,
-  job: Job
-) {
-  await job.updateProgress(20);
+  job: Job,
+    result: SpotifySyncResult,
+    options: any
+  ): Promise<void> {
+    // Sync profile first
+    await this.syncArtistProfile(artist, spotifyId, job, result);
+    await job.updateProgress(20);
+
+    // Then sync albums and tracks
+    await this.syncArtistAlbums(artist, spotifyId, job, result, options);
+    await job.updateProgress(80);
+
+    // Optionally sync audio features
+    if (options.includeFeatures) {
+      await this.syncAudioFeatures(artist, spotifyId, job, result);
+    }
   
-  const albums: any[] = [];
-  const albumTypes = ['album', 'single'];
-  let processed = 0;
-  
-  for (const albumType of albumTypes) {
-    let offset = 0;
-    const limit = 50;
-    let hasMore = true;
-    
-    while (hasMore) {
-      const response = await spotify.getArtistAlbums(spotifyId, {
-        include_groups: albumType as any,
-        limit,
-        offset,
-        market: 'US',
-      });
+  await job.updateProgress(100);
+  }
+
+  private static async syncAudioFeatures(
+    artist: any,
+    spotifyId: string,
+    job: Job,
+    result: SpotifySyncResult
+  ): Promise<void> {
+    // Get all songs for this artist that have Spotify IDs
+    const artistSongs = await db
+      .select({
+        songId: songs.id,
+        spotifyId: songs.spotifyId,
+      })
+      .from(songs)
+      .innerJoin(artistSongs, eq(songs.id, artistSongs.songId))
+      .where(eq(artistSongs.artistId, artist.id))
+      .limit(100); // Spotify API limit
+
+    if (artistSongs.length === 0) {
+      result.results.featuresUpdated = 0;
+      return;
+    }
+
+    const trackIds = artistSongs
+      .map(s => s.spotifyId)
+      .filter(Boolean) as string[];
+
+    if (trackIds.length === 0) {
+      result.results.featuresUpdated = 0;
+      return;
+    }
+
+    // Fetch audio features in batches of 100
+    let featuresUpdated = 0;
+    for (let i = 0; i < trackIds.length; i += 100) {
+      const batch = trackIds.slice(i, i + 100);
       
-      if (response?.items && response.items.length > 0) {
-        albums.push(...response.items);
-        offset += response.items.length;
-        hasMore = response.items.length === limit;
+      try {
+        const features = await this.spotifyClient.getAudioFeatures(batch);
         
-        processed += response.items.length;
-        const progress = Math.min(20 + (processed / 200) * 60, 80);
-        await job.updateProgress(progress);
-      } else {
-        hasMore = false;
+        for (const feature of features) {
+          if (!feature) continue;
+
+          await db
+            .update(songs)
+            .set({
+              audioFeatures: JSON.stringify({
+                danceability: feature.danceability,
+                energy: feature.energy,
+                key: feature.key,
+                loudness: feature.loudness,
+                mode: feature.mode,
+                speechiness: feature.speechiness,
+                acousticness: feature.acousticness,
+                instrumentalness: feature.instrumentalness,
+                liveness: feature.liveness,
+                valence: feature.valence,
+                tempo: feature.tempo,
+                timeSignature: feature.time_signature,
+              }),
+              updatedAt: new Date(),
+            })
+            .where(eq(songs.spotifyId, feature.id));
+
+          featuresUpdated++;
+        }
+      } catch (error) {
+        this.logger.warn('Failed to fetch audio features batch', { error });
+        result.errors.push(`Audio features batch: ${error}`);
       }
-      
-      // Rate limiting
-      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    result.results.featuresUpdated = featuresUpdated;
+  }
+
+  private static async createOrUpdateSong(
+    track: any,
+    album: any,
+    artist: any
+  ): Promise<{ created: boolean; updated: boolean }> {
+    // Check if song already exists
+    const existingSong = await db
+      .select({ id: songs.id })
+      .from(songs)
+      .where(eq(songs.spotifyId, track.id))
+      .get();
+
+    if (existingSong) {
+      // Update existing song
+      await db
+        .update(songs)
+        .set({
+          popularity: track.popularity,
+          previewUrl: track.preview_url,
+          updatedAt: new Date(),
+        })
+        .where(eq(songs.id, existingSong.id));
+
+      return { created: false, updated: true };
+    }
+
+    // Create new song
+    const [song] = await db
+      .insert(songs)
+      .values({
+        spotifyId: track.id,
+        name: track.name,
+        artist: artist.name,
+        albumName: album.name,
+        albumId: album.id,
+        trackNumber: track.track_number,
+        discNumber: track.disc_number || 1,
+        albumType: album.album_type,
+        albumArtUrl: album.images?.[0]?.url,
+        releaseDate: album.release_date,
+        durationMs: track.duration_ms,
+        popularity: track.popularity || 0,
+        previewUrl: track.preview_url,
+        spotifyUri: track.uri,
+        externalUrls: JSON.stringify(track.external_urls),
+        isExplicit: track.explicit || false,
+        isPlayable: !track.restrictions,
+        isLive: this.isLiveTrack(track.name),
+        isRemix: this.isRemixTrack(track.name),
+      })
+      .returning();
+
+    // Link song to artist
+    await db
+      .insert(artistSongs)
+      .values({
+        artistId: artist.id,
+        songId: song.id,
+        isPrimaryArtist: true,
+      })
+      .onConflictDoNothing();
+
+    return { created: true, updated: false };
+  }
+
+  private static async updateArtistSongStats(artistId: string): Promise<void> {
+    const stats = await db
+      .select({
+        totalSongs: sql<number>`COUNT(DISTINCT ${songs.id})`,
+        totalAlbums: sql<number>`COUNT(DISTINCT ${songs.albumId})`,
+      })
+      .from(songs)
+      .innerJoin(artistSongs, eq(songs.id, artistSongs.songId))
+      .where(eq(artistSongs.artistId, artistId))
+      .get();
+
+    if (stats) {
+      await db
+        .update(artists)
+        .set({
+          totalSongs: stats.totalSongs,
+          totalAlbums: stats.totalAlbums,
+          songCatalogSyncedAt: new Date(),
+        })
+        .where(eq(artists.id, artistId));
     }
   }
-  
-  // Update artist with album count
-  await db
-    .update(artists)
-    .set({
-      totalAlbums: albums.length,
-      lastSyncedAt: new Date(),
-    })
-    .where(eq(artists.id, artistId));
-  
-  await job.updateProgress(100);
-  await job.log(`Album sync completed: ${albums.length} albums found`);
-  
-  return {
-    success: true,
-    artistId,
-    totalAlbums: albums.length,
-    albums: albums.map(a => ({
-      id: a.id,
-      name: a.name,
-      type: a.album_type,
-      releaseDate: a.release_date,
-    })),
-  };
-}
 
-async function syncTracks(
-  artistId: string,
-  spotifyId: string,
-  job: Job,
-  options?: any
-) {
-  const catalogSync = new SpotifyCompleteCatalog();
-  
-  await job.updateProgress(10);
-  await job.log("Starting complete catalog sync...");
-  
-  const result = await catalogSync.importEntireDiscography(spotifyId, {
-    ...options,
-    onProgress: async (message: string, progress: number) => {
-      await job.updateProgress(Math.min(progress, 95));
-      await job.log(message);
-    },
-  });
-  
-  // Update artist stats
-  await db
-    .update(artists)
-    .set({
-      totalSongs: result.totalSongs,
-      totalAlbums: result.totalAlbums,
-      songCatalogSyncedAt: new Date(),
-      lastFullSyncAt: new Date(),
-    })
-    .where(eq(artists.id, artistId));
-  
-  await job.updateProgress(100);
-  await job.log(`Track sync completed: ${result.totalSongs} tracks imported`);
-  
-  return {
-    success: true,
-    artistId,
-    ...result,
-  };
-}
-
-async function syncFull(
-  spotify: SpotifyClient,
-  artistId: string,
-  spotifyId: string,
-  job: Job,
-  options?: any
-) {
-  await job.log("Starting full Spotify sync...");
-  
-  // Step 1: Sync profile (20%)
-  await job.updateProgress(5);
-  const profileResult = await syncProfile(spotify, artistId, spotifyId, job);
-  
-  // Step 2: Sync albums (40%)
-  await job.updateProgress(25);
-  const albumsResult = await syncAlbums(spotify, artistId, spotifyId, job);
-  
-  // Step 3: Sync tracks (100%)
-  await job.updateProgress(45);
-  const tracksResult = await syncTracks(artistId, spotifyId, job, options);
-  
-  await job.updateProgress(100);
-  await job.log("Full Spotify sync completed successfully!");
-  
-  return {
-    success: true,
-    artistId,
-    profile: profileResult,
-    albums: albumsResult,
-    tracks: tracksResult,
-  };
-}
-
-export async function processSpotifyCatalog(job: Job<{
-  artistId: string;
-  spotifyId: string;
-  deep?: boolean;
-  parentJobId?: string;
-}>) {
-  const { artistId, spotifyId, deep, parentJobId } = job.data;
-  
-  try {
-    await job.log(`Starting ${deep ? 'deep' : 'standard'} catalog sync for artist ${artistId}`);
+  private static isLiveTrack(name: string): boolean {
+    const livePatterns = [
+      /\b(live|Live|LIVE)\b/,
+      /\b(acoustic|Acoustic)\b/,
+      /\b(unplugged|Unplugged)\b/,
+      /\b(concert|Concert)\b/,
+      /\b(session|Session)\b/,
+      /\b(version|Version)\b.*\b(live|Live)\b/,
+      /\(.*live.*\)/i,
+      /\[.*live.*\]/i,
+      /- live/i,
+    ];
     
-    const catalogSync = new SpotifyCompleteCatalog();
+    return livePatterns.some(pattern => pattern.test(name));
+  }
+
+  private static isRemixTrack(name: string): boolean {
+    const remixPatterns = [
+      /\b(remix|Remix|REMIX)\b/,
+      /\b(edit|Edit|EDIT)\b/,
+      /\b(rework|Rework|REWORK)\b/,
+      /\b(mix|Mix|MIX)\b/,
+      /\(.*remix.*\)/i,
+      /\[.*remix.*\]/i,
+    ];
     
-    const result = await catalogSync.importEntireDiscography(spotifyId, {
-      includeCompilations: deep,
-      includeAppearsOn: deep,
-      skipLive: !deep,
-      skipRemixes: !deep,
-      onProgress: async (message: string, progress: number) => {
-        await job.updateProgress(progress);
-        await job.log(message);
-        
-        if (parentJobId) {
-          await updateImportStatus(parentJobId, {
-            stage: "importing-songs",
-            progress: 50 + (progress / 2), // 50-100% of parent job
-            message: `Syncing catalog: ${message}`,
-          });
+    return remixPatterns.some(pattern => pattern.test(name));
+  }
+
+  private static async processInBatches<T, R>(
+    items: T[],
+    processor: (item: T) => Promise<R>,
+    batchSize: number = 5,
+    delayMs: number = 100
+  ): Promise<R[]> {
+    const results: R[] = [];
+    
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize);
+      const batchResults = await Promise.allSettled(
+        batch.map(item => processor(item))
+      );
+      
+      for (const result of batchResults) {
+        if (result.status === 'fulfilled') {
+          results.push(result.value);
         }
-      },
-    });
+      }
+      
+      if (i + batchSize < items.length) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
     
-    await job.log(`Catalog sync completed: ${result.totalSongs} songs imported`);
-    
-    return result;
-    
-  } catch (error) {
-    console.error(`Catalog sync failed for ${artistId}:`, error);
-    throw error;
+    return results;
   }
 }
+
+export default SpotifySyncProcessor;

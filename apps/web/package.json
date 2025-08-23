@@ -14,7 +14,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "analyze": "ANALYZE=true next build"
+    "analyze": "ANALYZE=true next build",
+    "validate:env": "tsx scripts/validate-environment.ts",
+    "test:full-integration": "tsx scripts/test-integration.ts",
+    "queue:start": "tsx scripts/start-queue-workers.ts",
+    "db:migrate": "tsx scripts/run-migrations.ts"
   },
   "dependencies": {
     "@arcjet/next": "1.0.0-beta.8",
