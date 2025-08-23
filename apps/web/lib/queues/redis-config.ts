@@ -5,18 +5,36 @@
 import Redis from 'ioredis';
 import { ConnectionOptions } from 'bullmq';
 
-// Redis configuration based on environment
+// Redis configuration based on environment - supports Upstash
 const getRedisUrl = (): string => {
-  if (process.env['NODE_ENV'] === 'production') {
-    const redisUrl = process.env['REDIS_URL'];
-    if (!redisUrl) {
-      throw new Error('REDIS_URL is required in production');
+  // Check for direct Redis URL first
+  if (process.env['REDIS_URL']) {
+    return process.env['REDIS_URL'];
+  }
+  
+  // Check for Upstash REST credentials and convert to Redis URL
+  const upstashUrl = process.env['UPSTASH_REDIS_REST_URL'];
+  const upstashToken = process.env['UPSTASH_REDIS_REST_TOKEN'];
+  
+  if (upstashUrl && upstashToken) {
+    // Convert Upstash REST URL to Redis protocol URL
+    // Example: https://xxx.upstash.io -> redis://default:token@xxx.upstash.io:6379
+    try {
+      const url = new URL(upstashUrl);
+      return `redis://default:${upstashToken}@${url.hostname}:6379`;
+    } catch (error) {
+      console.error('Failed to parse Upstash URL:', error);
+      throw new Error('Invalid UPSTASH_REDIS_REST_URL format');
     }
-    return redisUrl;
+  }
+  
+  // Production fallback
+  if (process.env['NODE_ENV'] === 'production') {
+    throw new Error('Redis configuration required: set REDIS_URL or UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN');
   }
   
   // Development defaults
-  return process.env['REDIS_URL'] || 'redis://localhost:6379';
+  return 'redis://localhost:6379';
 };
 
 // Parse Redis URL into connection options
@@ -188,7 +206,7 @@ export async function getRedisHealthCheck(): Promise<{
   }
 }
 
-// Configuration validation
+// Configuration validation - supports both Redis URL and Upstash
 export function validateRedisConfig(): {
   valid: boolean;
   issues: string[];
@@ -197,17 +215,24 @@ export function validateRedisConfig(): {
   const issues: string[] = [];
   const recommendations: string[] = [];
   
+  const hasRedisUrl = !!process.env['REDIS_URL'];
+  const hasUpstash = !!(process.env['UPSTASH_REDIS_REST_URL'] && process.env['UPSTASH_REDIS_REST_TOKEN']);
+  
   if (process.env['NODE_ENV'] === 'production') {
-    if (!process.env['REDIS_URL']) {
-      issues.push('REDIS_URL is not set for production');
+    if (!hasRedisUrl && !hasUpstash) {
+      issues.push('Redis configuration required: set REDIS_URL or (UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN)');
     }
     
-    if (!(process.env['REDIS_URL'] || '').includes('rediss://')) {
+    if (hasUpstash && !process.env['UPSTASH_REDIS_REST_TOKEN']) {
+      issues.push('UPSTASH_REDIS_REST_URL set but UPSTASH_REDIS_REST_TOKEN missing');
+    }
+    
+    if (hasRedisUrl && !(process.env['REDIS_URL'] || '').includes('rediss://')) {
       recommendations.push('Consider using TLS (rediss://) for production Redis');
     }
     
-    if (!process.env['REDIS_CLUSTER']) {
-      recommendations.push('Consider using Redis Cluster for high availability');
+    if (hasUpstash) {
+      recommendations.push('Upstash Redis detected - excellent choice for production');
     }
   }
   

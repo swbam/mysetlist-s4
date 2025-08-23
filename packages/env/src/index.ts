@@ -25,6 +25,10 @@ export const env = createEnv({
     REDIS_PORT: z.preprocess((v) => (v ? Number(v) : undefined), z.number().optional()),
     REDIS_USERNAME: z.string().optional(),
     REDIS_PASSWORD: z.string().optional(),
+    
+    // Upstash Redis (alternative to REDIS_URL)
+    UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+    UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
     // Email
     RESEND_API_KEY: z.string().optional(),
@@ -70,6 +74,8 @@ export const env = createEnv({
     REDIS_PORT: process.env['REDIS_PORT'] as any,
     REDIS_USERNAME: process.env['REDIS_USERNAME'],
     REDIS_PASSWORD: process.env['REDIS_PASSWORD'],
+    UPSTASH_REDIS_REST_URL: process.env['UPSTASH_REDIS_REST_URL'],
+    UPSTASH_REDIS_REST_TOKEN: process.env['UPSTASH_REDIS_REST_TOKEN'],
     RESEND_API_KEY: process.env['RESEND_API_KEY'],
     CRON_SECRET: process.env['CRON_SECRET'],
     JWT_SECRET: process.env['JWT_SECRET'],

@@ -1,7 +1,7 @@
 import { Redis } from "ioredis";
 import { ConnectionOptions } from "bullmq";
 
-// Build config from environment (supports standard REDIS_URL or discrete settings)
+// Build config from environment (supports REDIS_URL, Upstash, or discrete settings)
 const {
   REDIS_URL,
   REDIS_HOST,
@@ -9,6 +9,8 @@ const {
   REDIS_USERNAME,
   REDIS_PASSWORD,
   REDIS_TLS,
+  UPSTASH_REDIS_REST_URL,
+  UPSTASH_REDIS_REST_TOKEN,
 } = process.env as Record<string, string | undefined>;
 
 const parsedPort = REDIS_PORT ? parseInt(REDIS_PORT, 10) : undefined;
@@ -22,12 +24,25 @@ const baseOptions = {
   lazyConnect: true as any,
 };
 
-// ioredis-compatible factory
+// ioredis-compatible factory with Upstash support
 export const createRedisClient = () => {
+  // Direct Redis URL (preferred for BullMQ)
   if (REDIS_URL) {
     return new Redis(REDIS_URL, baseOptions as any);
   }
+  
+  // Convert Upstash REST URL to Redis protocol if available
+  if (UPSTASH_REDIS_REST_URL && UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      const url = new URL(UPSTASH_REDIS_REST_URL);
+      const redisUrl = `redis://default:${UPSTASH_REDIS_REST_TOKEN}@${url.hostname}:6379`;
+      return new Redis(redisUrl, baseOptions as any);
+    } catch (error) {
+      console.error('Failed to parse Upstash URL for Redis client:', error);
+    }
+  }
 
+  // Fallback to discrete settings
   return new Redis(
     {
       host: REDIS_HOST || "127.0.0.1",
@@ -40,17 +55,34 @@ export const createRedisClient = () => {
   );
 };
 
-// BullMQ connection configuration (derived from same env)
-export const bullMQConnection: ConnectionOptions = REDIS_URL
-  ? { url: REDIS_URL, ...(baseOptions as any) }
-  : {
-      host: REDIS_HOST || "127.0.0.1",
-      port: parsedPort || 6379,
-      username: REDIS_USERNAME,
-      password: REDIS_PASSWORD,
-      tls: REDIS_TLS === "true" ? {} : undefined,
-      ...(baseOptions as any),
-    } as any;
+// BullMQ connection configuration with Upstash support
+export const bullMQConnection: ConnectionOptions = (() => {
+  // Use direct Redis URL if available (best for BullMQ)
+  if (REDIS_URL) {
+    return { url: REDIS_URL, ...(baseOptions as any) };
+  }
+  
+  // Convert Upstash to Redis URL if available
+  if (UPSTASH_REDIS_REST_URL && UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      const url = new URL(UPSTASH_REDIS_REST_URL);
+      const redisUrl = `redis://default:${UPSTASH_REDIS_REST_TOKEN}@${url.hostname}:6379`;
+      return { url: redisUrl, ...(baseOptions as any) };
+    } catch (error) {
+      console.error('Failed to parse Upstash URL for BullMQ:', error);
+    }
+  }
+  
+  // Fallback to discrete settings
+  return {
+    host: REDIS_HOST || "127.0.0.1",
+    port: parsedPort || 6379,
+    username: REDIS_USERNAME,
+    password: REDIS_PASSWORD,
+    tls: REDIS_TLS === "true" ? {} : undefined,
+    ...(baseOptions as any),
+  } as any;
+})();
 
 // Singleton Redis client for pub/sub
 let pubClient: Redis | null = null;

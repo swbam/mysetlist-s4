@@ -30,7 +30,7 @@ export interface RedisConfig {
   tls?: any;
 }
 
-// Build Redis configuration from environment
+// Build Redis configuration from environment with Upstash support
 function buildRedisConfig(): RedisConfig {
   const { 
     REDIS_URL,
@@ -40,10 +40,12 @@ function buildRedisConfig(): RedisConfig {
     REDIS_PASSWORD,
     REDIS_TLS,
     REDIS_DB,
-    NODE_ENV
+    NODE_ENV,
+    UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN
   } = process.env;
 
-  // Parse Redis URL if provided
+  // Parse Redis URL if provided (highest priority)
   if (REDIS_URL) {
     const url = new URL(REDIS_URL);
     return {
@@ -78,12 +80,50 @@ function buildRedisConfig(): RedisConfig {
     };
   }
 
+  // Convert Upstash REST URL to Redis protocol if available
+  if (UPSTASH_REDIS_REST_URL && UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      const url = new URL(UPSTASH_REDIS_REST_URL);
+      return {
+        host: url.hostname,
+        port: 6379,
+        password: UPSTASH_REDIS_REST_TOKEN,
+        username: 'default',
+        db: 0,
+        maxRetriesPerRequest: null,
+        enableReadyCheck: false,
+        lazyConnect: true,
+        family: 4,
+        keepAlive: true,
+        connectTimeout: 10000,
+        commandTimeout: 5000,
+        retryDelayOnFailover: 100,
+        reconnectOnError: (err) => {
+          console.log("Redis reconnect on error:", err.message);
+          return err.message.includes("READONLY");
+        },
+        retryStrategy: (times) => {
+          if (times > 10) {
+            console.error("Redis connection failed after 10 retries");
+            return undefined;
+          }
+          const delay = Math.min(times * 100, 3000);
+          console.log(`Retrying Redis connection in ${delay}ms...`);
+          return delay;
+        },
+        tls: {} // Upstash requires TLS
+      };
+    } catch (error) {
+      console.error('Failed to parse Upstash URL for production Redis:', error);
+    }
+  }
+
   // Fallback to individual environment variables
   return {
     host: REDIS_HOST || (NODE_ENV === 'production' ? 'redis' : 'localhost'),
     port: parseInt(REDIS_PORT || '6379'),
-    username: REDIS_USERNAME,
-    password: REDIS_PASSWORD,
+    ...(REDIS_USERNAME && { username: REDIS_USERNAME }),
+    ...(REDIS_PASSWORD && { password: REDIS_PASSWORD }),
     db: parseInt(REDIS_DB || '0'),
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
@@ -102,7 +142,7 @@ function buildRedisConfig(): RedisConfig {
       }
       return Math.min(times * 100, 3000);
     },
-    tls: REDIS_TLS === 'true' ? {} : undefined
+    ...(REDIS_TLS === 'true' && { tls: {} })
   };
 }
 
