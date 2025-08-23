@@ -7,7 +7,7 @@ import { ConnectionOptions } from 'bullmq';
 
 // Redis configuration based on environment
 const getRedisUrl = (): string => {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env['NODE_ENV'] === 'production') {
     const redisUrl = process.env['REDIS_URL'];
     if (!redisUrl) {
       throw new Error('REDIS_URL is required in production');
@@ -44,7 +44,7 @@ const parseRedisUrl = (url: string): any => {
       },
       
       // Performance settings
-      enableOfflineQueue: (process.env.NODE_ENV !== 'production') as any,
+      enableOfflineQueue: (process.env['NODE_ENV'] !== 'production') as any,
       connectTimeout: 10000,
       disconnectTimeout: 2000,
       commandTimeout: 5000,
@@ -197,7 +197,7 @@ export function validateRedisConfig(): {
   const issues: string[] = [];
   const recommendations: string[] = [];
   
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env['NODE_ENV'] === 'production') {
     if (!process.env['REDIS_URL']) {
       issues.push('REDIS_URL is not set for production');
     }

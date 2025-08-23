@@ -1,7 +1,7 @@
 import { artists, db } from "@repo/database";
 import { initiateImport } from "@repo/external-apis/src/services/orchestrators/ArtistImportOrchestrator";
 import { desc, sql } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import {
   createErrorResponse,
   createSuccessResponse,

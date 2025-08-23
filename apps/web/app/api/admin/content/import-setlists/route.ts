@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize Setlist.fm client
-    const setlistfmApiKey = process.env.SETLISTFM_API_KEY;
+    const setlistfmApiKey = process.env['SETLISTFM_API_KEY'];
     if (!setlistfmApiKey) {
       return NextResponse.json(
         { error: "Setlist.fm API key not configured" },

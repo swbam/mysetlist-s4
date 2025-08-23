@@ -1,6 +1,6 @@
 import { artists, db } from "@repo/database";
 import { desc, sql, and, lt, or, isNull } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import {
   createErrorResponse,
   createSuccessResponse,

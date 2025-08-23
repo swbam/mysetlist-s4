@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import {
@@ -56,10 +56,10 @@ async function handleTrendingPipeline() {
   
   try {
     // Trigger existing trending sync endpoint
-    const trendingResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3001'}/api/cron/sync-trending`, {
+    const trendingResponse = await fetch(`${process.env['VERCEL_URL'] || 'http://localhost:3001'}/api/cron/sync-trending`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+        'Authorization': `Bearer ${process.env['CRON_SECRET']}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -124,10 +124,10 @@ async function handleSyncPipeline() {
   
   try {
     // Trigger artist sync with batch processing
-    const syncResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3001'}/api/cron/trending-artist-sync`, {
+    const syncResponse = await fetch(`${process.env['VERCEL_URL'] || 'http://localhost:3001'}/api/cron/trending-artist-sync`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+        'Authorization': `Bearer ${process.env['CRON_SECRET']}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -237,10 +237,10 @@ async function handleMaintenancePipeline() {
 
     // 4. Cache cleanup
     try {
-      const cacheResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3001'}/api/admin/cache/cleanup`, {
+      const cacheResponse = await fetch(`${process.env['VERCEL_URL'] || 'http://localhost:3001'}/api/admin/cache/cleanup`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+          'Authorization': `Bearer ${process.env['CRON_SECRET']}`,
         },
       });
       

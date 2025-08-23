@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+// NextResponse removed - unused import
 import { updateSession } from "./middleware/auth";
 import { securityMiddleware } from "./middleware/security";
 

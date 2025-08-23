@@ -1,7 +1,7 @@
 import { artists, db, shows } from "@repo/database";
 import { ShowSyncService } from "@repo/external-apis";
 import { desc, sql } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import {
   createErrorResponse,
   createSuccessResponse,
