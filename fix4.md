@@ -1865,7 +1865,7 @@ import { ArtistImportOrchestrator } from '@/lib/services/orchestrators/artist-im
 import { queueManager, QueueName } from '@/lib/queues/queue-manager';
 
 export async function GET(
-  request: NextRequest,
+ _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const artistId = params.id;
@@ -1941,7 +1941,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 
 export async function GET(
-  request: NextRequest,
+ _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -2129,7 +2129,7 @@ import { headers } from 'next/headers';
 import { calculateTrending } from '@/lib/jobs/trending-calculator';
 import { syncActiveArtists } from '@/lib/jobs/sync-active-artists';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // Verify cron secret
   const authHeader = headers().get('authorization');
   const cronSecret = process.env.CRON_SECRET;

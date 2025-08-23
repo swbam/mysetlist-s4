@@ -20,7 +20,7 @@ const authEndpointLimiters = new Map([
  * Apply security middleware to API routes
  */
 export async function applySecurityMiddleware(
-  request: NextRequest,
+ _request: NextRequest,
 ): Promise<Response | null> {
   const pathname = request.nextUrl.pathname;
 

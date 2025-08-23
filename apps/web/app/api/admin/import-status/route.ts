@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, importStatus, artists } from "@repo/database";
 import { eq, desc, or } from "drizzle-orm";
-import { like } from "drizzle-orm";
 import { createClient } from "~/lib/supabase/server";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Check admin authorization
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user: _user } } = await supabase.auth.getUser();
     
     // For now, allow all authenticated users (you can add admin check later)
     // if (!user) {

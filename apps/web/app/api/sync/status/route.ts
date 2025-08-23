@@ -5,7 +5,7 @@ import { type NextRequest, NextResponse } from "next/server";
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const artistId = searchParams.get("artistId");

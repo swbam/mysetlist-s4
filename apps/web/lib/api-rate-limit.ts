@@ -88,7 +88,7 @@ export const voteRateLimiter = createRateLimiter({
 
 // Helper to get identifier from request (user ID or IP)
 export function getApiIdentifier(
-  request: NextRequest,
+ _request: NextRequest,
   userId?: string,
 ): string {
   // Prefer user ID if available
@@ -136,7 +136,7 @@ export function createRateLimitResponse(
 
 // Middleware helper for API routes
 export async function apiRateLimitMiddleware(
-  request: NextRequest,
+ _request: NextRequest,
   rateLimiter: ReturnType<typeof createRateLimiter>,
   identifier?: string,
 ): Promise<Response | null> {

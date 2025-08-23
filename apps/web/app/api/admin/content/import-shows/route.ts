@@ -103,7 +103,9 @@ export async function POST(request: NextRequest) {
           }
 
           // Import show
-          const showDate = event.dates?.start?.dateTime || event.dates?.start?.localDate;
+          const localDate = event.dates?.start?.localDate;
+          const localTime = event.dates?.start?.localTime;
+          const showDate = localTime ? `${localDate}T${localTime}` : localDate;
           const { error: showError } = await supabase
             .from("shows")
             .insert({

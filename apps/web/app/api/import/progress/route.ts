@@ -9,7 +9,7 @@ import { createServiceClient } from '~/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const jobId = searchParams.get('jobId');
   const artistId = searchParams.get('artistId');

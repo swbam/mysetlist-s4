@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tmAttractionId = searchParams.get("tmAttractionId");
   const spotifyId = searchParams.get("spotifyId");

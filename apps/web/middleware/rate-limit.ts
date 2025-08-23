@@ -5,7 +5,7 @@ import { createRateLimiter } from "@repo/rate-limit";
 const limiter = createRateLimiter({ limit: 1000, window: "1 m" });
 
 export async function rateLimitMiddleware(
-  request: NextRequest,
+ _request: NextRequest,
   opts?: { maxRequests?: number; windowSeconds?: number },
 ) {
   const ip =

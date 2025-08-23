@@ -5,7 +5,7 @@ import { rateLimitMiddleware } from "~/middleware/rate-limit";
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // Apply rate limiting
   const rateLimitResult = await rateLimitMiddleware(request);
   if (rateLimitResult) {

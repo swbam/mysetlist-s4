@@ -775,7 +775,7 @@ import { db } from "@repo/database";
 import { artists, shows, venues, songs } from "@repo/database/schema";
 import { ilike, or, sql } from "drizzle-orm";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q");
   const type = searchParams.get("type"); // 'artist', 'show', 'venue', 'all'

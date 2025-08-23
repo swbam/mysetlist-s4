@@ -149,7 +149,7 @@ The logger automatically:
 ```typescript
 import { logger } from "@/lib/logger";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     logger.info("API endpoint called", {
       action: "get-data",

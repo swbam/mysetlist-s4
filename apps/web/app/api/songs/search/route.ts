@@ -7,7 +7,7 @@ import { type NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 // GET method for searching songs
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q") || searchParams.get("search");

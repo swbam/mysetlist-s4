@@ -8,7 +8,7 @@ import { createServiceClient } from "~/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 // GET method for fetching songs
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const page = Number.parseInt(searchParams.get("page") || "1");

@@ -25,7 +25,7 @@ interface SearchResult {
 const searchCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 60000; // 60 seconds
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // Apply rate limiting only in production
   if (process.env['NODE_ENV'] === "production") {
     const rateLimitResult = await rateLimitMiddleware(request);

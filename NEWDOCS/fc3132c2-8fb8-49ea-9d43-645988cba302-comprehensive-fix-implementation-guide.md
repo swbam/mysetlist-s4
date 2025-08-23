@@ -732,7 +732,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   return POST(request);
 }
 ```
@@ -904,7 +904,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   return POST(request);
 }
 ```
@@ -1018,7 +1018,7 @@ import { Redis } from "ioredis";
 const redis = new Redis(process.env.REDIS_URL!);
 
 export async function GET(
-  request: NextRequest,
+ _request: NextRequest,
   { params }: { params: { jobId: string } }
 ) {
   const jobId = params.jobId;

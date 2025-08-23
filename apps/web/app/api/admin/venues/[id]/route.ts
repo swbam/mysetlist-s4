@@ -2,7 +2,7 @@ import { createClient } from "~/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: any,
 ) {
   try {

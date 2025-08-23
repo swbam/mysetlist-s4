@@ -52,7 +52,7 @@ export async function getCSRFToken(): Promise<string> {
  * Validate CSRF token from request
  */
 export async function validateCSRFToken(
-  request: NextRequest,
+ _request: NextRequest,
 ): Promise<boolean> {
   // Skip CSRF validation for GET requests
   if (request.method === "GET") {
@@ -90,7 +90,7 @@ export async function validateCSRFToken(
  * CSRF protection middleware for API routes
  */
 export async function csrfProtection(
-  request: NextRequest,
+ _request: NextRequest,
 ): Promise<Response | null> {
   // Skip CSRF for public endpoints
   const publicEndpoints = ["/api/health", "/api/search", "/api/trending"];

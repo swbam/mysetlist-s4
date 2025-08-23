@@ -137,7 +137,7 @@ const detectSuspiciousActivity = (request: NextRequest): boolean => {
 
 // Main security middleware
 export async function securityMiddleware(
-  request: NextRequest,
+ _request: NextRequest,
 ): Promise<NextResponse | null> {
   const response = NextResponse.next();
   const pathname = request.nextUrl.pathname;

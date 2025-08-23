@@ -56,7 +56,7 @@ export async function checkRateLimit(
 
 // Middleware helper for auth routes
 export async function authRateLimitMiddleware(
-  request: NextRequest,
+ _request: NextRequest,
   rateLimiter: ReturnType<typeof createRateLimiter>,
 ): Promise<Response | null> {
   const identifier = getIdentifier(request);

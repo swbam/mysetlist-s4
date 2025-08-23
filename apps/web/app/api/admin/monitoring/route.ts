@@ -4,7 +4,7 @@ import { createClient } from "~/lib/supabase/server";
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const supabase = await createClient();
 
