@@ -39,7 +39,7 @@ interface LiveTrendingResponse {
   };
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   // Apply rate limiting - more frequent for live updates
   const rateLimitResult = await rateLimitMiddleware(request, {
     maxRequests: 120,

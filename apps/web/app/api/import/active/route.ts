@@ -8,7 +8,7 @@ import { createServiceClient } from '~/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Verify authentication
     const supabase = createServiceClient();

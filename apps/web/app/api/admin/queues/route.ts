@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 /**
  * GET /api/admin/queues - Get queue statistics and health
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Check authorization (admin only)
     const authHeader = request.headers.get("authorization");

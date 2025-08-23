@@ -13,7 +13,7 @@ let initializationPromise: Promise<any> | null = null;
  * GET /api/workers/init - Initialize BullMQ workers
  * This should be called once when the application starts
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Check if already initialized
     if (isInitialized) {

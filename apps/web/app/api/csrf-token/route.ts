@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  * Generates secure CSRF tokens for form submissions and API calls
  * Tokens are bound to user sessions and have expiration times
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   // Apply rate limiting - more lenient for CSRF token requests
   const rateLimitResult = await rateLimitMiddleware(request, {
     maxRequests: 30,

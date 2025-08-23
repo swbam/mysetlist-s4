@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  * Handles 3 autonomous pipelines: trending, sync, maintenance
  * Replaces 15+ separate cron jobs with optimized batch processing
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Authenticate autonomous sync request
     await requireCronAuth();

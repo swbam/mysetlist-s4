@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, importLogs, artists } from "@repo/database";
-import { eq, desc, and, or } from "drizzle-orm";
-import { like } from "drizzle-orm";
+import { eq, desc, and, or, like } from "drizzle-orm";
 import { createClient } from "~/lib/supabase/server";
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Check admin authorization
     const supabase = await createClient();

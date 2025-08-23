@@ -3,7 +3,7 @@ import { db, importStatus, artists } from "@repo/database";
 import { eq, desc, or } from "drizzle-orm";
 import { createClient } from "~/lib/supabase/server";
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Check admin authorization
     const supabase = await createClient();

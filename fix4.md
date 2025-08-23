@@ -2129,7 +2129,7 @@ import { headers } from 'next/headers';
 import { calculateTrending } from '@/lib/jobs/trending-calculator';
 import { syncActiveArtists } from '@/lib/jobs/sync-active-artists';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   // Verify cron secret
   const authHeader = headers().get('authorization');
   const cronSecret = process.env.CRON_SECRET;

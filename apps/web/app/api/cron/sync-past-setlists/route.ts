@@ -5,7 +5,7 @@ import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { SetlistFmClient } from "@repo/external-apis/src/clients/setlistfm";
 import { requireCronAuth } from "~/lib/api/auth-helpers";
 
-export async function GET(_request: Request) {
+export async function GET(request: Request) {
   try {
     await requireCronAuth();
 

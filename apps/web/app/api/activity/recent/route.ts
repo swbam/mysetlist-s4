@@ -69,7 +69,7 @@ interface RecentActivityResponse {
   };
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   // Apply rate limiting
   const rateLimitResult = await rateLimitMiddleware(request, {
     maxRequests: 60,

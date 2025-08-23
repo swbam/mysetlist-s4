@@ -293,7 +293,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET endpoint to check sync status
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const stats = await db.execute(sql`
       SELECT 

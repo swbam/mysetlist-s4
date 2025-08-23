@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   // Support GET requests for manual triggers
   return POST(request);
 }

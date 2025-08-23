@@ -21,7 +21,7 @@ interface InlineSearchResult {
 const searchCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 300000; // 5 minutes for inline search
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   // Apply rate limiting
   if (process.env['NODE_ENV'] === "production") {
     const rateLimitResult = await rateLimitMiddleware(request);

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  * Cron job health monitoring API endpoint
  * Provides health status, metrics, and alerts for all cron jobs
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Check for authorization (admin only)
     const headersList = await headers();
