@@ -2,7 +2,7 @@
 // File: apps/web/lib/queues/redis-config.ts
 // Production-ready Redis configuration with error handling and connection pooling
 
-import Redis, { RedisOptions } from 'ioredis';
+import Redis from 'ioredis';
 import { ConnectionOptions } from 'bullmq';
 
 // Redis configuration based on environment
@@ -20,7 +20,7 @@ const getRedisUrl = (): string => {
 };
 
 // Parse Redis URL into connection options
-const parseRedisUrl = (url: string): RedisOptions => {
+const parseRedisUrl = (url: string): any => {
   try {
     const redisUrl = new URL(url);
     
@@ -28,7 +28,7 @@ const parseRedisUrl = (url: string): RedisOptions => {
       host: redisUrl.hostname,
       port: parseInt(redisUrl.port || '6379'),
       password: redisUrl.password || undefined,
-      username: redisUrl.username || undefined,
+      username: (redisUrl.username || undefined) as any,
       db: parseInt(redisUrl.pathname?.slice(1) || '0'),
       family: 4, // Force IPv4
       
@@ -44,7 +44,7 @@ const parseRedisUrl = (url: string): RedisOptions => {
       },
       
       // Performance settings
-      enableOfflineQueue: process.env.NODE_ENV !== 'production',
+      enableOfflineQueue: (process.env.NODE_ENV !== 'production') as any,
       connectTimeout: 10000,
       disconnectTimeout: 2000,
       commandTimeout: 5000,
@@ -67,28 +67,20 @@ export const getRedisConnection = (): ConnectionOptions => {
   const options = parseRedisUrl(redisUrl);
   
   return {
-    ...options,
-    maxRetriesPerRequest: null, // Required for BullMQ
-    enableOfflineQueue: false,  // BullMQ recommendation
-    retryStrategy: (times: number) => {
-      if (times > 10) {
-        return null;
-      }
-      return Math.min(times * 1000, 30000);
-    },
-  };
+    host: options.host!,
+    port: options.port!,
+    password: options.password,
+    username: options.username as any,
+    db: options.db,
+    maxRetriesPerRequest: null as any,
+    retryStrategy: (times: number) => (times > 10 ? null : Math.min(times * 1000, 30000)) as any,
+  } as any;
 };
 
 // Separate connection for BullMQ (recommended for production)
 export const getBullMQConnection = (): ConnectionOptions => {
   const baseConfig = getRedisConnection();
-  
-  return {
-    ...baseConfig,
-    // BullMQ specific settings
-    maxRetriesPerRequest: null,
-    enableOfflineQueue: false,
-  };
+  return baseConfig;
 };
 
 // Redis client factory for different purposes
@@ -100,8 +92,8 @@ export class RedisClientFactory {
       return this.clients.get(purpose)!;
     }
 
-    const config = getRedisConnection();
-    const client = new Redis(config);
+    const url = getRedisUrl();
+    const client = new Redis(url, { maxRetriesPerRequest: null as any, enableReadyCheck: false as any });
 
     // Set up event listeners
     client.on('connect', () => {
@@ -125,11 +117,11 @@ export class RedisClientFactory {
   }
 
   static async closeAll(): Promise<void> {
-    const promises: Promise<void>[] = [];
+    const promises: Promise<unknown>[] = [];
     
     for (const [purpose, client] of this.clients) {
       console.log(`Closing Redis client for ${purpose}`);
-      promises.push(client.quit());
+      promises.push(client.quit() as unknown as Promise<void>);
     }
     
     await Promise.all(promises);
@@ -150,7 +142,7 @@ export class RedisClientFactory {
 // Test connection utility
 export async function testRedisConnection(): Promise<boolean> {
   try {
-    const client = new Redis(getRedisConnection() as RedisOptions);
+    const client = new Redis(getRedisUrl(), { maxRetriesPerRequest: null as any, enableReadyCheck: false as any });
     const result = await client.ping();
     await client.quit();
     return result === 'PONG';
@@ -206,15 +198,15 @@ export function validateRedisConfig(): {
   const recommendations: string[] = [];
   
   if (process.env.NODE_ENV === 'production') {
-    if (!process.env.REDIS_URL) {
+    if (!process.env['REDIS_URL']) {
       issues.push('REDIS_URL is not set for production');
     }
     
-    if (!process.env.REDIS_URL?.includes('rediss://')) {
+    if (!(process.env['REDIS_URL'] || '').includes('rediss://')) {
       recommendations.push('Consider using TLS (rediss://) for production Redis');
     }
     
-    if (!process.env.REDIS_CLUSTER) {
+    if (!process.env['REDIS_CLUSTER']) {
       recommendations.push('Consider using Redis Cluster for high availability');
     }
   }

@@ -228,9 +228,10 @@ async function calculateArtistTrending(): Promise<{
       )
     `);
 
+    const updated = Array.isArray((result as any).rows) ? (result as any).rows.length : 0;
     return {
-      updated: result.rowCount || 0,
-      calculations: result.rowCount || 0,
+      updated,
+      calculations: updated,
     };
 
   } catch (error) {
@@ -319,9 +320,10 @@ async function calculateShowTrending(): Promise<{
       )
     `);
 
+    const updated = Array.isArray((result as any).rows) ? (result as any).rows.length : 0;
     return {
-      updated: result.rowCount || 0,
-      calculations: result.rowCount || 0,
+      updated,
+      calculations: updated,
     };
 
   } catch (error) {

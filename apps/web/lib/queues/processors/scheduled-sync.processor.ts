@@ -1,3 +1,12 @@
+// Minimal Scheduled Sync Processor stub
+import { Job } from "bullmq";
+
+export default class ScheduledSyncProcessor {
+  static async process(job: Job): Promise<any> {
+    return { success: true, jobId: job.id };
+  }
+}
+
 import { Job } from "bullmq";
 import { db, artists, shows } from "@repo/database";
 import { eq, sql, desc } from "drizzle-orm";

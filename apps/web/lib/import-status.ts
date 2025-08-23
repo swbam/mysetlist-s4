@@ -1,412 +1,308 @@
-// MySetlist-S4 Enhanced Import Status System
+// MySetlist-S4 Enhanced Import Status System (DB + Redis)
 // File: apps/web/lib/import-status.ts
-// REPLACE existing incomplete implementation
 
-import { createServiceClient } from "./supabase/server";
+import { db, importStatus, eq, sql } from "@repo/database";
 import { RedisClientFactory } from "./queues/redis-config";
 
-// Import status types
-export interface ImportStatus {
-  stage: 
-    | "initializing"
-    | "syncing-identifiers"
-    | "importing-songs"
-    | "importing-shows"
-    | "creating-setlists"
-    | "completed"
-    | "failed";
+// Types per NEWDOCS
+interface ImportStatusUpdate {
+  stage: "initializing" | "syncing-identifiers" | "importing-songs" | 
+         "importing-shows" | "creating-setlists" | "completed" | "failed";
   progress: number;
   message: string;
   error?: string;
-  artistId?: string;
+  job_id?: string;
+  artist_name?: string;
+  total_songs?: number;
+  total_shows?: number;
+  total_venues?: number;
+  completed_at?: Date;
+  phase_timings?: Record<string, number>;
+  started_at?: Date;
+}
+
+interface ImportStatusResponse {
+  artistId: string;
+  stage: string;
+  progress: number;
+  message: string;
+  error?: string | undefined;
+  jobId?: string;
   artistName?: string;
-  slug?: string;
   totalSongs?: number;
   totalShows?: number;
   totalVenues?: number;
-  completedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  jobId?: string;
-  phaseTimings?: Record<string, number>;
-  estimatedTimeRemaining?: number;
+  completedAt?: Date | undefined;
+  startedAt?: Date | undefined;
+  phaseTimings?: Record<string, number> | undefined;
+  estimatedTimeRemaining?: number | undefined;
+  timestamp: string;
 }
 
 export class ImportStatusManager {
   private static redis = RedisClientFactory.getClient('cache');
 
-  /**
-   * Update import status for an artist
-   * Writes to both database and Redis for real-time updates
-   */
   static async updateImportStatus(
-    jobId: string,
-    status: Partial<ImportStatus>
+    artistId: string, 
+    update: ImportStatusUpdate
   ): Promise<void> {
     try {
-      const now = new Date().toISOString();
+      const now = new Date();
       
-      // Prepare full status
-      const fullStatus: ImportStatus = {
-        ...status,
-        jobId,
+      const dbUpdate = {
+        artistId,
+        stage: update.stage,
+        percentage: Math.max(0, Math.min(100, update.progress)),
+        message: update.message,
+        error: update.error || null,
+        jobId: update.job_id || null,
+        artistName: update.artist_name || null,
+        totalSongs: update.total_songs || 0,
+        totalShows: update.total_shows || 0,
+        totalVenues: update.total_venues || 0,
+        completedAt: update.completed_at || null,
+        startedAt: update.started_at || (update.stage === 'initializing' ? now : undefined),
+        phaseTimings: update.phase_timings ? JSON.stringify(update.phase_timings) : null,
         updatedAt: now,
-        progress: Math.max(0, Math.min(100, status.progress || 0)), // Clamp 0-100
-        estimatedTimeRemaining: this.calculateTimeRemaining(status),
-      } as ImportStatus;
+      } as any;
 
-      // Update Redis cache for quick retrieval
-      const cacheKey = `import:status:${jobId}`;
-      await this.redis.setex(cacheKey, 300, JSON.stringify(fullStatus)); // 5 min TTL
+      await db
+        .insert(importStatus)
+        .values(dbUpdate)
+        .onConflictDoUpdate({
+          target: importStatus.artistId,
+          set: {
+            ...dbUpdate,
+            startedAt: update.stage === 'initializing' ? now : importStatus.startedAt,
+          },
+        });
 
-      // Publish to Redis channel for SSE
+      const redisData: ImportStatusResponse = {
+        artistId,
+        stage: update.stage,
+        progress: dbUpdate.percentage,
+        message: update.message,
+        ...(update.error ? { error: update.error } : {}),
+        ...(update.job_id ? { jobId: update.job_id } : {}),
+        ...(update.artist_name ? { artistName: update.artist_name } : {}),
+        ...(update.total_songs !== undefined ? { totalSongs: update.total_songs } : {}),
+        ...(update.total_shows !== undefined ? { totalShows: update.total_shows } : {}),
+        ...(update.total_venues !== undefined ? { totalVenues: update.total_venues } : {}),
+        ...(update.completed_at ? { completedAt: update.completed_at } : {}),
+        ...(update.started_at ? { startedAt: update.started_at } : {}),
+        ...(update.phase_timings ? { phaseTimings: update.phase_timings } : {}),
+        estimatedTimeRemaining: this.calculateTimeRemaining({
+          stage: update.stage,
+          progress: dbUpdate.percentage,
+          ...(update.started_at ? { started_at: update.started_at } : {}),
+        }),
+        timestamp: now.toISOString(),
+      } as ImportStatusResponse;
+
+      const cacheKey = `import:status:${update.job_id ?? artistId}`;
+      await this.redis.setex(cacheKey, 300, JSON.stringify(redisData));
+
       const channels = [
-        `import:progress:${jobId}`,
-        status.artistId ? `import:progress:${status.artistId}` : null,
+        update.job_id ? `import:progress:${update.job_id}` : null,
+        `import:progress:${artistId}`,
       ].filter(Boolean) as string[];
 
       for (const channel of channels) {
-        await this.redis.publish(channel, JSON.stringify({
-          type: 'progress',
-          ...fullStatus,
-        }));
+        await this.redis.publish(channel, JSON.stringify({ type: 'progress', ...redisData }));
       }
 
-      // Update database for persistence
-      const supabase = createServiceClient();
-
-      // Check if record exists
-      const { data: existing } = await supabase
-        .from("import_status")
-        .select("job_id")
-        .eq("job_id", jobId)
-        .single();
-
-      const updateData = {
-        job_id: jobId,
-        stage: status.stage,
-        percentage: status.progress || 0,
-        message: status.message || "",
-        error: status.error || null,
-        artist_id: status.artistId || null,
-        artist_name: status.artistName || null,
-        total_songs: status.totalSongs || null,
-        total_shows: status.totalShows || null,
-        total_venues: status.totalVenues || null,
-        completed_at: status.completedAt || null,
-        phase_timings: status.phaseTimings ? JSON.stringify(status.phaseTimings) : null,
-        updated_at: now,
-        ...(existing ? {} : { created_at: now }),
-      };
-
-      const { error } = await supabase.from("import_status").upsert(updateData);
-      
-      if (error) {
-        console.error(`[IMPORT STATUS] Failed to update status for ${jobId}:`, error);
-      }
-
-      console.log(`✅ Import status updated for job ${jobId}: ${status.stage} (${status.progress}%)`);
-      
     } catch (error) {
       console.error("Failed to update import status:", error);
-      // Don't throw - status updates should not break the import process
     }
   }
 
-  /**
-   * Get import status for a job
-   * Tries Redis first, falls back to database
-   */
   static async getImportStatus(
-    identifier: string, // jobId or artistId
-    type: 'job' | 'artist' = 'job'
-  ): Promise<ImportStatus | null> {
+    identifier: string,
+    type: 'artist' | 'job' = 'artist'
+  ): Promise<ImportStatusResponse | null> {
     try {
-      // Try Redis first
       const cacheKey = `import:status:${identifier}`;
       const cached = await this.redis.get(cacheKey);
-      if (cached) {
-        return JSON.parse(cached);
-      }
+      if (cached) return JSON.parse(cached);
 
-      // Fallback to database
-      const supabase = createServiceClient();
+      const dbRows = type === 'artist'
+        ? await db.select().from(importStatus).where(eq(importStatus.artistId, identifier)).limit(1)
+        : await db.select().from(importStatus).where(eq(importStatus.jobId, identifier)).limit(1);
+      const dbStatus = Array.isArray(dbRows) ? dbRows[0] : dbRows;
 
-      const query = type === 'job'
-        ? supabase.from("import_status").select("*").eq("job_id", identifier)
-        : supabase.from("import_status").select("*").eq("artist_id", identifier).order('updated_at', { ascending: false }).limit(1);
+      if (!dbStatus) return null;
 
-      const { data, error } = await query.single();
-
-      if (error || !data) {
-        return null;
-      }
-
-      // Convert DB record to status format
-      const status: ImportStatus = {
-        stage: data.stage,
-        progress: data.percentage || 0,
-        message: data.message || "",
-        error: data.error,
-        artistId: data.artist_id,
-        artistName: data.artist_name,
-        totalSongs: data.total_songs,
-        totalShows: data.total_shows,
-        totalVenues: data.total_venues,
-        completedAt: data.completed_at,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-        jobId: data.job_id,
-        phaseTimings: data.phase_timings ? JSON.parse(data.phase_timings) : undefined,
+      const response: ImportStatusResponse = {
+        artistId: dbStatus.artistId,
+        stage: dbStatus.stage,
+        progress: Number(dbStatus.percentage ?? 0),
+        message: dbStatus.message || '',
+        ...(dbStatus.error ? { error: dbStatus.error } : {}),
+        ...(dbStatus.jobId ? { jobId: dbStatus.jobId } : {}),
+        ...(dbStatus.artistName ? { artistName: dbStatus.artistName } : {}),
+        ...(dbStatus.totalSongs !== null && dbStatus.totalSongs !== undefined ? { totalSongs: dbStatus.totalSongs } : {}),
+        ...(dbStatus.totalShows !== null && dbStatus.totalShows !== undefined ? { totalShows: dbStatus.totalShows } : {}),
+        ...(dbStatus.totalVenues !== null && dbStatus.totalVenues !== undefined ? { totalVenues: dbStatus.totalVenues } : {}),
+        ...(dbStatus.completedAt ? { completedAt: dbStatus.completedAt } : {}),
+        ...(dbStatus.startedAt ? { startedAt: dbStatus.startedAt } : {}),
+        ...(typeof dbStatus.phaseTimings === 'string' ? { phaseTimings: JSON.parse(dbStatus.phaseTimings) } : {}),
         estimatedTimeRemaining: this.calculateTimeRemaining({
-          stage: data.stage,
-          progress: data.percentage,
-          createdAt: data.created_at,
+          stage: dbStatus.stage,
+          progress: Number(dbStatus.percentage ?? 0),
+          ...(dbStatus.startedAt ? { started_at: dbStatus.startedAt } : {}),
         }),
-      };
+        timestamp: dbStatus.updatedAt?.toISOString() || new Date().toISOString(),
+      } as ImportStatusResponse;
 
-      // Cache the result
-      await this.redis.setex(cacheKey, 60, JSON.stringify(status)); // 1 min cache
-
-      return status;
-      
+      await this.redis.setex(cacheKey, 300, JSON.stringify(response));
+      return response;
     } catch (error) {
       console.error("Failed to get import status:", error);
       return null;
     }
   }
 
-  /**
-   * Get all active import statuses
-   */
-  static async getActiveImports(): Promise<ImportStatus[]> {
+  static async getActiveImports(): Promise<ImportStatusResponse[]> {
     try {
-      const supabase = createServiceClient();
-
-      const { data, error } = await supabase
-        .from("import_status")
-        .select("*")
-        .not('stage', 'in', '(completed,failed)')
-        .order('updated_at', { ascending: false });
-
-      if (error || !data) {
-        return [];
-      }
-
-      return data.map(row => ({
-        stage: row.stage,
-        progress: row.percentage || 0,
-        message: row.message || "",
-        error: row.error,
-        artistId: row.artist_id,
-        artistName: row.artist_name,
-        totalSongs: row.total_songs,
-        totalShows: row.total_shows,
-        totalVenues: row.total_venues,
-        completedAt: row.completed_at,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-        jobId: row.job_id,
-        phaseTimings: row.phase_timings ? JSON.parse(row.phase_timings) : undefined,
+      const rows = await db.select().from(importStatus).where(sql`stage NOT IN ('completed','failed')`);
+      return rows.map((status: any) => ({
+        artistId: status.artistId,
+        stage: status.stage,
+        progress: Number(status.percentage ?? 0),
+        message: status.message || '',
+        ...(status.error ? { error: status.error } : {}),
+        ...(status.jobId ? { jobId: status.jobId } : {}),
+        ...(status.artistName ? { artistName: status.artistName } : {}),
+        ...(status.totalSongs !== null && status.totalSongs !== undefined ? { totalSongs: status.totalSongs } : {}),
+        ...(status.totalShows !== null && status.totalShows !== undefined ? { totalShows: status.totalShows } : {}),
+        ...(status.totalVenues !== null && status.totalVenues !== undefined ? { totalVenues: status.totalVenues } : {}),
+        ...(status.completedAt ? { completedAt: status.completedAt } : {}),
+        ...(status.startedAt ? { startedAt: status.startedAt } : {}),
+        ...(typeof status.phaseTimings === 'string' ? { phaseTimings: JSON.parse(status.phaseTimings) } : {}),
         estimatedTimeRemaining: this.calculateTimeRemaining({
-          stage: row.stage,
-          progress: row.percentage,
-          createdAt: row.created_at,
+          stage: status.stage,
+          progress: Number(status.percentage ?? 0),
+          ...(status.startedAt ? { started_at: status.startedAt } : {}),
         }),
+        timestamp: status.updatedAt?.toISOString() || new Date().toISOString(),
       }));
-      
     } catch (error) {
       console.error("Failed to get active imports:", error);
       return [];
     }
   }
 
-  /**
-   * Clean up completed import statuses older than specified time
-   */
   static async cleanupCompletedImports(olderThanHours: number = 24): Promise<number> {
     try {
-      const supabase = createServiceClient();
-      const cutoffTime = new Date(Date.now() - olderThanHours * 60 * 60 * 1000).toISOString();
-      
-      const { data, error } = await supabase
-        .from("import_status")
-        .delete()
-        .in('stage', ['completed', 'failed'])
-        .lt('updated_at', cutoffTime)
-        .select('job_id');
-
-      const count = data?.length || 0;
-      console.log(`🧹 Cleaned up ${count} completed import statuses`);
-      return count;
-      
+      const cutoffTime = new Date(Date.now() - olderThanHours * 3600 * 1000).toISOString();
+      const result: any = await db
+        .delete(importStatus)
+        .where(sql`stage IN ('completed','failed') AND updated_at < ${cutoffTime}`);
+      return result?.rowCount || 0;
     } catch (error) {
       console.error("Failed to cleanup import statuses:", error);
       return 0;
     }
   }
 
-  /**
-   * Calculate estimated time remaining based on progress and stage
-   */
-  private static calculateTimeRemaining(status: Partial<ImportStatus>): number | undefined {
-    if (!status.createdAt || !status.progress || status.progress >= 100) {
-      return undefined;
-    }
-
-    const startTime = new Date(status.createdAt).getTime();
-    const elapsed = Date.now() - startTime;
-    
-    // Stage-based time estimates (in seconds)
-    const stageEstimates = {
+  private static calculateTimeRemaining(update: {
+    stage: string;
+    progress: number;
+    started_at?: Date;
+  }): number | undefined {
+    if (!update.started_at || update.progress >= 100) return undefined;
+    const elapsed = Date.now() - update.started_at.getTime();
+    const stageEstimates: Record<string, number> = {
       'initializing': 5,
       'syncing-identifiers': 10,
       'importing-songs': 30,
       'importing-shows': 20,
       'creating-setlists': 5,
     };
-
-    const currentStageEstimate = status.stage ? stageEstimates[status.stage] || 10 : 10;
-    
-    if (status.progress > 0) {
-      // Calculate based on current progress
-      const estimatedTotal = (elapsed / (status.progress / 100));
+    const current = stageEstimates[update.stage] ?? 10;
+    if (update.progress > 0) {
+      const estimatedTotal = elapsed / (update.progress / 100);
       return Math.max(0, Math.floor((estimatedTotal - elapsed) / 1000));
-    } else {
-      // Fallback to stage estimate
-      return currentStageEstimate;
     }
+    return current;
   }
 
-  /**
-   * Create a new import session
-   */
   static async createImportSession(artistId: string, jobId: string): Promise<void> {
-    await this.updateImportStatus(jobId, {
+    await this.updateImportStatus(artistId, {
       stage: 'initializing',
       progress: 0,
       message: 'Import session created',
-      artistId,
-      createdAt: new Date().toISOString(),
+      job_id: jobId,
+      started_at: new Date(),
     });
   }
 
-  /**
-   * Mark import as failed with error details
-   */
-  static async markImportFailed(
-    jobId: string,
-    error: string,
-    artistId?: string
-  ): Promise<void> {
-    await this.updateImportStatus(jobId, {
+  static async markImportFailed(artistId: string, error: string, jobId?: string): Promise<void> {
+    await this.updateImportStatus(artistId, {
       stage: 'failed',
       progress: 0,
       message: 'Import failed',
       error,
-      artistId,
-      completedAt: new Date().toISOString(),
+      ...(jobId ? { job_id: jobId } : {} as any),
+      completed_at: new Date(),
     });
   }
 
-  /**
-   * Mark import as completed
-   */
   static async markImportCompleted(
-    jobId: string,
-    totals: {
-      songs?: number;
-      shows?: number;
-      venues?: number;
-    },
-    artistId?: string
+    artistId: string,
+    totals: { songs?: number; shows?: number; venues?: number },
+    jobId?: string
   ): Promise<void> {
-    await this.updateImportStatus(jobId, {
+    await this.updateImportStatus(artistId, {
       stage: 'completed',
       progress: 100,
       message: 'Import completed successfully',
-      artistId,
-      totalSongs: totals.songs,
-      totalShows: totals.shows,
-      totalVenues: totals.venues,
-      completedAt: new Date().toISOString(),
+      ...(jobId ? { job_id: jobId } : {} as any),
+      total_songs: totals.songs,
+      total_shows: totals.shows,
+      total_venues: totals.venues,
+      completed_at: new Date(),
     });
   }
 
-  /**
-   * Get import statistics
-   */
   static async getImportStatistics(days: number = 7): Promise<{
-    totalImports: number;
-    successfulImports: number;
-    failedImports: number;
-    averageDuration: number;
-    inProgress: number;
+    totalImports: number; successfulImports: number; failedImports: number; averageDuration: number; inProgress: number;
   }> {
     try {
-      const supabase = createServiceClient();
       const cutoffTime = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+      const statsRows = await db
+        .select({
+          total: sql<number>`COUNT(*)`,
+          successful: sql<number>`COUNT(CASE WHEN stage = 'completed' THEN 1 END)`,
+          failed: sql<number>`COUNT(CASE WHEN stage = 'failed' THEN 1 END)`,
+          inProgress: sql<number>`COUNT(CASE WHEN stage NOT IN ('completed','failed') THEN 1 END)`,
+          avgDuration: sql<number>`
+            AVG(
+              EXTRACT(EPOCH FROM (completed_at - started_at))
+            ) FILTER (WHERE completed_at IS NOT NULL AND started_at IS NOT NULL AND stage = 'completed')
+          `,
+        })
+        .from(importStatus)
+        .where(sql`updated_at >= ${cutoffTime}`)
+        .limit(1) as any;
+      const stats = Array.isArray(statsRows) ? statsRows[0] : statsRows;
 
-      const { data, error } = await supabase
-        .from("import_status")
-        .select("*")
-        .gte('updated_at', cutoffTime);
-
-      if (error || !data) {
-        return {
-          totalImports: 0,
-          successfulImports: 0,
-          failedImports: 0,
-          averageDuration: 0,
-          inProgress: 0,
-        };
-      }
-
-      const stats = {
-        totalImports: data.length,
-        successfulImports: data.filter(d => d.stage === 'completed').length,
-        failedImports: data.filter(d => d.stage === 'failed').length,
-        inProgress: data.filter(d => !['completed', 'failed'].includes(d.stage)).length,
-        averageDuration: 0,
+      return {
+        totalImports: stats?.total || 0,
+        successfulImports: stats?.successful || 0,
+        failedImports: stats?.failed || 0,
+        averageDuration: stats?.avgDuration || 0,
+        inProgress: stats?.inProgress || 0,
       };
-
-      // Calculate average duration for completed imports
-      const completedImports = data.filter(d => 
-        d.stage === 'completed' && d.created_at && d.completed_at
-      );
-
-      if (completedImports.length > 0) {
-        const totalDuration = completedImports.reduce((sum, imp) => {
-          const duration = new Date(imp.completed_at).getTime() - new Date(imp.created_at).getTime();
-          return sum + duration;
-        }, 0);
-        
-        stats.averageDuration = Math.floor(totalDuration / completedImports.length / 1000); // in seconds
-      }
-
-      return stats;
-      
     } catch (error) {
       console.error("Failed to get import statistics:", error);
-      return {
-        totalImports: 0,
-        successfulImports: 0,
-        failedImports: 0,
-        averageDuration: 0,
-        inProgress: 0,
-      };
+      return { totalImports: 0, successfulImports: 0, failedImports: 0, averageDuration: 0, inProgress: 0 };
     }
   }
 }
 
-// Export convenience functions for backward compatibility
-export const updateImportStatus = (jobId: string, status: Partial<ImportStatus>) => 
-  ImportStatusManager.updateImportStatus(jobId, status);
-
-export const getImportStatus = (jobId: string) => 
-  ImportStatusManager.getImportStatus(jobId);
-
-// Export for SSE endpoints
-export const getActiveImports = () => ImportStatusManager.getActiveImports();
-export const cleanupCompletedImports = (hours?: number) => ImportStatusManager.cleanupCompletedImports(hours);
-export const getImportStatistics = (days?: number) => ImportStatusManager.getImportStatistics(days);
+export const updateImportStatus = ImportStatusManager.updateImportStatus.bind(ImportStatusManager);
+export const getImportStatus = ImportStatusManager.getImportStatus.bind(ImportStatusManager);
+export const getActiveImports = ImportStatusManager.getActiveImports.bind(ImportStatusManager);
+export const cleanupCompletedImports = ImportStatusManager.cleanupCompletedImports.bind(ImportStatusManager);
+export const getImportStatistics = ImportStatusManager.getImportStatistics.bind(ImportStatusManager);

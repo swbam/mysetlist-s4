@@ -2,10 +2,10 @@
 // File: apps/web/lib/services/data-freshness-manager.ts
 // Intelligent sync scheduling based on data freshness requirements
 
-import { db, sql, artists, shows, venues, songs, syncJobs } from '@repo/database';
+import { db, sql } from '@repo/database';
 import { Queue } from 'bullmq';
 import { cacheManager } from '../cache/cache-manager';
-import { QueueManager } from '../queues/queue-manager';
+import queueManagerInstance from '../queues/queue-manager';
 
 export interface FreshnessRule {
   entityType: 'artist' | 'show' | 'venue' | 'setlist';
@@ -131,11 +131,12 @@ export class DataFreshnessManager {
   }
 
   private initializeQueues(): void {
-    const queueManager = QueueManager.getInstance();
-    this.queues.set('spotify-sync', queueManager.getQueue('spotify-sync'));
-    this.queues.set('ticketmaster-sync', queueManager.getQueue('ticketmaster-sync'));
-    this.queues.set('venue-sync', queueManager.getQueue('venue-sync'));
-    this.queues.set('full-sync', queueManager.getQueue('scheduled-sync'));
+    const qm: any = queueManagerInstance as any;
+    if (typeof qm.getQueue !== 'function') return;
+    this.queues.set('spotify-sync', qm.getQueue('spotify-sync'));
+    this.queues.set('ticketmaster-sync', qm.getQueue('ticketmaster-sync'));
+    this.queues.set('venue-sync', qm.getQueue('venue-sync'));
+    this.queues.set('full-sync', qm.getQueue('scheduled-sync'));
   }
 
   /**
@@ -201,12 +202,13 @@ export class DataFreshnessManager {
       GROUP BY a.id, sj.completed_at
     `);
 
-    report.byType.artist = { total: 0, stale: 0, scheduled: 0 };
+    report.byType['artist'] = { total: 0, stale: 0, scheduled: 0 } as any;
     const batchedSyncs: Array<{ artistId: string; priority: number; syncType: string }> = [];
 
-    for (const row of artistsData.rows) {
+    const artistRows: any[] = (artistsData as any).rows || [];
+    for (const row of artistRows) {
       report.totalEntities++;
-      report.byType.artist.total++;
+      (report.byType['artist'] as any).total++;
 
       const freshness = await this.checkEntityFreshness(
         'artist',
@@ -217,7 +219,7 @@ export class DataFreshnessManager {
 
       if (freshness.requiresSync) {
         report.staleEntities++;
-        report.byType.artist.stale++;
+        (report.byType['artist'] as any).stale++;
         
         batchedSyncs.push({
           artistId: row.id,
@@ -231,7 +233,7 @@ export class DataFreshnessManager {
     if (batchedSyncs.length > 0) {
       const scheduled = await this.scheduleBatchedSyncs(batchedSyncs);
       report.scheduledSyncs += scheduled;
-      report.byType.artist.scheduled = scheduled;
+      (report.byType['artist'] as any).scheduled = scheduled;
     }
   }
 
@@ -260,12 +262,13 @@ export class DataFreshnessManager {
       WHERE s.status IN ('upcoming', 'ongoing')
     `);
 
-    report.byType.show = { total: 0, stale: 0, scheduled: 0 };
+    report.byType['show'] = { total: 0, stale: 0, scheduled: 0 } as any;
     const batchedSyncs: Array<{ showId: string; priority: number }> = [];
 
-    for (const row of showsData.rows) {
+    const showRows: any[] = (showsData as any).rows || [];
+    for (const row of showRows) {
       report.totalEntities++;
-      report.byType.show.total++;
+      (report.byType['show'] as any).total++;
 
       const freshness = await this.checkEntityFreshness(
         'show',
@@ -276,7 +279,7 @@ export class DataFreshnessManager {
 
       if (freshness.requiresSync) {
         report.staleEntities++;
-        report.byType.show.stale++;
+        (report.byType['show'] as any).stale++;
         
         batchedSyncs.push({
           showId: row.id,
@@ -289,7 +292,7 @@ export class DataFreshnessManager {
     if (batchedSyncs.length > 0) {
       const scheduled = await this.scheduleShowSyncs(batchedSyncs);
       report.scheduledSyncs += scheduled;
-      report.byType.show.scheduled = scheduled;
+      (report.byType['show'] as any).scheduled = scheduled;
     }
   }
 
@@ -320,12 +323,13 @@ export class DataFreshnessManager {
       GROUP BY v.id, sj.completed_at
     `);
 
-    report.byType.venue = { total: 0, stale: 0, scheduled: 0 };
+    report.byType['venue'] = { total: 0, stale: 0, scheduled: 0 } as any;
     const batchedSyncs: Array<{ venueId: string; priority: number }> = [];
 
-    for (const row of venuesData.rows) {
+    const venueRows: any[] = (venuesData as any).rows || [];
+    for (const row of venueRows) {
       report.totalEntities++;
-      report.byType.venue.total++;
+      (report.byType['venue'] as any).total++;
 
       const freshness = await this.checkEntityFreshness(
         'venue',
@@ -336,7 +340,7 @@ export class DataFreshnessManager {
 
       if (freshness.requiresSync) {
         report.staleEntities++;
-        report.byType.venue.stale++;
+        (report.byType['venue'] as any).stale++;
         
         batchedSyncs.push({
           venueId: row.id,
@@ -349,7 +353,7 @@ export class DataFreshnessManager {
     if (batchedSyncs.length > 0) {
       const scheduled = await this.scheduleVenueSyncs(batchedSyncs);
       report.scheduledSyncs += scheduled;
-      report.byType.venue.scheduled = scheduled;
+      (report.byType['venue'] as any).scheduled = scheduled;
     }
   }
 

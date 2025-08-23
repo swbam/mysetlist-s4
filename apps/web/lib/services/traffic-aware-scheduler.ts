@@ -2,7 +2,7 @@
 // File: apps/web/lib/services/traffic-aware-scheduler.ts
 // Intelligent cron scheduling based on traffic patterns
 
-import { db, sql, cronLogs, cronMetrics } from '@repo/database';
+import { db, sql } from '@repo/database';
 import { cacheManager } from '../cache/cache-manager';
 import { RedisClientFactory } from '../queues/redis-config';
 
@@ -122,14 +122,14 @@ export class TrafficAwareScheduler {
     dayOfWeek: number,
     load: 'low' | 'medium' | 'high' | 'peak'
   ): TrafficPattern {
-    const loadMetrics = {
+    const loadMetrics: Record<'low'|'medium'|'high'|'peak', { requests: number; response: number; error: number }> = {
       low: { requests: 10, response: 100, error: 0.01 },
       medium: { requests: 50, response: 200, error: 0.02 },
       high: { requests: 100, response: 300, error: 0.03 },
       peak: { requests: 200, response: 500, error: 0.05 },
     };
 
-    const metrics = loadMetrics[load];
+    const metrics = loadMetrics[load as 'low'|'medium'|'high'|'peak'];
     
     return {
       hour,
@@ -188,7 +188,8 @@ export class TrafficAwareScheduler {
       `);
 
       // Update traffic patterns based on real data
-      for (const row of metricsData.rows) {
+      const metricRows: any[] = (metricsData as any).rows || [];
+      for (const row of metricRows) {
         const load = this.calculateLoad(
           row.job_count,
           row.avg_execution_time,
@@ -306,7 +307,7 @@ export class TrafficAwareScheduler {
       FROM job_metrics
     `);
 
-    const row = metrics.rows[0];
+    const row = (metrics as any).rows?.[0] || {};
     const hoursByFreq = row?.hours_by_frequency || [];
 
     return {
@@ -366,7 +367,7 @@ export class TrafficAwareScheduler {
 
     // Default: run during quiet hours
     const quietHours = this.getQuietHours();
-    const hour = quietHours[Math.floor(Math.random() * quietHours.length)];
+    const hour = quietHours[Math.floor(Math.random() * quietHours.length)] ?? 3;
     return `0 ${hour} * * *`;
   }
 
@@ -526,26 +527,27 @@ export class TrafficAwareScheduler {
    */
   private extractHoursFromCron(cronExpression: string): number[] {
     const parts = cronExpression.split(' ');
-    const hourPart = parts[1];
+    const hourPart: string | undefined = parts[1];
 
     if (hourPart === '*') {
       return Array.from({ length: 24 }, (_, i) => i);
     }
 
-    if (hourPart.includes('/')) {
+    if (hourPart && hourPart.includes('/')) {
       const [, interval] = hourPart.split('/');
       const hours: number[] = [];
-      for (let h = 0; h < 24; h += parseInt(interval)) {
+      const step = parseInt(interval || '1');
+      for (let h = 0; h < 24; h += step) {
         hours.push(h);
       }
       return hours;
     }
 
-    if (hourPart.includes(',')) {
+    if (hourPart && hourPart.includes(',')) {
       return hourPart.split(',').map(h => parseInt(h));
     }
 
-    return [parseInt(hourPart)];
+    return [parseInt(hourPart || '0')];
   }
 
   /**
@@ -554,16 +556,15 @@ export class TrafficAwareScheduler {
   async getCurrentMetrics(): Promise<SystemMetrics> {
     try {
       // Get Redis queue depths
-      const queueManager = await import('../queues/queue-manager');
-      const qm = queueManager.QueueManager.getInstance();
-      const queueStats = await qm.getQueueStatistics();
+      const { queueManager } = await import('../queues/queue-manager');
+      const stats = (await queueManager.getAllStats()) as any[];
       
       let totalQueueDepth = 0;
       let activeJobs = 0;
       
-      for (const [, stats] of Object.entries(queueStats)) {
-        totalQueueDepth += stats.waiting + stats.delayed;
-        activeJobs += stats.active;
+      for (const s of stats) {
+        totalQueueDepth += (s.waiting || 0) + (s.delayed || 0);
+        activeJobs += (s.active || 0);
       }
 
       // Get recent cron metrics
@@ -577,7 +578,7 @@ export class TrafficAwareScheduler {
         WHERE created_at >= NOW() - INTERVAL '5 minutes'
       `);
 
-      const metrics = recentMetrics.rows[0] || {};
+      const metrics = (recentMetrics as any).rows?.[0] || {};
 
       return {
         cpuUsage: metrics.avg_cpu || 0,
@@ -615,7 +616,7 @@ export class TrafficAwareScheduler {
     const day = now.getDay();
     
     const pattern = this.trafficPatterns.get(`${day}-${hour}`);
-    const load = pattern?.load || 'medium';
+    const load: 'low' | 'medium' | 'high' | 'peak' = (pattern?.load as any) || 'medium';
 
     // Decision logic
     if (load === 'peak' && metrics.cpuUsage > 80) {

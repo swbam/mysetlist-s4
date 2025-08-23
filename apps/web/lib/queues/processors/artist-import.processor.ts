@@ -3,19 +3,7 @@
 // NEW FILE - Core processor for artist import jobs
 
 import { Job } from "bullmq";
-import { 
-  db, 
-  artists, 
-  shows, 
-  venues, 
-  songs, 
-  artistSongs, 
-  setlists, 
-  eq, 
-  sql, 
-  and,
-  desc 
-} from "@repo/database";
+import { db, artists, shows, venues, songs, artistSongs, setlists, setlistSongs, eq, desc } from "@repo/database";
 import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
 import { updateImportStatus } from "~/lib/import-status";
 import { ImportLogger } from "~/lib/import-logger";
@@ -47,13 +35,13 @@ interface ImportResult {
 }
 
 export class ArtistImportProcessor {
-  private static spotifyClient = new SpotifyClient();
-  private static ticketmasterClient = new TicketmasterClient();
+  private static spotifyClient = new SpotifyClient({ apiKey: process.env["SPOTIFY_CLIENT_ID"] });
+  private static ticketmasterClient = new TicketmasterClient({ apiKey: process.env["TICKETMASTER_API_KEY"] });
   private static redis = RedisClientFactory.getClient('pubsub');
 
   static async process(job: Job<ArtistImportJobData>): Promise<ImportResult> {
     const { tmAttractionId, artistId, syncOnly = false } = job.data;
-    const logger = new ImportLogger(job.id || "unknown");
+    const logger = new ImportLogger({ artistId: artistId || "unknown", tmAttractionId, jobId: String(job.id) });
   const startTime = Date.now();
     
     const phaseTimings = {
@@ -63,7 +51,7 @@ export class ArtistImportProcessor {
     };
 
     try {
-      logger.info("Starting artist import process", { 
+      await logger.info("start", "Starting artist import process", { 
         tmAttractionId, 
         artistId, 
         syncOnly,
@@ -71,12 +59,14 @@ export class ArtistImportProcessor {
       });
 
       await job.updateProgress(0);
-      await updateImportStatus(artistId!, {
+      if (artistId) {
+        await updateImportStatus(artistId, {
       stage: "initializing",
-        progress: 0,
-        message: "Starting artist import process",
-        job_id: job.id,
-      });
+          progress: 0,
+          message: "Starting artist import process",
+          ...(job.id ? { job_id: String(job.id) } : {} as any),
+        });
+      }
 
       let artist: any;
       
@@ -85,11 +75,8 @@ export class ArtistImportProcessor {
       if (!artistId || !syncOnly) {
         artist = await this.executePhase1(tmAttractionId, job);
       } else {
-        artist = await db
-          .select()
-          .from(artists)
-          .where(eq(artists.id, artistId))
-          .get();
+        const rows = await db.select().from(artists).where(eq(artists.id, artistId)).limit(1);
+        artist = Array.isArray(rows) ? rows[0] : rows;
       }
       phaseTimings.phase1Duration = Date.now() - phase1Start;
 
@@ -152,7 +139,7 @@ export class ArtistImportProcessor {
 
       const totalDuration = Date.now() - startTime;
       
-      logger.success("Artist import completed", {
+      await logger.success("complete", "Artist import completed", {
         artistId: artist.id,
         totalSongs: catalogResult.totalSongs,
         totalShows: showsResult.totalShows,
@@ -176,11 +163,7 @@ export class ArtistImportProcessor {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
-      logger.error("Artist import failed", { 
-        error: errorMessage, 
-        tmAttractionId,
-        jobId: job.id,
-      });
+      await logger.error("failed", "Artist import failed", { message: errorMessage });
       
       if (artistId) {
         await updateImportStatus(artistId, {
@@ -218,10 +201,10 @@ export class ArtistImportProcessor {
         );
         
         const selectedArtist = exactMatch || searchResults.artists.items[0];
-        spotifyId = selectedArtist.id;
+        spotifyId = selectedArtist!.id;
         spotifyData = selectedArtist;
         
-        console.log(`✅ Found Spotify match: ${selectedArtist.name} (${spotifyId})`);
+        console.log(`✅ Found Spotify match: ${selectedArtist!.name} (${spotifyId})`);
       }
     } catch (error) {
       console.warn("Failed to find Spotify ID:", error);
@@ -249,11 +232,11 @@ export class ArtistImportProcessor {
     const uniqueGenres = [...new Set(genres)].slice(0, 5);
 
     // Create artist record
-    const [artist] = await db
+    const insertedArtist = await db
       .insert(artists)
       .values({
         tmAttractionId,
-        spotifyId,
+        spotifyId: spotifyId ?? null,
         name: tmArtist.name,
         slug,
         imageUrl: tmArtist.images?.[0]?.url || spotifyData?.images?.[0]?.url,
@@ -269,11 +252,13 @@ export class ArtistImportProcessor {
         verified: false,
       })
       .returning();
+    const createdArtist = Array.isArray(insertedArtist) ? insertedArtist[0] : insertedArtist;
+    if (!createdArtist) throw new Error('Failed to insert artist');
     
     await job.updateProgress(15);
 
-    console.log(`✅ Phase 1 completed: Created artist ${artist.name} (${artist.id})`);
-    return artist;
+    console.log(`✅ Phase 1 completed: Created artist ${createdArtist.name} (${createdArtist.id})`);
+    return createdArtist;
   }
 
   private static async executePhase2(artist: any, job: Job): Promise<{
@@ -286,7 +271,8 @@ export class ArtistImportProcessor {
     }
 
     // Fetch events from Ticketmaster
-    const events = await this.ticketmasterClient.getArtistEvents(artist.tmAttractionId);
+    const eventsRes = await this.ticketmasterClient.searchEvents({ attractionId: artist.tmAttractionId, size: 200 });
+    const events = eventsRes?._embedded?.events || [];
     
     let totalShows = 0;
     let venuesCreated = 0;
@@ -307,32 +293,36 @@ export class ArtistImportProcessor {
             const venueData = event._embedded.venues[0];
             
             // Check if venue exists
-            const existingVenue = await db
+            const existingRows = await db
               .select({ id: venues.id })
               .from(venues)
               .where(eq(venues.tmVenueId, venueData.id))
-              .get();
+              .limit(1);
+            const existingVenue = Array.isArray(existingRows) ? existingRows[0] : existingRows;
 
             if (existingVenue) {
               venueId = existingVenue.id;
             } else {
               // Create venue
-              const [newVenue] = await db
+              const venueSlug = `${(venueData.name || 'venue').toLowerCase().replace(/[^a-z0-9]+/g,'-')}-${String(venueData.id || 'id').slice(-6)}`;
+              const vInserted = await db
                 .insert(venues)
                 .values({
                   tmVenueId: venueData.id,
                   name: venueData.name,
-                  address: venueData.address ? JSON.stringify(venueData.address) : null,
-                  city: venueData.city?.name,
-                  state: venueData.state?.name,
-                  country: venueData.country?.name,
+                  slug: venueSlug,
+                  address: venueData.address?.line1 ?? null,
+                  city: venueData.city?.name || 'Unknown',
+                  state: venueData.state?.stateCode || null,
+                  country: venueData.country?.countryCode || 'US',
                   postalCode: venueData.postalCode,
-                  timezone: venueData.timezone,
-                  capacity: venueData.capacity,
-                  imageUrl: venueData.images?.[0]?.url,
+                  timezone: venueData.timezone || 'UTC',
+                  capacity: venueData.capacity ?? null,
+                  imageUrl: null,
                 })
                 .returning();
-              
+              const newVenue = Array.isArray(vInserted) ? vInserted[0] : vInserted;
+              if (!newVenue) throw new Error('Failed to insert venue');
               venueId = newVenue.id;
               venuesCreated++;
             }
@@ -341,7 +331,7 @@ export class ArtistImportProcessor {
           // Create show
           const showSlug = this.generateShowSlug(artist.name, venueId || 'venue', event.dates?.start?.localDate);
           
-          const [show] = await db
+          const showInserted = await db
             .insert(shows)
             .values({
               headlinerArtistId: artist.id,
@@ -349,18 +339,18 @@ export class ArtistImportProcessor {
               name: event.name,
               slug: showSlug,
               date: event.dates?.start?.localDate,
-              startTime: event.dates?.start?.localTime,
-              doorsTime: event.dates?.start?.doorTime || null,
+              startTime: event.dates?.start?.localTime || null,
+              doorsTime: null,
               status: this.getShowStatus(event.dates?.start?.localDate),
-              description: event.info || null,
+              description: null,
               ticketUrl: event.url,
-              minPrice: event.priceRanges?.[0]?.min,
-              maxPrice: event.priceRanges?.[0]?.max,
+              minPrice: event.priceRanges?.[0]?.min ?? null,
+              maxPrice: event.priceRanges?.[0]?.max ?? null,
               currency: event.priceRanges?.[0]?.currency || "USD",
               tmEventId: event.id,
             })
             .returning();
-
+          const show = Array.isArray(showInserted) ? showInserted[0] : showInserted;
           createdShows.push(show);
           totalShows++;
 
@@ -432,14 +422,15 @@ export class ArtistImportProcessor {
               continue;
             }
             
-            // Skip live versions for studio albums
-            if (this.isLiveTrack(track.name) && album.album_type === 'album') {
+            // Exclude all live songs (track or album indicated as live)
+            const albumLooksLive = typeof album.name === 'string' && /\blive\b/i.test(album.name);
+            if (this.isLiveTrack(track.name) || albumLooksLive) {
               continue;
             }
 
             // Create song record
             try {
-              const [song] = await db
+              const sInserted = await db
                 .insert(songs)
                 .values({
                   spotifyId: track.id,
@@ -463,6 +454,8 @@ export class ArtistImportProcessor {
                   isRemix: this.isRemixTrack(track.name),
                 })
                 .returning();
+              const song = Array.isArray(sInserted) ? sInserted[0] : sInserted;
+              if (!song) throw new Error('Failed to insert song');
 
               // Link song to artist
               await db
@@ -477,7 +470,7 @@ export class ArtistImportProcessor {
               processedTracks.add(track.id);
               totalSongs++;
 
-            } catch (error) {
+            } catch (error: any) {
               // Skip duplicate songs
               if (!error.message?.includes('unique constraint')) {
                 console.error(`Failed to create song ${track.name}:`, error);
@@ -540,7 +533,7 @@ export class ArtistImportProcessor {
     for (const show of upcomingShows.slice(0, 10)) { // Limit to first 10 shows
       try {
         // Create predicted setlist
-        const [setlist] = await db
+        const insertedSetlist = await db
           .insert(setlists)
           .values({
             showId: show.id,
@@ -552,22 +545,25 @@ export class ArtistImportProcessor {
             importedFrom: "auto-generated",
           })
           .returning();
+        const setlist = Array.isArray(insertedSetlist) ? insertedSetlist[0] : insertedSetlist;
+        if (!setlist) throw new Error('Failed to insert setlist');
 
         // Add songs to setlist (top 15-20 songs)
-        const setlistSongs = popularSongs.slice(0, Math.min(18, popularSongs.length));
+        const setlistItems = popularSongs.slice(0, Math.min(18, popularSongs.length));
         
-        for (let i = 0; i < setlistSongs.length; i++) {
+        for (let i = 0; i < setlistItems.length; i++) {
+          const item = setlistItems[i];
           await db
             .insert(setlistSongs)
             .values({
               setlistId: setlist.id,
-              songId: setlistSongs[i].id,
+              songId: item!.id as string,
               position: i + 1,
             });
         }
 
         setlistsCreated++;
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Failed to create setlist for show ${show.id}:`, error);
       }
     }
@@ -586,11 +582,12 @@ export class ArtistImportProcessor {
     let counter = 1;
 
     while (true) {
-      const existing = await db
+      const existingRows = await db
         .select({ id: artists.id })
         .from(artists)
         .where(eq(artists.slug, slug))
-        .get();
+        .limit(1);
+      const existing = Array.isArray(existingRows) ? existingRows[0] : existingRows;
 
       if (!existing) {
         return slug;
