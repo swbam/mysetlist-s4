@@ -1,16 +1,21 @@
 import { Job } from "bullmq";
 import { db, artists, shows } from "@repo/database";
 import { eq, sql, desc } from "drizzle-orm";
-import { queueManager, QueueName, Priority } from "../queue-manager";
-import { RedisCache } from "../redis-config";
+import { RedisClientFactory } from "../redis-config";
 
-const cache = new RedisCache();
+const cache = RedisClientFactory.getClient('cache');
 
 export interface ScheduledSyncJobData {
   type: 'active' | 'trending' | 'stale' | 'new' | 'all';
   limit?: number;
   deep?: boolean;
   options?: any;
+}
+
+export class ScheduledSyncProcessor {
+  static async process(job: Job<ScheduledSyncJobData>) {
+    return await processScheduledSync(job);
+  }
 }
 
 export async function processScheduledSync(job: Job<ScheduledSyncJobData>) {
@@ -60,6 +65,9 @@ export async function processScheduledSync(job: Job<ScheduledSyncJobData>) {
     
     // Queue sync jobs for each artist
     const jobs: Promise<any>[] = [];
+    
+    // Import queue manager dynamically to avoid circular dependency
+    const { queueManager, QueueName, Priority } = await import("../queue-manager");
     const priority = deep ? Priority.LOW : Priority.NORMAL;
     
     for (const artist of artistsToSync) {

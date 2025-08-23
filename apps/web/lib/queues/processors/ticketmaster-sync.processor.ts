@@ -4,10 +4,9 @@ import { TicketmasterClient } from "@repo/external-apis";
 import { db, artists, shows, venues } from "@repo/database";
 import { eq, sql } from "drizzle-orm";
 import { updateImportStatus } from "../../import-status";
-import { RedisCache } from "../redis-config";
-import { queueManager, QueueName } from "../queue-manager";
+import { RedisClientFactory } from "../redis-config";
 
-const cache = new RedisCache();
+const cache = RedisClientFactory.getClient('cache');
 
 export interface TicketmasterSyncJobData {
   artistId: string;
@@ -18,6 +17,12 @@ export interface TicketmasterSyncJobData {
     includePast?: boolean;
     maxShows?: number;
   };
+}
+
+export class TicketmasterSyncProcessor {
+  static async process(job: Job<TicketmasterSyncJobData>) {
+    return await processTicketmasterSync(job);
+  }
 }
 
 export async function processTicketmasterSync(job: Job<TicketmasterSyncJobData>) {
@@ -166,15 +171,21 @@ async function syncShows(
   
   // Queue venue sync if we have venues
   if (venueIds.size > 0) {
-    await queueManager.addJob(
-      QueueName.VENUE_SYNC,
-      `venue-sync-${artistId}`,
-      {
-        artistId,
-        tmVenueIds: Array.from(venueIds),
-      },
-      { priority: 15, delay: 2000 }
-    );
+    try {
+      // Dynamic import to avoid circular dependency
+      const { queueManager, QueueName } = await import("../queue-manager");
+      await queueManager.addJob(
+        QueueName.VENUE_SYNC,
+        `venue-sync-${artistId}`,
+        {
+          artistId,
+          tmVenueIds: Array.from(venueIds),
+        },
+        { priority: 15, delay: 2000 }
+      );
+    } catch (error) {
+      console.warn('Failed to queue venue sync:', error);
+    }
   }
   
   await job.updateProgress(100);
