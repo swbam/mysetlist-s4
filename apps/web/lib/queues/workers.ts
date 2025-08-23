@@ -3,6 +3,7 @@ import { processArtistImport } from "./processors/artist-import.processor";
 import { processSpotifySync, processSpotifyCatalog } from "./processors/spotify-sync.processor";
 import { processTicketmasterSync } from "./processors/ticketmaster-sync.processor";
 import { processVenueSync } from "./processors/venue-sync.processor";
+import { processSetlistSync } from "./processors/setlist-sync.processor";
 import { processTrendingCalc } from "./processors/trending.processor";
 import { processScheduledSync } from "./processors/scheduled-sync.processor";
 import { Worker } from "bullmq";
@@ -65,6 +66,14 @@ export async function initializeWorkers() {
   );
   
   workers.set(QueueName.VENUE_SYNC, venueSyncWorker);
+  
+  // Setlist Sync Worker
+  const setlistSyncWorker = queueManager.createWorker(
+    QueueName.SETLIST_SYNC,
+    processSetlistSync
+  );
+  
+  workers.set(QueueName.SETLIST_SYNC, setlistSyncWorker);
   
   // Trending Calculation Worker
   const trendingWorker = queueManager.createWorker(

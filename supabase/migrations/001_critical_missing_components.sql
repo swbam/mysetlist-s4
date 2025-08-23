@@ -1,6 +1,6 @@
--- MySetlist Database - Critical Components Applied
--- This file contains all the critical database components that were missing
--- Apply this to new database instances to ensure full functionality
+-- MySetlist-S4 Critical Missing Database Components
+-- File: 001_critical_missing_components.sql
+-- Apply after existing migrations to fix critical missing components
 
 -- =====================================================
 -- CRITICAL MISSING TABLES (Referenced but not existing)
@@ -27,8 +27,7 @@ CREATE TABLE IF NOT EXISTS cron_metrics (
   cpu_percentage DECIMAL(5,2),
   error_count INTEGER DEFAULT 0,
   success_count INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT NOW(),
-  CONSTRAINT unique_job_name UNIQUE (job_name)
+  created_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Queue job tracking (missing for BullMQ integration)
@@ -46,7 +45,7 @@ CREATE TABLE IF NOT EXISTS queue_jobs (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- System health monitoring (may already exist)
+-- System health monitoring
 CREATE TABLE IF NOT EXISTS system_health (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   service_name VARCHAR(100) NOT NULL,
@@ -105,6 +104,70 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- =====================================================
+-- PERFORMANCE OPTIMIZATION INDEXES (From docs)
+-- =====================================================
+
+-- Performance optimization indexes (referenced in docs but missing)
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_activity_lookup 
+ON artists(last_synced_at, updated_at, popularity DESC)
+WHERE last_synced_at IS NOT NULL;
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_trending_score 
+ON artists(trending_score DESC, updated_at)
+WHERE trending_score > 0;
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_shows_artist_date 
+ON shows(headliner_artist_id, date DESC)
+WHERE headliner_artist_id IS NOT NULL AND date IS NOT NULL;
+
+-- Add missing index for import status lookups
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_import_status_artist_id 
+ON import_status(artist_id, stage, updated_at DESC);
+
+-- Add missing index for import logs performance
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_import_logs_artist_job 
+ON import_logs(artist_id, job_id, created_at DESC);
+
+-- Queue jobs performance indexes
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_queue_jobs_status_queue 
+ON queue_jobs(status, queue_name, created_at);
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_queue_jobs_job_id 
+ON queue_jobs(job_id);
+
+-- Cron logs performance indexes  
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_cron_logs_job_status_time
+ON cron_logs(job_name, status, created_at DESC);
+
+-- =====================================================
+-- MATERIALIZED VIEWS FOR PERFORMANCE (From docs)
+-- =====================================================
+
+-- Materialized view for trending artists (referenced in docs)
+DROP MATERIALIZED VIEW IF EXISTS trending_artists_mv;
+CREATE MATERIALIZED VIEW trending_artists_mv AS
+SELECT 
+  a.id,
+  a.name,
+  a.slug,
+  a.image_url,
+  a.trending_score,
+  a.popularity,
+  COUNT(DISTINCT s.id) as total_shows,
+  COUNT(DISTINCT uf.user_id) as follower_count,
+  MAX(s.date) as latest_show_date,
+  COUNT(DISTINCT s.id) FILTER (WHERE s.date >= NOW()) as upcoming_shows
+FROM artists a
+LEFT JOIN shows s ON s.headliner_artist_id = a.id
+LEFT JOIN user_follows_artists uf ON uf.artist_id = a.id
+GROUP BY a.id, a.name, a.slug, a.image_url, a.trending_score, a.popularity
+ORDER BY a.trending_score DESC;
+
+-- Create unique index for concurrent refresh
+CREATE UNIQUE INDEX IF NOT EXISTS trending_artists_mv_id_idx 
+ON trending_artists_mv(id);
+
 -- Function to refresh trending data (called in cron jobs)
 CREATE OR REPLACE FUNCTION refresh_trending_data()
 RETURNS VOID AS $$
@@ -112,6 +175,10 @@ BEGIN
   REFRESH MATERIALIZED VIEW CONCURRENTLY trending_artists_mv;
 END;
 $$ LANGUAGE plpgsql;
+
+-- =====================================================
+-- DATA CLEANUP FUNCTIONS (Referenced in cron jobs)
+-- =====================================================
 
 -- Cleanup old data function (referenced in complete-catalog-sync)
 CREATE OR REPLACE FUNCTION cleanup_old_data()
@@ -144,34 +211,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- =====================================================
--- MATERIALIZED VIEWS FOR PERFORMANCE (From docs)
--- =====================================================
-
--- Materialized view for trending artists (referenced in docs)
-DROP MATERIALIZED VIEW IF EXISTS trending_artists_mv;
-CREATE MATERIALIZED VIEW trending_artists_mv AS
-SELECT 
-  a.id,
-  a.name,
-  a.slug,
-  a.image_url,
-  a.trending_score,
-  a.popularity,
-  COUNT(DISTINCT s.id) as total_shows,
-  COUNT(DISTINCT uf.user_id) as follower_count,
-  MAX(s.date) as latest_show_date,
-  COUNT(DISTINCT s.id) FILTER (WHERE s.date >= NOW()) as upcoming_shows
-FROM artists a
-LEFT JOIN shows s ON s.headliner_artist_id = a.id
-LEFT JOIN user_follows_artists uf ON uf.artist_id = a.id
-GROUP BY a.id, a.name, a.slug, a.image_url, a.trending_score, a.popularity
-ORDER BY a.trending_score DESC;
-
--- Create unique index for concurrent refresh
-CREATE UNIQUE INDEX IF NOT EXISTS trending_artists_mv_id_idx 
-ON trending_artists_mv(id);
-
--- =====================================================
 -- GRANT PERMISSIONS
 -- =====================================================
 
@@ -179,11 +218,3 @@ ON trending_artists_mv(id);
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO postgres;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO postgres;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO postgres;
-
--- =====================================================
--- MIGRATION STATUS
--- =====================================================
--- Applied: 2025-08-23 
--- Components: Critical tables, functions, materialized views, indexes
--- Status:  All critical missing components have been applied
--- Database is now ready for full MySetlist app functionality
