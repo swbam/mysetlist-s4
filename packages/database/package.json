@@ -22,6 +22,7 @@
     "@repo/env": "workspace:*",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.50.3",
+    "dotenv": "^17.2.1",
     "drizzle-orm": "^0.29.5",
     "postgres": "^3.4.7"
   },

@@ -41,7 +41,7 @@ export interface DatabaseVenue {
   timezone?: string | null;
   capacity?: number | null;
   website?: string | null;
-  ticketmaster_id?: string | null;
+  tm_venue_id?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -54,7 +54,7 @@ export interface DatabaseShow {
   status: "upcoming" | "in_progress" | "completed" | "cancelled";
   artist_id?: string | null;
   venue_id?: string | null;
-  ticketmaster_id?: string | null;
+  tm_event_id?: string | null;
   ticket_url?: string | null;
   price_range_min?: number | null;
   price_range_max?: number | null;

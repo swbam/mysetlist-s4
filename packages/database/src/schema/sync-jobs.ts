@@ -15,7 +15,7 @@ export const syncJobs = pgTable("sync_jobs", {
   entityType: text("entity_type").notNull(), // 'artist', 'venue', 'show'
   entityId: text("entity_id").notNull(),
   spotifyId: text("spotify_id"),
-  ticketmasterId: text("ticketmaster_id"),
+  tmAttractionId: text("tm_attraction_id"),
   setlistfmId: text("setlistfm_id"),
 
   // Status tracking

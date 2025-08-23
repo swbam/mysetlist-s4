@@ -10,7 +10,7 @@ export async function GET() {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         artist_id VARCHAR(255) NOT NULL,
         artist_name VARCHAR(255),
-        ticketmaster_id VARCHAR(255),
+        tm_attraction_id VARCHAR(255),
         spotify_id VARCHAR(255),
         job_id VARCHAR(255),
         

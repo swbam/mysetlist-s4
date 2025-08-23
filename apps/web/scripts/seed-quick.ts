@@ -44,7 +44,7 @@ async function seedWithSQL() {
 
   // Create popular artists with high trending scores
   await db.execute(sql`
-    INSERT INTO artists (name, slug, genres, popularity, followers, follower_count, monthly_listeners, verified, trending_score, created_at, spotify_id, ticketmaster_id)
+    INSERT INTO artists (name, slug, genres, popularity, followers, follower_count, monthly_listeners, verified, trending_score, created_at, spotify_id, tm_attraction_id)
     VALUES 
       ('Taylor Swift', 'taylor-swift', '["pop", "country"]', 98, 84000000, 8400, 84000000, true, 95, NOW(), '06HL4z0CvFAxyc27GXpf02', 'K8vZ917Gku7'),
       ('Bad Bunny', 'bad-bunny', '["reggaeton", "latin"]', 96, 65000000, 6500, 65000000, true, 92, NOW(), '4q3ewBCX7sLwd24euuV69X', 'K8vZ917oNX7'),

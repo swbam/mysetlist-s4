@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
             const { data: existingVenue } = await supabase
               .from("venues")
               .select("id")
-              .eq("ticketmaster_id", venue.id)
+              .eq("tm_venue_id", venue.id)
               .single();
 
             if (existingVenue) {
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
               const { data: newVenue, error: venueError } = await supabase
                 .from("venues")
                 .insert({
-                  ticketmaster_id: venue.id,
+                  tm_venue_id: venue.id,
                   name: venue.name,
                   city: venue.city?.name || "Unknown",
                   state: venue.state?.stateCode || null,
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
           const { error: showError } = await supabase
             .from("shows")
             .insert({
-              ticketmaster_id: event.id,
+              tm_event_id: event.id,
               name: event.name,
               date: showDate,
               status: "upcoming",

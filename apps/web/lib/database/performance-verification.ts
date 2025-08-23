@@ -660,7 +660,7 @@ export class DatabaseOptimizer {
       const indexQueries = [
         // Artist lookups
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_slug ON artists(slug)",
-        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_ticketmaster_id ON artists(ticketmaster_id)",
+        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_tm_attraction_id ON artists(tm_attraction_id)",
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_spotify_id ON artists(spotify_id)",
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_popularity ON artists(popularity DESC)",
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_trending_score ON artists(trending_score DESC)",
