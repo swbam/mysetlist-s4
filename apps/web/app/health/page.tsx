@@ -313,19 +313,19 @@ export default function HealthDashboard() {
             <div>
               <p className="text-sm text-muted-foreground">Environment</p>
               <p className="font-mono text-sm">
-                {process.env.NODE_ENV || "development"}
+                {process.env['NODE_ENV'] || "development"}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Site URL</p>
               <p className="font-mono text-sm truncate">
-                {process.env.NEXT_PUBLIC_SITE_URL || "Not configured"}
+                {process.env['NEXT_PUBLIC_SITE_URL'] || "Not configured"}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Deployment</p>
               <p className="font-mono text-sm">
-                {process.env.VERCEL ? "Vercel" : "Local"}
+                {process.env['VERCEL'] ? "Vercel" : "Local"}
               </p>
             </div>
           </div>

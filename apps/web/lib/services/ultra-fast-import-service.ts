@@ -146,7 +146,7 @@ class WorkerPool {
   private async executeTask(task: ImportTask): Promise<any> {
     const spotifyClient = new SpotifyClient({});
     const ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env.TICKETMASTER_API_KEY || "",
+      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
     });
 
     switch (task.type) {
@@ -302,7 +302,7 @@ class PredictiveCache {
   
   private async predictArtists(query: string): Promise<any[]> {
     const ticketmaster = new TicketmasterClient({
-      apiKey: process.env.TICKETMASTER_API_KEY || "",
+      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
     });
     
     try {
@@ -551,7 +551,7 @@ export class UltraFastImportService {
    */
   private async createPlaceholder(tmAttractionId: string): Promise<any> {
     const ticketmaster = new TicketmasterClient({
-      apiKey: process.env.TICKETMASTER_API_KEY || "",
+      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
     });
     
     // Get basic data from Ticketmaster

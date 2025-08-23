@@ -39,7 +39,7 @@ export default function GlobalError({
               Reload application
             </button>
 
-            {process.env.NODE_ENV === "development" && (
+            {process.env['NODE_ENV'] === "development" && (
               <details className="mt-6 text-left">
                 <summary className="cursor-pointer text-gray-500 text-sm hover:text-gray-700">
                   Error details (development only)

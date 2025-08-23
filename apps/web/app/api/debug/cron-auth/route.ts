@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 export async function POST(_request: Request) {
   const headersList = await headers();
   const authHeader = headersList.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
+  const cronSecret = process.env['CRON_SECRET'];
 
   // Check various auth methods
   const checks = {
@@ -20,9 +20,9 @@ export async function POST(_request: Request) {
     matchesOldSecret: authHeader === "Bearer 615002300",
     matchesNewSecret: authHeader === "Bearer 6155002300",
     // Check environment
-    nodeEnv: process.env.NODE_ENV,
-    hasSpotifyId: !!process.env.SPOTIFY_CLIENT_ID,
-    hasSpotifySecret: !!process.env.SPOTIFY_CLIENT_SECRET,
+    nodeEnv: process.env['NODE_ENV'],
+    hasSpotifyId: !!process.env['SPOTIFY_CLIENT_ID'],
+    hasSpotifySecret: !!process.env['SPOTIFY_CLIENT_SECRET'],
   };
 
   return NextResponse.json(checks);

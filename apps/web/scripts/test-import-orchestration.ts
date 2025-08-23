@@ -88,7 +88,7 @@ class ImportOrchestrationTester {
       console.log(`🔍 Searching for ${artistName} on Ticketmaster...`);
       
       const encodedName = encodeURIComponent(artistName);
-      const url = `https://app.ticketmaster.com/discovery/v2/attractions.json?keyword=${encodedName}&apikey=${process.env.TICKETMASTER_API_KEY}`;
+      const url = `https://app.ticketmaster.com/discovery/v2/attractions.json?keyword=${encodedName}&apikey=${process.env['TICKETMASTER_API_KEY']}`;
       
       const response = await fetch(url);
       const data = await response.json();
@@ -338,7 +338,7 @@ class ImportOrchestrationTester {
 
 // Test execution
 async function main() {
-  if (!process.env.TICKETMASTER_API_KEY) {
+  if (!process.env['TICKETMASTER_API_KEY']) {
     console.error('❌ TICKETMASTER_API_KEY environment variable is required');
     process.exit(1);
   }

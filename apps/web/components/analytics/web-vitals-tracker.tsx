@@ -15,7 +15,7 @@ interface WebVital {
 function sendToAnalytics(metric: WebVital) {
   // Only send in production or when explicitly enabled
   if (
-    process.env.NODE_ENV !== "production" &&
+    process.env['NODE_ENV'] !== "production" &&
     !process.env['NEXT_PUBLIC_ENABLE_ANALYTICS']
   ) {
     console.log("Web Vital:", metric);

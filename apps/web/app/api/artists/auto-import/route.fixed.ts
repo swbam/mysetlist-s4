@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${process.env.CRON_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+                "Authorization": `Bearer ${process.env['CRON_SECRET'] || process.env['SUPABASE_SERVICE_ROLE_KEY']}`,
                 "User-Agent": "TheSet-AutoImport/1.0",
               },
               body: JSON.stringify({
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: "Auto-import failed",
         details:
-          process.env.NODE_ENV === "development" ? errorMessage : undefined,
+          process.env['NODE_ENV'] === "development" ? errorMessage : undefined,
         statusEndpoint: targetArtistId
           ? `/api/sync/status?artistId=${targetArtistId}`
           : undefined,

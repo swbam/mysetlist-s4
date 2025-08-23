@@ -88,7 +88,7 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
     // Do not generate mock data in production
     if (
       typeof process !== "undefined" &&
-      process.env.NODE_ENV === "production"
+      process.env['NODE_ENV'] === "production"
     ) {
       return [];
     }

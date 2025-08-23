@@ -60,14 +60,14 @@ export interface ServiceConfig {
  */
 export function initializeServices(config: ServiceConfig = {}) {
   const defaults: Required<ServiceConfig> = {
-    ticketmasterApiKey: process.env.TICKETMASTER_API_KEY || '',
-    spotifyClientId: process.env.SPOTIFY_CLIENT_ID || '',
-    spotifyClientSecret: process.env.SPOTIFY_CLIENT_SECRET || '',
+    ticketmasterApiKey: process.env['TICKETMASTER_API_KEY'] || '',
+    spotifyClientId: process.env['SPOTIFY_CLIENT_ID'] || '',
+    spotifyClientSecret: process.env['SPOTIFY_CLIENT_SECRET'] || '',
     defaultConcurrency: 5,
     defaultRetries: 3,
     defaultTimeout: 30000,
     enableProgressTracking: true,
-    enableDetailedLogging: process.env.NODE_ENV === 'development',
+    enableDetailedLogging: process.env['NODE_ENV'] === 'development',
   };
 
   const finalConfig = { ...defaults, ...config };

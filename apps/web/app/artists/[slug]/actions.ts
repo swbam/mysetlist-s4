@@ -122,8 +122,8 @@ async function attemptAutoImport(slug: string) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(process.env.CRON_SECRET && {
-          "Authorization": `Bearer ${process.env.CRON_SECRET}`
+        ...(process.env['CRON_SECRET'] && {
+          "Authorization": `Bearer ${process.env['CRON_SECRET']}`
         }),
       },
       body: JSON.stringify({
@@ -188,11 +188,11 @@ async function attemptAutoImport(slug: string) {
 // Helper function to get proper import URL for production
 function getImportUrl(): string {
   // In server action context, we need to use absolute URLs
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
+  if (process.env['VERCEL_URL']) {
+    return `https://${process.env['VERCEL_URL']}`;
   }
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL;
+  if (process.env['NEXT_PUBLIC_APP_URL']) {
+    return process.env['NEXT_PUBLIC_APP_URL'];
   }
   // Fallback for local development
   return "http://localhost:3001";
@@ -225,7 +225,7 @@ async function searchSpotifyArtist(name: string) {
 async function searchTicketmasterArtist(name: string) {
   try {
     const ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env.TICKETMASTER_API_KEY || ""
+      apiKey: process.env['TICKETMASTER_API_KEY'] || ""
     });
     const attractions = await ticketmasterClient.searchAttractions({
       keyword: name,

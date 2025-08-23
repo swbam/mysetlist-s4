@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     const cookieStore = await cookies();
     cookieStore.set("csrf-token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env['NODE_ENV'] === "production",
       sameSite: "strict",
       maxAge: 60 * 60, // 1 hour
       path: "/",
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     // Also set token hash in a separate cookie for client-side validation
     cookieStore.set("csrf-token-hash", tokenHash, {
       httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env['NODE_ENV'] === "production",
       sameSite: "strict",
       maxAge: 60 * 60, // 1 hour
       path: "/",

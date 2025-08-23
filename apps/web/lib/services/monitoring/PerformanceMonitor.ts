@@ -218,7 +218,7 @@ export class PerformanceMonitor {
       // Metadata
       artistId: this.artistId || 'unknown',
       timestamp: new Date(),
-      environment: process.env.NODE_ENV || 'development',
+      environment: process.env['NODE_ENV'] || 'development',
     };
 
     return metrics;

@@ -234,7 +234,7 @@ export function withAnalyticsOptimization<P extends object>(
 ) {
   return optimizeComponent(Component, {
     propsComparator: analyticsChartComparator,
-    trackPerformance: process.env.NODE_ENV === "development",
+    trackPerformance: process.env['NODE_ENV'] === "development",
     componentName: displayName || Component.displayName || Component.name,
   });
 }
@@ -268,7 +268,7 @@ export class PerformanceTracker {
       PerformanceTracker.measurements.set(componentName, measurements);
 
       // Log slow renders in development
-      if (process.env.NODE_ENV === "development" && measure.duration > 16) {
+      if (process.env['NODE_ENV'] === "development" && measure.duration > 16) {
         console.warn(
           `[Performance] ${componentName} rendered in ${measure.duration.toFixed(2)}ms`,
         );

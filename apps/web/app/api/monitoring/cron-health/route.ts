@@ -16,9 +16,9 @@ export async function GET(request: NextRequest) {
     const headersList = await headers();
     const authHeader = headersList.get("authorization");
     const validTokens = [
-      process.env.CRON_SECRET,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      process.env.ADMIN_API_KEY,
+      process.env['CRON_SECRET'],
+      process.env['SUPABASE_SERVICE_ROLE_KEY'],
+      process.env['ADMIN_API_KEY'],
     ].filter(Boolean) as string[];
 
     if (
@@ -84,9 +84,9 @@ export async function POST(request: NextRequest) {
     const headersList = await headers();
     const authHeader = headersList.get("authorization");
     const validTokens = [
-      process.env.CRON_SECRET,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      process.env.ADMIN_API_KEY,
+      process.env['CRON_SECRET'],
+      process.env['SUPABASE_SERVICE_ROLE_KEY'],
+      process.env['ADMIN_API_KEY'],
     ].filter(Boolean) as string[];
 
     if (

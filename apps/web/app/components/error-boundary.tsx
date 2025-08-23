@@ -48,7 +48,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <Button onClick={() => window.location.reload()} className="mb-4">
               Refresh Page
             </Button>
-            {process.env.NODE_ENV === "development" && this.state.error && (
+            {process.env['NODE_ENV'] === "development" && this.state.error && (
               <details className="mt-4 text-left">
                 <summary className="cursor-pointer text-sm text-muted-foreground">
                   Error details

@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 
 // Enhanced Sentry configuration
 const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
-const environment = process.env.NODE_ENV || "development";
+const environment = process.env['NODE_ENV'] || "development";
 
 if (SENTRY_DSN) {
   Sentry.init({
@@ -91,14 +91,14 @@ if (SENTRY_DSN) {
     integrations: [],
 
     // Release tracking
-    release: process.env.VERCEL_GIT_COMMIT_SHA || "unknown",
+    release: process.env['VERCEL_GIT_COMMIT_SHA'] || "unknown",
 
     // Custom tags for better filtering
     initialScope: {
       tags: {
         component: "web-app",
         environment,
-        deployment: process.env.VERCEL_ENV || "development",
+        deployment: process.env['VERCEL_ENV'] || "development",
       },
       level: "info",
     },

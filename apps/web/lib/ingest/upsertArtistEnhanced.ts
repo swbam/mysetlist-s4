@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 
 async function fetchAttraction(tmId: string) {
   const tmClient = new TicketmasterClient({
-    apiKey: process.env.TICKETMASTER_API_KEY || "",
+    apiKey: process.env['TICKETMASTER_API_KEY'] || "",
   });
   return await tmClient.getAttraction(tmId);
 }

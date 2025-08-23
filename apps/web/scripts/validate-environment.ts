@@ -171,14 +171,14 @@ class EnvironmentValidator {
       this.errors.push('❌ No Redis configuration found (REDIS_URL or UPSTASH_REDIS_REST_URL)');
     }
 
-    if (upstashUrl && !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    if (upstashUrl && !process.env['UPSTASH_REDIS_REST_TOKEN']) {
       this.errors.push('❌ UPSTASH_REDIS_REST_URL set but UPSTASH_REDIS_REST_TOKEN missing');
     }
   }
 
   private validateApiKeys(): void {
     // Check Spotify configuration
-    if (process.env.SPOTIFY_CLIENT_ID !== process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID) {
+    if (process.env['SPOTIFY_CLIENT_ID'] !== process.env['NEXT_PUBLIC_SPOTIFY_CLIENT_ID']) {
       this.warnings.push('⚠️  SPOTIFY_CLIENT_ID and NEXT_PUBLIC_SPOTIFY_CLIENT_ID should match');
     }
 
@@ -225,7 +225,7 @@ class EnvironmentValidator {
   }
 
   private async checkRedis(): Promise<void> {
-    if (process.env.UPSTASH_REDIS_REST_URL) {
+    if (process.env['UPSTASH_REDIS_REST_URL']) {
       try {
         const response = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/ping`, {
           headers: {
@@ -246,7 +246,7 @@ class EnvironmentValidator {
 
   private async checkExternalAPIs(): Promise<void> {
     // Check Spotify
-    if (process.env.SPOTIFY_CLIENT_ID && process.env.SPOTIFY_CLIENT_SECRET) {
+    if (process.env['SPOTIFY_CLIENT_ID'] && process.env['SPOTIFY_CLIENT_SECRET']) {
       try {
         const auth = Buffer.from(
           `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`

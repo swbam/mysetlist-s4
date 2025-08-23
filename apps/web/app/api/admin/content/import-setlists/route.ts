@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
                   setlist_id: newSetlist.id,
                   song_id: songId,
                   position: position,
-                  is_encore: (set.encore || 0) > 0,
+                  is_encore: ((set as any)['encore'] || 0) > 0,
                   created_at: new Date().toISOString(),
                 });
 

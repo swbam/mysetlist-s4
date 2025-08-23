@@ -6,7 +6,7 @@ import { keys as auth } from "@repo/auth/keys";
 import { keys as nextConfig } from "@repo/next-config/keys";
 
 export const env = createEnv({
-  extends: [...(process.env.SKIP_ENV_VALIDATION ? [] : [auth(), nextConfig()])],
+  extends: [...(process.env['SKIP_ENV_VALIDATION'] ? [] : [auth(), nextConfig()])],
   server: {
     // Authentication
     NEXTAUTH_URL: z.string().url().optional(),
@@ -129,12 +129,12 @@ export const env = createEnv({
     // Server
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-    TICKETMASTER_API_KEY: process.env.TICKETMASTER_API_KEY,
-    SETLISTFM_API_KEY: process.env.SETLISTFM_API_KEY,
-    SETLISTFM_API_KEY: process.env.SETLISTFM_API_KEY,
-    CRON_SECRET: process.env.CRON_SECRET,
+    TICKETMASTER_API_KEY: process.env['TICKETMASTER_API_KEY'],
+    SETLISTFM_API_KEY: process.env['SETLISTFM_API_KEY'],
+    SETLISTFM_API_KEY: process.env['SETLISTFM_API_KEY'],
+    CRON_SECRET: process.env['CRON_SECRET'],
     CSRF_SECRET: process.env.CSRF_SECRET,
-    ADMIN_API_KEY: process.env.ADMIN_API_KEY,
+    ADMIN_API_KEY: process.env['ADMIN_API_KEY'],
     SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EMAIL_SYSTEM_TOKEN: process.env.EMAIL_SYSTEM_TOKEN,
@@ -162,7 +162,7 @@ export const env = createEnv({
     // Client
     NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_APP_URL: process.env['NEXT_PUBLIC_APP_URL'],
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
@@ -191,8 +191,8 @@ export const env = createEnv({
 });
 
 // Server-side environment checks (only access on server-side)
-export const isDevelopment = process.env.NODE_ENV === "development";
-export const isProduction = process.env.NODE_ENV === "production";
+export const isDevelopment = process.env['NODE_ENV'] === "development";
+export const isProduction = process.env['NODE_ENV'] === "production";
 
 // Client-safe performance configurations (only using client-side variables)
 export const performanceConfig = {

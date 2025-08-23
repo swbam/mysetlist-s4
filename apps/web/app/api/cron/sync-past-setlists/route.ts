@@ -18,7 +18,7 @@ export async function GET(_request: Request) {
       .where(and(lte(shows.date, sql`'${now.toISOString().split("T")[0]}'` ), gte(shows.date, sql`'${sevenDaysAgo.toISOString().split("T")[0]}'`)));
 
     const setlistFmClient = new SetlistFmClient({
-      apiKey: process.env.SETLISTFM_API_KEY!,
+      apiKey: process.env['SETLISTFM_API_KEY']!,
     });
 
     for (const show of recentShows) {

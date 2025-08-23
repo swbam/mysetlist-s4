@@ -113,7 +113,7 @@ export function CacheManager({
     <>
       {children}
       {/* Add a hidden div that displays cache status in dev mode */}
-      {process.env.NODE_ENV === "development" && (
+      {process.env['NODE_ENV'] === "development" && (
         <div
           style={{
             position: "fixed",

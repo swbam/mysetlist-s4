@@ -27,7 +27,7 @@ const CACHE_TTL = 60000; // 60 seconds
 
 export async function GET(request: NextRequest) {
   // Apply rate limiting only in production
-  if (process.env.NODE_ENV === "production") {
+  if (process.env['NODE_ENV'] === "production") {
     const rateLimitResult = await rateLimitMiddleware(request);
     if (rateLimitResult) {
       return rateLimitResult;
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     }
 
     // TICKETMASTER-ONLY SEARCH: Always query Ticketmaster API directly
-    const apiKey = process.env.TICKETMASTER_API_KEY;
+    const apiKey = process.env['TICKETMASTER_API_KEY'];
     if (!apiKey) {
       throw new Error("Ticketmaster API not configured");
     }
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       console.log(`Searching Ticketmaster for: ${query}, limit: ${limit}`);
 
       // Direct API call to bypass client issues
-      const apiKey = process.env.TICKETMASTER_API_KEY;
+      const apiKey = process.env['TICKETMASTER_API_KEY'];
       if (!apiKey) {
         throw new Error("Ticketmaster API key not configured");
       }

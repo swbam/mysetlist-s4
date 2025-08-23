@@ -30,7 +30,7 @@ export function performanceMiddleware(request: NextRequest) {
     // Add CORS headers for API routes
     response.headers.set(
       "Access-Control-Allow-Origin",
-      process.env.NEXT_PUBLIC_APP_URL || "*",
+      process.env['NEXT_PUBLIC_APP_URL'] || "*",
     );
     response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     response.headers.set(

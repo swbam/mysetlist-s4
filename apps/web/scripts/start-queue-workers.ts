@@ -14,7 +14,6 @@ async function startWorkers() {
   try {
     // Initialize queue manager
     console.log('Initializing queue system...');
-    // Initialize queue system
     await queueManager.initialize();
     
     // Start all workers
@@ -35,22 +34,38 @@ async function startWorkers() {
     
     console.log('─'.repeat(50));
 
-    // Start cache warming
-    console.log('\nStarting cache warming service...');
-    cacheManager.startWarming();
-    console.log('✅ Cache warming started');
+    // Start cache warming with error handling
+    try {
+      console.log('\nStarting cache warming service...');
+      cacheManager.startWarming();
+      console.log('✅ Cache warming started');
+    } catch (error) {
+      console.warn('⚠️ Cache warming failed to start:', error);
+    }
 
-    // Analyze traffic patterns for optimal scheduling
-    console.log('\nAnalyzing traffic patterns...');
-    await trafficAwareScheduler.analyzeTrafficPatterns(7); // Last 7 days
-    console.log('✅ Traffic patterns analyzed');
+    // Analyze traffic patterns with error handling  
+    try {
+      console.log('\nAnalyzing traffic patterns...');
+      await trafficAwareScheduler.analyzeTrafficPatterns(7);
+      console.log('✅ Traffic patterns analyzed');
+    } catch (error) {
+      console.warn('⚠️ Traffic analysis failed:', error);
+    }
 
-    // Schedule initial data freshness check
-    console.log('\nScheduling data freshness check...');
-    setTimeout(async () => {
-      const report = await dataFreshnessManager.checkAndScheduleSyncs();
-      console.log(`\n📊 Freshness Check: ${report.staleEntities}/${report.totalEntities} entities need refresh`);
-    }, 30000); // Run after 30 seconds
+    // Schedule initial data freshness check with error handling
+    try {
+      console.log('\nScheduling data freshness check...');
+      setTimeout(async () => {
+        try {
+          const report = await dataFreshnessManager.checkAndScheduleSyncs();
+          console.log(`\n📊 Freshness Check: ${report.staleEntities}/${report.totalEntities} entities need refresh`);
+        } catch (error) {
+          console.warn('⚠️ Data freshness check failed:', error);
+        }
+      }, 30000); // Run after 30 seconds
+    } catch (error) {
+      console.warn('⚠️ Failed to schedule data freshness check:', error);
+    }
 
     // Display monitoring info
     console.log('\n📊 Monitoring Dashboard:');
@@ -93,7 +108,11 @@ async function shutdown() {
     await queueManager.shutdown();
     
     // Stop cache warming
-    cacheManager.stopWarming();
+    try {
+      cacheManager.stopWarming();
+    } catch (error) {
+      console.warn('⚠️ Failed to stop cache warming:', error);
+    }
     
     console.log('✅ Shutdown complete');
     process.exit(0);

@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-// NextResponse removed - unused import
+import { NextResponse } from "next/server";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -36,12 +36,15 @@ export async function GET() {
     // API integrations health check
     const apiHealth = await checkAPIIntegrations();
 
+    // Queue health check
+    const queueHealth = await checkQueueHealth();
+
     // Calculate response time
     const responseTime = Date.now() - startTime;
 
     // Overall health status
     const allHealthy =
-      dbHealth.healthy && authHealth.healthy && apiHealth.healthy;
+      dbHealth.healthy && authHealth.healthy && apiHealth.healthy && queueHealth.healthy;
 
     const response = {
       status: allHealthy ? "healthy" : "degraded",
@@ -52,6 +55,7 @@ export async function GET() {
         database: dbHealth,
         auth: authHealth,
         apis: apiHealth,
+        queues: queueHealth,
       },
       uptime: process.uptime(),
     };
@@ -280,6 +284,39 @@ async function checkTicketmasterAPI(): Promise<{
     return {
       healthy: false,
       message: `Ticketmaster check failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+    };
+  }
+}
+
+async function checkQueueHealth(): Promise<{
+  healthy: boolean;
+  message: string;
+  details?: any;
+  responseTime?: string;
+}> {
+  const startTime = Date.now();
+  
+  try {
+    const { queueManager } = await import("~/lib/queues/queue-manager");
+    const health = await queueManager.getHealthStatus();
+    
+    return {
+      healthy: health.healthy,
+      message: health.healthy ? "Queue system operational" : "Queue system issues detected",
+      details: {
+        initialized: health.initialized,
+        queues: health.queues,
+        workers: health.workers,
+        redis: health.redis,
+        errors: health.errors
+      },
+      responseTime: `${Date.now() - startTime}ms`
+    };
+  } catch (error) {
+    return {
+      healthy: false,
+      message: `Queue health check failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      responseTime: `${Date.now() - startTime}ms`
     };
   }
 }

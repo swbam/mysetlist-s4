@@ -96,7 +96,7 @@ const nextConfig = {
   },
 
   // Bundle analyzer (for pnpm analyze)
-  ...(process.env.ANALYZE === 'true' && {
+  ...(process.env['ANALYZE'] === 'true' && {
     webpack: (config, { isServer }) => {
       if (!isServer) {
         const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');

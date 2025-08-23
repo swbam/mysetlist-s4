@@ -1,12 +1,3 @@
-// Minimal Venue Sync Processor stub to satisfy imports
-import { Job } from "bullmq";
-
-export default class VenueSyncProcessor {
-  static async process(job: Job): Promise<any> {
-    return { success: true, jobId: job.id };
-  }
-}
-
 import { Job } from "bullmq";
 import { db, venues, shows } from "@repo/database";
 import { eq, sql, inArray } from "drizzle-orm";
@@ -161,7 +152,7 @@ async function syncSpecificVenues(tmVenueIds: string[], job: Job) {
   await job.updateProgress(20);
   
   const ticketmaster = new TicketmasterClient({
-    apiKey: process.env.TICKETMASTER_API_KEY || "",
+    apiKey: process.env['TICKETMASTER_API_KEY'] || "",
   });
   
   let created = 0;
@@ -322,7 +313,7 @@ async function updateVenueDetails(venueIds: string[], job: Job) {
     if (daysSinceUpdate > 30 && venue.tmVenueId) {
       try {
         const ticketmaster = new TicketmasterClient({
-          apiKey: process.env.TICKETMASTER_API_KEY || "",
+          apiKey: process.env['TICKETMASTER_API_KEY'] || "",
         });
         
         const venueData = await ticketmaster.getVenue(venue.tmVenueId);
@@ -352,4 +343,10 @@ async function updateVenueDetails(venueIds: string[], job: Job) {
   return {
     venuesUpdated: updated,
   };
+}
+
+export default class VenueSyncProcessor {
+  static async process(job: Job): Promise<any> {
+    return processVenueSync(job);
+  }
 }

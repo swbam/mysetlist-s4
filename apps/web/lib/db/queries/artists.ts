@@ -57,7 +57,7 @@ async function withPerformanceTracking<T>(
     }
     
     // Track metrics in production
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env['NODE_ENV'] === 'production') {
       // Could send to monitoring service
       console.log(`Query ${queryName}: ${duration.toFixed(2)}ms`);
     }

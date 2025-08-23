@@ -9,8 +9,8 @@ export async function checkDatabaseConnection() {
 
   // Check 1: Environment variables
   checks.hasEnvVars = !!(
-    process.env.DATABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env['DATABASE_URL'] &&
+    process.env['NEXT_PUBLIC_SUPABASE_URL'] &&
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
@@ -45,7 +45,7 @@ export async function checkDatabaseConnection() {
     checks.error = {
       message: error.message,
       code: error.code,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      stack: process.env['NODE_ENV'] === "development" ? error.stack : undefined,
     };
   }
 

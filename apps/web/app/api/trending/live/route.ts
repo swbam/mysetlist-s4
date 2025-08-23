@@ -302,7 +302,7 @@ export async function POST(request: NextRequest) {
   try {
     // Verify internal webhook token
     const authHeader = request.headers.get("authorization");
-    const webhookSecret = process.env.TRENDING_WEBHOOK_SECRET;
+    const webhookSecret = process.env['TRENDING_WEBHOOK_SECRET'];
 
     if (!webhookSecret || authHeader !== `Bearer ${webhookSecret}`) {
       return NextResponse.json(

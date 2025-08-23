@@ -86,10 +86,10 @@ export default defineConfig({
     },
     
     // Fail fast for CI environments
-    bail: process.env.CI ? 1 : 0,
+    bail: process.env['CI'] ? 1 : 0,
     
     // Reporter configuration
-    reporter: process.env.CI 
+    reporter: process.env['CI'] 
       ? ["verbose", "github-actions"]
       : ["verbose", "html"],
     

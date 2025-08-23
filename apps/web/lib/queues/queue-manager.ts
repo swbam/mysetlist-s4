@@ -413,6 +413,19 @@ class QueueManager {
     return stats;
   }
 
+  async getAllMetrics() {
+    const stats = await this.getAllStats();
+    const health = await this.getHealthStatus();
+    
+    return {
+      queues: stats,
+      health,
+      workers: this.workers.size,
+      totalQueues: this.queues.size,
+      timestamp: new Date().toISOString()
+    };
+  }
+
   async getHealthStatus(): Promise<{
     healthy: boolean;
     initialized: boolean;
@@ -464,13 +477,24 @@ class QueueManager {
     }
   }
 
-  async cleanQueue(queueName: QueueName, grace: number = 1000): Promise<void> {
+  async cleanQueue(queueName: QueueName, grace: number = 1000, limit: number = 1000, status?: string): Promise<any[]> {
     const queue = this.queues.get(queueName);
-    if (queue) {
-      await queue.clean(grace, 1000, 'completed');
-      await queue.clean(grace, 1000, 'failed');
-      console.log(`Queue ${queueName} cleaned`);
+    if (!queue) {
+      throw new Error(`Queue ${queueName} not found`);
     }
+    
+    const cleaned = [];
+    if (status) {
+      const jobs = await queue.clean(grace, limit, status as any);
+      cleaned.push(...jobs);
+    } else {
+      const completedJobs = await queue.clean(grace, limit, 'completed');
+      const failedJobs = await queue.clean(grace, limit, 'failed');
+      cleaned.push(...completedJobs, ...failedJobs);
+    }
+    
+    console.log(`Queue ${queueName} cleaned: ${cleaned.length} jobs`);
+    return cleaned;
   }
 
   async shutdown(): Promise<void> {

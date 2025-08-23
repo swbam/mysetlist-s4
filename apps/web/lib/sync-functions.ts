@@ -32,7 +32,7 @@ function getAppUrl() {
     return "";
   }
   // Server-side
-  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+  return process.env['NEXT_PUBLIC_APP_URL'] || "http://localhost:3001";
 }
 
 /**
@@ -106,7 +106,7 @@ export async function triggerManualSync(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.CRON_SECRET || ""}`,
+      Authorization: `Bearer ${process.env['CRON_SECRET'] || ""}`,
     },
     body: JSON.stringify({ type, limit, mode: "manual" }),
   });
@@ -127,7 +127,7 @@ export async function triggerTrendingUpdate() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.CRON_SECRET || ""}`,
+      Authorization: `Bearer ${process.env['CRON_SECRET'] || ""}`,
     },
   });
 
@@ -147,7 +147,7 @@ export async function triggerArtistSync(limit = 20, mode = "auto") {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.CRON_SECRET || ""}`,
+      Authorization: `Bearer ${process.env['CRON_SECRET'] || ""}`,
     },
     body: JSON.stringify({ limit, mode }),
   });
@@ -170,7 +170,7 @@ export async function triggerFinishSync(mode = "daily") {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.CRON_SECRET || ""}`,
+        Authorization: `Bearer ${process.env['CRON_SECRET'] || ""}`,
       },
       body: JSON.stringify({ mode }),
     },

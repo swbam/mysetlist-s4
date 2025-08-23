@@ -53,7 +53,7 @@ export const productionConfig = {
 
 // Helper to get the correct app URL
 export function getAppUrl(): string {
-  if (process.env.NODE_ENV === "production") {
+  if (process.env['NODE_ENV'] === "production") {
     // In production, always use the configured production URL
     return productionConfig.urls.app;
   }

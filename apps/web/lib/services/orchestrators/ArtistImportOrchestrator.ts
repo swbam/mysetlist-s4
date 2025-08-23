@@ -78,7 +78,7 @@ export interface ImportConfig {
  * Default configuration following GROK.md specifications
  */
 const DEFAULT_CONFIG: ImportConfig = {
-  ticketmasterApiKey: process.env.TICKETMASTER_API_KEY,
+  ticketmasterApiKey: process.env['TICKETMASTER_API_KEY'],
   spotifyClientId: process.env.SPOTIFY_CLIENT_ID,
   spotifyClientSecret: process.env.SPOTIFY_CLIENT_SECRET,
   concurrency: {

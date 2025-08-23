@@ -540,7 +540,7 @@ export function withMonitoring<T extends (...args: any[]) => Promise<any>>(
 }
 
 // Auto-start monitoring in production
-if (process.env.NODE_ENV === "production") {
+if (process.env['NODE_ENV'] === "production") {
   cronMonitor.startMonitoring();
 }
 

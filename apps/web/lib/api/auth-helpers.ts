@@ -12,7 +12,7 @@ export async function validateApiAuth(): Promise<{
 }> {
   try {
     // Allow local development without authentication
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       return { isValid: true };
     }
 
@@ -20,9 +20,9 @@ export async function validateApiAuth(): Promise<{
     const authHeader = headersList.get("authorization");
 
     const validTokens = [
-      process.env.CRON_SECRET,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      process.env.ADMIN_API_KEY,
+      process.env['CRON_SECRET'],
+      process.env['SUPABASE_SERVICE_ROLE_KEY'],
+      process.env['ADMIN_API_KEY'],
     ].filter(Boolean) as string[];
 
     if (validTokens.length === 0) {

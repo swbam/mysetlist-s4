@@ -32,11 +32,11 @@ export async function POST(request: NextRequest) {
     const setlistSync = new SetlistSyncService();
     const showSync = new ShowSyncService();
     const setlistFmClient = new SetlistFmClient({
-      apiKey: process.env.SETLISTFM_API_KEY || "",
+      apiKey: process.env['SETLISTFM_API_KEY'] || "",
     });
     const spotifyClient = new SpotifyClient({});
     const ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env.TICKETMASTER_API_KEY || "",
+      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
     });
 
     await spotifyClient.authenticate();

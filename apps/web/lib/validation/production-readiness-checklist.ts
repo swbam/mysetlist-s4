@@ -268,8 +268,8 @@ export const PRODUCTION_CHECKLIST: ProductionReadinessCheck[] = [
     testFunction: async (): Promise<CheckResult> => {
       const apiKeys = {
         spotify: process.env.SPOTIFY_CLIENT_SECRET,
-        ticketmaster: process.env.TICKETMASTER_API_KEY,
-        cronSecret: process.env.CRON_SECRET,
+        ticketmaster: process.env['TICKETMASTER_API_KEY'],
+        cronSecret: process.env['CRON_SECRET'],
       };
 
       const issues: string[] = [];
@@ -498,7 +498,7 @@ export const PRODUCTION_CHECKLIST: ProductionReadinessCheck[] = [
           "@repo/external-apis/src/clients/ticketmaster"
         );
         const client = new TicketmasterClient({
-          apiKey: process.env.TICKETMASTER_API_KEY || "",
+          apiKey: process.env['TICKETMASTER_API_KEY'] || "",
         });
 
         // Test with a known artist ID
@@ -545,7 +545,7 @@ export const PRODUCTION_CHECKLIST: ProductionReadinessCheck[] = [
     status: "not_tested",
     automated: true,
     testFunction: async (): Promise<CheckResult> => {
-      const nodeEnv = process.env.NODE_ENV;
+      const nodeEnv = process.env['NODE_ENV'];
 
       return {
         passed: nodeEnv === "production",

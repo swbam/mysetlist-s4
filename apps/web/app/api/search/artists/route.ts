@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 const ticketmaster = new TicketmasterClient({
   apiKey:
-    process.env.TICKETMASTER_API_KEY || "k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b",
+    process.env['TICKETMASTER_API_KEY'] || "k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b",
 });
 
 interface InlineSearchResult {
@@ -23,7 +23,7 @@ const CACHE_TTL = 300000; // 5 minutes for inline search
 
 export async function GET(request: NextRequest) {
   // Apply rate limiting
-  if (process.env.NODE_ENV === "production") {
+  if (process.env['NODE_ENV'] === "production") {
     const rateLimitResult = await rateLimitMiddleware(request);
     if (rateLimitResult) {
       return rateLimitResult;
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Validate Ticketmaster API key
-    const apiKey = process.env.TICKETMASTER_API_KEY;
+    const apiKey = process.env['TICKETMASTER_API_KEY'];
     if (!apiKey) {
       throw new Error("Ticketmaster API not configured");
     }

@@ -31,14 +31,14 @@ export const usePerformanceMonitor = (componentName: string) => {
       const renderTime = performance.now() - renderStartTime.current;
 
       // Log performance metrics in development
-      if (process.env.NODE_ENV === "development") {
+      if (process.env['NODE_ENV'] === "development") {
         console.log(
           `[Performance] ${componentName}: ${renderTime.toFixed(2)}ms`,
         );
       }
 
       // In production, you might want to send this to analytics
-      if (process.env.NODE_ENV === "production" && renderTime > 16) {
+      if (process.env['NODE_ENV'] === "production" && renderTime > 16) {
         // Only log slow renders (> 16ms)
         const metrics: PerformanceMetrics = {
           component: componentName,
@@ -157,7 +157,7 @@ export const useCoreWebVitals = () => {
 
     // Only run in production or when explicitly enabled
     if (
-      process.env.NODE_ENV === "production" ||
+      process.env['NODE_ENV'] === "production" ||
       process.env['NEXT_PUBLIC_MONITOR_PERFORMANCE'] === "true"
     ) {
       try {
@@ -189,7 +189,7 @@ export const useCoreWebVitals = () => {
 
 // Bundle size analyzer (development only)
 export const analyzeBundleSize = () => {
-  if (process.env.NODE_ENV === "development") {
+  if (process.env['NODE_ENV'] === "development") {
     useEffect(() => {
       // Estimate bundle size based on loaded scripts
       const scripts = Array.from(document.querySelectorAll("script[src]"));

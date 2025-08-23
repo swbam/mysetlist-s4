@@ -12,7 +12,7 @@ export const performanceConfig = {
 
   // Bundle optimization
   bundleAnalyzer: {
-    enabled: process.env.ANALYZE === "true",
+    enabled: process.env['ANALYZE'] === "true",
     openAnalyzer: true,
   },
 
@@ -144,7 +144,7 @@ export const performanceConfig = {
     preconnect: [
       { url: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+        url: process.env['NEXT_PUBLIC_SUPABASE_URL'] || "",
         crossOrigin: "anonymous",
       },
     ],

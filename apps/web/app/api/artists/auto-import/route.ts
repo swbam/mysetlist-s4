@@ -155,10 +155,10 @@ export async function POST(request: NextRequest) {
       );
 
       // Use proper URL construction for production
-      const baseUrl = process.env.VERCEL_URL 
-        ? `https://${process.env.VERCEL_URL}`
-        : process.env.NEXT_PUBLIC_APP_URL
-        ? process.env.NEXT_PUBLIC_APP_URL
+      const baseUrl = process.env['VERCEL_URL'] 
+        ? `https://${process.env['VERCEL_URL']}`
+        : process.env['NEXT_PUBLIC_APP_URL']
+        ? process.env['NEXT_PUBLIC_APP_URL']
         : request.nextUrl.origin;
         
       const orchestrationResponse = await fetch(
@@ -168,8 +168,8 @@ export async function POST(request: NextRequest) {
           headers: {
             "Content-Type": "application/json",
             // Add authorization for internal API calls
-            ...(process.env.CRON_SECRET && {
-              "Authorization": `Bearer ${process.env.CRON_SECRET}`
+            ...(process.env['CRON_SECRET'] && {
+              "Authorization": `Bearer ${process.env['CRON_SECRET']}`
             }),
           },
           body: JSON.stringify({
@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: "Auto-import failed",
         details:
-          process.env.NODE_ENV === "development" ? errorMessage : undefined,
+          process.env['NODE_ENV'] === "development" ? errorMessage : undefined,
         statusEndpoint: targetArtistId
           ? `/api/sync/status?artistId=${targetArtistId}`
           : undefined,

@@ -220,7 +220,7 @@ export async function GET(request: NextRequest) {
     // Check for authorization
     const headersList = await headers();
     const authHeader = headersList.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
+    const cronSecret = process.env['CRON_SECRET'];
 
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

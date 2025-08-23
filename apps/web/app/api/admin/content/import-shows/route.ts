@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize Ticketmaster client
-    const ticketmasterApiKey = process.env.TICKETMASTER_API_KEY;
+    const ticketmasterApiKey = process.env['TICKETMASTER_API_KEY'];
     if (!ticketmasterApiKey) {
       return NextResponse.json(
         { error: "Ticketmaster API key not configured" },

@@ -359,7 +359,7 @@ export async function closeRedisConnections(): Promise<void> {
 }
 
 // Handle process shutdown gracefully
-if (process.env.NODE_ENV === 'production') {
+if (process.env['NODE_ENV'] === 'production') {
   process.on('SIGINT', async () => {
     console.log('Received SIGINT, closing Redis connections...');
     await closeRedisConnections();
