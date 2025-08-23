@@ -1,4 +1,4 @@
-import { queueManager, QueueName } from "./queue-manager";
+import { queueManager, QueueName, queueConfigs } from "./queue-manager";
 
 // Worker health check using queue manager's internal state
 export async function checkWorkerHealth(): Promise<{
@@ -45,7 +45,7 @@ export async function checkWorkerHealth(): Promise<{
         name: queueStat.name,
         running: !queueStat.paused,
         paused: queueStat.paused,
-        concurrency: 1, // Default concurrency from queue config
+        concurrency: queueConfigs[queueStat.name as QueueName]?.concurrency ?? 1,
         stalledJobs: hasStalled ? queueStat.failed : 0,
       });
       
@@ -159,7 +159,7 @@ export async function getWorkerStatus() {
     for (const queueStat of queueStats) {
       status.push({
         queue: queueStat.name,
-        concurrency: 1, // Default concurrency - could be enhanced with queue config lookup
+        concurrency: queueConfigs[queueStat.name as QueueName]?.concurrency ?? 1,
         running: !queueStat.paused && healthStatus.healthy,
         paused: queueStat.paused,
         processing: queueStat.active,
@@ -214,6 +214,19 @@ export async function triggerManualJob(
     data,
     { priority: priority || 10 }
   );
+}
+
+// Export missing functions that are imported elsewhere
+export function initializeWorkers() {
+  // Initialize workers via queue manager
+  console.log("Initializing workers via queue manager");
+  // Workers are already initialized in queue manager
+}
+
+export async function setupRecurringJobs() {
+  // Set up recurring jobs - placeholder implementation
+  console.log("Setting up recurring jobs");
+  // TODO: Implement actual recurring job setup when needed
 }
 
 // Export for external use

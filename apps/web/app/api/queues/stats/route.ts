@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { queueManager } from "~/lib/queues/queue-manager";
 import { getQueueStats, getJobCounts } from "~/lib/queues/workers";
 import { ImportStatusManager } from "~/lib/import-status";
+import { RedisClientFactory } from "~/lib/queues/redis-config";
 
 // Force dynamic rendering for real-time stats
 export const dynamic = "force-dynamic";
@@ -11,8 +12,18 @@ export const runtime = "nodejs";
  * GET /api/queues/stats - Public queue statistics for monitoring dashboards
  * No authentication required - provides non-sensitive metrics only
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    // Add basic per-IP rate limiting
+    const limiter = RedisClientFactory.getClient('cache');
+    const key = `ratelimit:queues:stats:${request.headers.get('x-forwarded-for') ?? 'unknown'}`;
+    const window = 60; // seconds
+    const max = 60; // requests
+    const count = await limiter.incr(key);
+    if (count === 1) await limiter.expire(key, window);
+    if (count > max) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    
+    
     // Get basic queue metrics (non-sensitive)
     const [queueStats, jobCounts, importStats] = await Promise.all([
       getQueueStats(),
@@ -38,8 +49,10 @@ export async function GET() {
       ? Math.round((jobCounts.completed / totalProcessed) * 100 * 100) / 100 
       : 100;
 
-    // Get system health status
+    // Get system health status and measure response time
+    const t0 = Date.now();
     const systemHealth = await queueManager.getHealthStatus();
+    const queueResponseTime = Date.now() - t0;
 
     const response = {
       timestamp: new Date().toISOString(),
@@ -65,7 +78,7 @@ export async function GET() {
         },
       },
       performance: {
-        queueResponseTime: Date.now() % 100, // Simple response time indicator
+        queueResponseTime,
         systemHealth: systemHealth.healthy ? 'healthy' : 'degraded',
         redisConnected: systemHealth.redis,
         workersRunning: systemHealth.workers > 0,

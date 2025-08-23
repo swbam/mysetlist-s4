@@ -3,6 +3,9 @@ import { initiateImport } from "@repo/external-apis";
 import { queueManager, Priority } from "~/lib/queues/queue-manager";
 import { ImportStatusManager } from "~/lib/import-status";
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   let jobId: string | undefined;
   let result: any;

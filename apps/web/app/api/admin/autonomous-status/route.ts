@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
  * Autonomous System Status Endpoint
  * Provides comprehensive monitoring of all autonomous pipelines
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Authenticate admin request
     await requireCronAuth();
