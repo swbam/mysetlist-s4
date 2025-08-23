@@ -3,7 +3,7 @@
 // REPLACE existing stub with complete implementation
 
 import { db, sql, artists, shows, votes, userFollowsArtists, desc } from "@repo/database";
-import { type NextRequest } from "next/server";
+
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -24,7 +24,7 @@ interface TrendingCalculationResult {
   }>;
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Authentication check
     await requireCronAuth();
@@ -116,8 +116,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
-  return POST(request);
+export async function GET() {
+  return POST();
 }
 
 // Artist trending calculation with sophisticated scoring

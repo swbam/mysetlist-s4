@@ -1,6 +1,6 @@
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
-import { type NextRequest, NextResponse } from "next/server";
+
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 

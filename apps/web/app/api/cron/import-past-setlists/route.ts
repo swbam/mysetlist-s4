@@ -1,7 +1,7 @@
 import { db, shows, setlists } from "@repo/database";
 import { SetlistSyncService } from "@repo/external-apis";
 import { and, lt, sql, isNull, isNotNull, or } from "drizzle-orm";
-import type { NextRequest } from "next/server";
+
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -111,7 +111,7 @@ async function executePastSetlistImport() {
   };
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Standardized authentication
     await requireCronAuth();
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   // Support GET requests for manual triggers - delegate to POST
-  return POST(request);
+  return POST();
 }

@@ -1,4 +1,4 @@
-import { type NextRequest } from "next/server";
+
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import {
@@ -119,6 +119,6 @@ function calculateGrokComplianceScore(syncStatus: any[], missingPipelines: strin
 }
 
 // Support POST for manual health checks
-export async function POST(request: NextRequest) {
-  return GET(request);
+export async function POST() {
+  return GET();
 }

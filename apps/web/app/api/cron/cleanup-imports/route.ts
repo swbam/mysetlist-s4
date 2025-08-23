@@ -2,7 +2,7 @@
 // File: apps/web/app/api/cron/cleanup-imports/route.ts
 // Cleans up old completed/failed import statuses
 
-import { NextRequest } from 'next/server';
+
 import { cleanupCompletedImports } from '~/lib/import-status';
 import {
   createErrorResponse,
@@ -13,7 +13,7 @@ import { db, sql } from '@repo/database';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Authentication check
     await requireCronAuth();

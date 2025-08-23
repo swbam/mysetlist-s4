@@ -1,6 +1,6 @@
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
-import { type NextRequest } from "next/server";
+
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
  * - Verifies authentication
  * - Tests logging functionality
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Test authentication
     await requireCronAuth();
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   // Support GET requests for manual triggers
-  return POST(request);
+  return POST();
 }

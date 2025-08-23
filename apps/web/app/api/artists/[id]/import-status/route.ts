@@ -1,6 +1,6 @@
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 /**
  * Calculate estimated time remaining based on current progress and elapsed time

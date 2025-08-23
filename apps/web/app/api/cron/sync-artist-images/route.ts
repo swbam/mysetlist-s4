@@ -1,7 +1,7 @@
 import { db, artists } from "@repo/database";
 import { SpotifyClient } from "@repo/external-apis";
 import { and, eq, isNull, sql } from "drizzle-orm";
-import type { NextRequest } from "next/server";
+
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -54,7 +54,7 @@ async function executeArtistImageSync() {
   return { message: "Artist image sync completed", processed, updated, errors };
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     await requireCronAuth();
     const result = await executeArtistImageSync();
@@ -71,6 +71,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
-  return POST(request);
+export async function GET() {
+  return POST();
 }
