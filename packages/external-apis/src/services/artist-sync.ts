@@ -279,6 +279,43 @@ export class ArtistSyncService {
     }
   }
 
+  // NEW: bulk-sync popular artists (top Ticketmaster attractions)
+  async syncPopularArtists(limit: number = 50): Promise<number> {
+    console.log(`[ArtistSyncService] Syncing top ${limit} popular Ticketmaster artists…`);
+    try {
+      const attractionsResp = await this.ticketmasterClient.searchAttractions({
+        classificationName: "music",
+        size: limit,
+        sort: "relevance,desc",
+      });
+      const attractions = attractionsResp?._embedded?.attractions ?? [];
+      let processed = 0;
+      for (const attr of attractions) {
+        const name: string = attr.name;
+        const tmId: string = attr.id;
+        if (!name || !tmId) continue;
+
+        // Insert placeholder artist if not exists
+        await db
+          .insert(artists)
+          .values({
+            name,
+            slug: this.generateSlug(name),
+            tmAttractionId: tmId,
+            importStatus: "pending",
+          })
+          .onConflictDoNothing();
+
+        processed += 1;
+      }
+      console.log(`[ArtistSyncService] Synced ${processed} popular artists`);
+      return processed;
+    } catch (e) {
+      console.error("syncPopularArtists failed", e);
+      return 0;
+    }
+  }
+
   /**
    * Fetches full Spotify catalog excluding "live" tracks with deduplication
    */
