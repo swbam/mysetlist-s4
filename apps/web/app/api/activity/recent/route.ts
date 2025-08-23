@@ -8,7 +8,7 @@ import {
   users,
   venues,
 } from "@repo/database";
-import { and, desc, eq, gte, inArray } from "drizzle-orm";
+import { and, desc, eq, gte } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { rateLimitMiddleware } from "~/middleware/rate-limit";
@@ -259,9 +259,9 @@ export async function GET(request: NextRequest) {
                 const artist = artistData[0];
                 baseActivity.target_details = {
                   name: artist.name,
-                  slug: artist.slug || undefined,
-                  image_url: artist.imageUrl || undefined,
-                };
+                  slug: artist.slug ?? undefined,
+                  image_url: artist.imageUrl ?? undefined,
+                } as { name: string; slug?: string; image_url?: string };
               }
               break;
             }
@@ -286,13 +286,13 @@ export async function GET(request: NextRequest) {
                 const show = showData[0];
                 baseActivity.target_details = {
                   name: show.name || `${show.artistName} at ${show.venueName}`,
-                  slug: show.slug || undefined,
-                  date: show.date || undefined,
-                  artist_name: show.artistName || undefined,
+                  slug: show.slug ?? undefined,
+                  date: show.date ?? undefined,
+                  artist_name: show.artistName ?? undefined,
                   venue_name: show.venueName
                     ? `${show.venueName}, ${show.venueCity}`
                     : undefined,
-                };
+                } as { name: string; slug?: string; date?: string; artist_name?: string; venue_name?: string };
               }
               break;
             }
@@ -313,9 +313,9 @@ export async function GET(request: NextRequest) {
                 const venue = venueData[0];
                 baseActivity.target_details = {
                   name: venue.name,
-                  slug: venue.slug || undefined,
+                  slug: venue.slug ?? undefined,
                   venue_name: `${venue.city}, ${venue.state}`,
-                };
+                } as { name: string; slug?: string; venue_name?: string };
               }
               break;
             }
@@ -340,12 +340,12 @@ export async function GET(request: NextRequest) {
                 const setlist = setlistData[0];
                 baseActivity.target_details = {
                   name: `${setlist.artistName} setlist`,
-                  slug: setlist.showSlug || undefined,
-                  date: setlist.showDate || undefined,
-                  artist_name: setlist.artistName || undefined,
-                  venue_name: setlist.venueName || undefined,
-                  image_url: setlist.artistImageUrl || undefined,
-                };
+                  slug: setlist.showSlug ?? undefined,
+                  date: setlist.showDate ?? undefined,
+                  artist_name: setlist.artistName ?? undefined,
+                  venue_name: setlist.venueName ?? undefined,
+                  image_url: setlist.artistImageUrl ?? undefined,
+                } as { name: string; slug?: string; date?: string; artist_name?: string; venue_name?: string; image_url?: string };
               }
               break;
             }
@@ -364,8 +364,8 @@ export async function GET(request: NextRequest) {
                 const song = songData[0];
                 baseActivity.target_details = {
                   name: song.songTitle,
-                  artist_name: song.artistName || undefined,
-                };
+                  artist_name: song.artistName ?? undefined,
+                } as { name: string; artist_name?: string };
               }
               break;
             }
@@ -408,9 +408,9 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
       filters_applied: {
         type: activityType,
-        user_id,
-        since: sinceParam,
-      },
+        user_id: user_id ?? undefined,
+        since: sinceParam ?? undefined,
+      } as { type: string; user_id?: string; since?: string },
     };
 
     const jsonResponse = NextResponse.json(response);
