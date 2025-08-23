@@ -576,18 +576,5 @@ class QueueManager {
 // Export singleton instance
 const queueManagerInstance = new QueueManager();
 
-// Handle graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down queue manager...');
-  await queueManagerInstance.shutdown();
-  process.exit(0);
-});
-
-process.on('SIGINT', async () => {
-  console.log('SIGINT received, shutting down queue manager...');
-  await queueManagerInstance.shutdown();
-  process.exit(0);
-});
-
 export const queueManager = queueManagerInstance;
 export default queueManagerInstance;

@@ -4,7 +4,7 @@
 // Tests complete sync and import flow end-to-end
 
 import chalk from 'chalk';
-import { QueueManager } from '../lib/queues/queue-manager';
+import { queueManager } from '../lib/queues/queue-manager';
 import { ImportStatusManager } from '../lib/import-status';
 import { cacheManager } from '../lib/cache/cache-manager';
 import { dataFreshnessManager } from '../lib/services/data-freshness-manager';

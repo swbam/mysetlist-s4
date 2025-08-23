@@ -89,7 +89,7 @@ export default defineConfig({
     bail: process.env['CI'] ? 1 : 0,
     
     // Reporter configuration
-    reporter: process.env['CI'] 
+    reporters: process.env['CI'] 
       ? ["verbose", "github-actions"]
       : ["verbose", "html"],
     

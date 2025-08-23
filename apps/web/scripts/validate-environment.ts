@@ -144,8 +144,8 @@ class EnvironmentValidator {
   }
 
   private validateDatabaseUrls(): void {
-    const dbUrl = process.env.DATABASE_URL;
-    const directUrl = process.env.DIRECT_URL;
+    const dbUrl = process.env['DATABASE_URL'];
+    const directUrl = process.env['DIRECT_URL'];
 
     if (dbUrl && directUrl) {
       // Extract database names
@@ -164,8 +164,8 @@ class EnvironmentValidator {
   }
 
   private validateRedisConfig(): void {
-    const redisUrl = process.env.REDIS_URL;
-    const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+    const redisUrl = process.env['REDIS_URL'];
+    const upstashUrl = process.env['UPSTASH_REDIS_REST_URL'];
 
     if (!redisUrl && !upstashUrl) {
       this.errors.push('❌ No Redis configuration found (REDIS_URL or UPSTASH_REDIS_REST_URL)');
@@ -183,12 +183,12 @@ class EnvironmentValidator {
     }
 
     // Validate key formats
-    const spotifySecret = process.env.SPOTIFY_CLIENT_SECRET;
+    const spotifySecret = process.env['SPOTIFY_CLIENT_SECRET'];
     if (spotifySecret && spotifySecret.length < 20) {
       this.warnings.push('⚠️  SPOTIFY_CLIENT_SECRET seems unusually short');
     }
 
-    const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAnon = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
     if (supabaseAnon && !supabaseAnon.includes('.')) {
       this.warnings.push('⚠️  NEXT_PUBLIC_SUPABASE_ANON_KEY doesn\'t look like a JWT');
     }
@@ -209,7 +209,7 @@ class EnvironmentValidator {
 
   private async checkSupabase(): Promise<void> {
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'];
       const response = await fetch(`${supabaseUrl}/rest/v1/`, {
         method: 'HEAD',
       });
@@ -227,9 +227,9 @@ class EnvironmentValidator {
   private async checkRedis(): Promise<void> {
     if (process.env['UPSTASH_REDIS_REST_URL']) {
       try {
-        const response = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/ping`, {
+        const response = await fetch(`${process.env['UPSTASH_REDIS_REST_URL']}/ping`, {
           headers: {
-            Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+            Authorization: `Bearer ${process.env['UPSTASH_REDIS_REST_TOKEN']}`,
           },
         });
 
@@ -249,7 +249,7 @@ class EnvironmentValidator {
     if (process.env['SPOTIFY_CLIENT_ID'] && process.env['SPOTIFY_CLIENT_SECRET']) {
       try {
         const auth = Buffer.from(
-          `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+          `${process.env['SPOTIFY_CLIENT_ID']}:${process.env['SPOTIFY_CLIENT_SECRET']}`
         ).toString('base64');
 
         const response = await fetch('https://accounts.spotify.com/api/token', {

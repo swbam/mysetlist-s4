@@ -1,5 +1,5 @@
 import { Job } from "bullmq";
-import { EnhancedShowVenueSync } from "@repo/external-apis/src/services/enhanced-show-venue-sync";
+import { EnhancedShowVenueSync } from "@repo/external-apis";
 import { TicketmasterClient } from "@repo/external-apis";
 import { db, artists, shows, venues } from "@repo/database";
 import { eq, sql } from "drizzle-orm";

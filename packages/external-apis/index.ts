@@ -73,3 +73,5 @@ export {
   initiateImport,
   runFullImport,
 } from "./src/services/orchestrators/ArtistImportOrchestrator";
+
+export { EnhancedShowVenueSync } from "./src/services/enhanced-show-venue-sync";

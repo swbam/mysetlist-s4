@@ -4,9 +4,6 @@
 // Starts all queue workers with proper configuration
 
 import queueManager from '../lib/queues/queue-manager';
-import { cacheManager } from '../lib/cache/cache-manager';
-import { dataFreshnessManager } from '../lib/services/data-freshness-manager';
-import { trafficAwareScheduler } from '../lib/services/traffic-aware-scheduler';
 
 async function startWorkers() {
   console.log('🚀 Starting MySetlist-S4 Queue Workers\n');
@@ -34,27 +31,33 @@ async function startWorkers() {
     
     console.log('─'.repeat(50));
 
-    // Start cache warming with error handling
+    // Start cache warming with dynamic import
+    let cacheManager: any;
     try {
       console.log('\nStarting cache warming service...');
+      ({ cacheManager } = await import('../lib/cache/cache-manager'));
       cacheManager.startWarming();
       console.log('✅ Cache warming started');
     } catch (error) {
-      console.warn('⚠️ Cache warming failed to start:', error);
+      console.warn('⚠️ Cache warming unavailable:', error);
     }
 
-    // Analyze traffic patterns with error handling  
+    // Analyze traffic patterns with dynamic import
+    let trafficAwareScheduler: any;
     try {
       console.log('\nAnalyzing traffic patterns...');
+      ({ trafficAwareScheduler } = await import('../lib/services/traffic-aware-scheduler'));
       await trafficAwareScheduler.analyzeTrafficPatterns(7);
       console.log('✅ Traffic patterns analyzed');
     } catch (error) {
-      console.warn('⚠️ Traffic analysis failed:', error);
+      console.warn('⚠️ Traffic analysis unavailable:', error);
     }
 
-    // Schedule initial data freshness check with error handling
+    // Schedule initial data freshness check with dynamic import
+    let dataFreshnessManager: any;
     try {
       console.log('\nScheduling data freshness check...');
+      ({ dataFreshnessManager } = await import('../lib/services/data-freshness-manager'));
       setTimeout(async () => {
         try {
           const report = await dataFreshnessManager.checkAndScheduleSyncs();
@@ -64,7 +67,7 @@ async function startWorkers() {
         }
       }, 30000); // Run after 30 seconds
     } catch (error) {
-      console.warn('⚠️ Failed to schedule data freshness check:', error);
+      console.warn('⚠️ Data freshness manager unavailable:', error);
     }
 
     // Display monitoring info
@@ -107,8 +110,9 @@ async function shutdown() {
     // Close all connections via queue manager shutdown
     await queueManager.shutdown();
     
-    // Stop cache warming
+    // Stop cache warming with dynamic import
     try {
+      const { cacheManager } = await import('../lib/cache/cache-manager');
       cacheManager.stopWarming();
     } catch (error) {
       console.warn('⚠️ Failed to stop cache warming:', error);
