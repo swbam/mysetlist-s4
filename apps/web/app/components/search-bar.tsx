@@ -155,13 +155,11 @@ export const SearchBar = React.memo(
                     ) {
                       try {
                         // Trigger artist import in the background
-                        fetch("/api/sync/artist-import", {
+                        fetch("/api/artists/import", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({
                             tmAttractionId: result.tmAttractionId,
-                            name: result.title,
-                            imageUrl: result.imageUrl,
                           }),
                         });
                       } catch (error) {
