@@ -435,4 +435,13 @@ export class SpotifySyncProcessor {
   }
 }
 
+// Named exports for workers
+export async function processSpotifySync(job: Job): Promise<any> {
+  return SpotifySyncProcessor.process(job);
+}
+
+export async function processSpotifyCatalog(job: Job): Promise<any> {
+  return SpotifySyncProcessor.process(job);
+}
+
 export default SpotifySyncProcessor;

@@ -178,7 +178,7 @@ export const AuthProvider = React.memo(function AuthProvider({
   const hasRole = (role: string) => {
     // Check user metadata for role
     const userRole =
-      user?.app_metadata?.role || user?.user_metadata?.role || "user";
+      user?.app_metadata?.['role'] || user?.user_metadata?.['role'] || "user";
     return userRole === role;
   };
 

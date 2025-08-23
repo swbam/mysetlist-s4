@@ -1,11 +1,11 @@
 import { Job } from "bullmq";
 import { db, artists, shows, votes } from "@repo/database";
 import { sql } from "drizzle-orm";
-import { RedisCache } from "../redis-config";
+import { RedisClientFactory } from "../redis-config";
 
-let _cache: RedisCache | null = null;
-function getCache(): RedisCache {
-  if (!_cache) _cache = new RedisCache();
+let _cache: any | null = null;
+function getCache() {
+  if (!_cache) _cache = RedisClientFactory.getClient('cache');
   return _cache;
 }
 

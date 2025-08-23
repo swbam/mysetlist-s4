@@ -628,4 +628,9 @@ export class ArtistImportProcessor {
   }
 }
 
+// Named export for workers
+export async function processArtistImport(job: Job): Promise<any> {
+  return ArtistImportProcessor.process(job);
+}
+
 export default ArtistImportProcessor;

@@ -64,8 +64,8 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       const supabase = createClient();
 
       // Check if we have valid Supabase config
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+      const url = process.env['NEXT_PUBLIC_SUPABASE_URL'] || "";
+      const anonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] || "";
       
       if (!url || !anonKey || url.includes("your_supabase") || anonKey.includes("your_supabase")) {
         console.error("🔴 Real-time disabled: Missing or invalid Supabase configuration", {

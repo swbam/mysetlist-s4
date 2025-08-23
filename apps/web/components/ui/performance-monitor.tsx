@@ -158,7 +158,7 @@ export const useCoreWebVitals = () => {
     // Only run in production or when explicitly enabled
     if (
       process.env.NODE_ENV === "production" ||
-      process.env.NEXT_PUBLIC_MONITOR_PERFORMANCE === "true"
+      process.env['NEXT_PUBLIC_MONITOR_PERFORMANCE'] === "true"
     ) {
       try {
         if ("PerformanceObserver" in window) {

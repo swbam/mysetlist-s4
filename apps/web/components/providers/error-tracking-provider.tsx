@@ -63,7 +63,7 @@ export function ErrorTrackingProvider({
         const eventId = captureException(error, {
           tags: {
             errorSource: "application",
-            component: context?.component || "unknown",
+            component: context?.['component'] || "unknown",
           },
           extra: {
             timestamp: new Date().toISOString(),
@@ -78,7 +78,7 @@ export function ErrorTrackingProvider({
           fingerprint: [
             error.name,
             error.message,
-            context?.component || "default",
+            context?.['component'] || "default",
           ],
         });
 

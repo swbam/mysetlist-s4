@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+// NextResponse removed - unused import
 import { db, artists } from "@repo/database";
 import { eq } from "drizzle-orm";
 

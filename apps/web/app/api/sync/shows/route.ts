@@ -88,13 +88,13 @@ export async function GET(request: NextRequest) {
     const showSyncService = new ShowSyncService();
 
     const syncOptions = {
-      city: searchParams.get("city") || undefined,
-      stateCode: searchParams.get("stateCode") || undefined,
-      keyword: searchParams.get("keyword") || undefined,
+      ...(searchParams.get("city") && { city: searchParams.get("city")! }),
+      ...(searchParams.get("stateCode") && { stateCode: searchParams.get("stateCode")! }),
+      ...(searchParams.get("keyword") && { keyword: searchParams.get("keyword")! }),
       classificationName: searchParams.get("classificationName") || "music",
       startDateTime:
         searchParams.get("startDateTime") || new Date().toISOString(),
-      endDateTime: searchParams.get("endDateTime") || undefined,
+      ...(searchParams.get("endDateTime") && { endDateTime: searchParams.get("endDateTime")! }),
     };
 
     const artistId = searchParams.get("artistId");

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+// NextResponse removed - unused import
 import { onProgress, offProgress, report, runFullImport } from "@repo/external-apis";
 
 export async function GET(_: Request, { params }: any) {

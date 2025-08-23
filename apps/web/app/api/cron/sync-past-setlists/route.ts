@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+// NextResponse removed - unused import
 import { db } from "@repo/database";
 import { shows, artists, venues, setlists, songs, setlistSongs } from "@repo/database";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { SetlistFmClient } from "@repo/external-apis/src/clients/setlistfm";
 import { requireCronAuth } from "~/lib/api/auth-helpers";
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     await requireCronAuth();
 

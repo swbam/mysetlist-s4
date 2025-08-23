@@ -97,7 +97,7 @@ export async function getTrendingShows(
         votes: show.vote_count || 0,
         attendees: show.attendee_count || 0,
         recent_activity: (show.vote_count || 0) + (show.attendee_count || 0),
-        image_url: artist?.image_url || undefined,
+        ...(artist?.image_url && { image_url: artist.image_url }),
         slug: show.slug,
         artist_name: artist?.name || "Artist TBA",
         venue_name: venue

@@ -319,7 +319,7 @@ export function ImportProgressSSE({
 
   const currentStage = progressData?.stage || "initializing";
   const stageInfo =
-    STAGE_DESCRIPTIONS[currentStage] || STAGE_DESCRIPTIONS.initializing;
+    STAGE_DESCRIPTIONS[currentStage] || STAGE_DESCRIPTIONS['initializing'];
 
   return (
     <Card className={cn("w-full", className)}>

@@ -170,7 +170,7 @@ class ProgressBusInstance extends EventEmitter {
         progress: status.percentage || 0,
         message: status.message || 'Processing...',
         at: status.updatedAt.toISOString(),
-        error: status.error || undefined,
+        ...(status.error && { error: status.error }),
         phaseTimings: status.phaseTimings ? JSON.parse(status.phaseTimings as string) : undefined,
       };
     } catch (error) {
@@ -356,7 +356,7 @@ class ProgressBusInstance extends EventEmitter {
         progress: status.percentage || 0,
         message: status.message || 'Processing...',
         startedAt: status.startedAt || status.createdAt,
-        artistName: status.artistName || undefined,
+        ...(status.artistName && { artistName: status.artistName }),
       }));
     } catch (error) {
       console.error('Failed to get active imports:', error);

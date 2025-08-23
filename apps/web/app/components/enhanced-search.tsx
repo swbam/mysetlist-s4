@@ -278,7 +278,7 @@ export function EnhancedSearch({
                     onChange={(e) =>
                       setFilters((prev) => ({
                         ...prev,
-                        genre: e.target.value || undefined,
+                        ...(e.target.value && { genre: e.target.value }),
                       }))
                     }
                   />

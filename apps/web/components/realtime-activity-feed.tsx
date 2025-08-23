@@ -70,9 +70,9 @@ export function RealtimeActivityFeed({
           const voteData = await fetchVoteDetails(payload.new);
           if (voteData) {
             const activity: Activity = {
-              id: `vote-${payload.new.id}`,
+              id: `vote-${payload.new['id']}`,
               type: "vote",
-              timestamp: new Date(payload.new.created_at),
+              timestamp: new Date(payload.new['created_at']),
               data: voteData,
             };
             addActivity(activity);
@@ -88,13 +88,13 @@ export function RealtimeActivityFeed({
           filter: "is_played=eq.true",
         },
         async (payload) => {
-          if (payload.new.is_played && !payload.old.is_played) {
+          if (payload.new['is_played'] && !payload.old['is_played']) {
             const songData = await fetchSongDetails(payload.new);
             if (songData) {
               const activity: Activity = {
-                id: `played-${payload.new.id}`,
+                id: `played-${payload.new['id']}`,
                 type: "song_played",
-                timestamp: new Date(payload.new.play_time),
+                timestamp: new Date(payload.new['play_time']),
                 data: songData,
               };
               addActivity(activity);
@@ -113,9 +113,9 @@ export function RealtimeActivityFeed({
           const attendeeData = await fetchAttendeeDetails(payload.new);
           if (attendeeData) {
             const activity: Activity = {
-              id: `joined-${payload.new.id}`,
+              id: `joined-${payload.new['id']}`,
               type: "user_joined",
-              timestamp: new Date(payload.new.created_at),
+              timestamp: new Date(payload.new['created_at']),
               data: attendeeData,
             };
             addActivity(activity);

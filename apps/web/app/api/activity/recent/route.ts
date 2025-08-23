@@ -8,7 +8,7 @@ import {
   users,
   venues,
 } from "@repo/database";
-import { and, desc, eq, gte, inArray } from "drizzle-orm";
+import { and, desc, eq, gte } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { rateLimitMiddleware } from "~/middleware/rate-limit";
@@ -83,9 +83,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const limit = Number.parseInt(searchParams.get("limit") || "20", 10);
     const offset = Number.parseInt(searchParams.get("offset") || "0", 10);
-    const userId = searchParams.get("user_id") || undefined;
     const type = searchParams.get("type") || "all";
-    const since = searchParams.get("since") || undefined;
     const includeUserDetails =
       searchParams.get("include_user_details") !== "false";
 
@@ -93,9 +91,9 @@ export async function GET(request: NextRequest) {
     const validation = activityQuerySchema.safeParse({
       limit,
       offset,
-      user_id: userId,
+      user_id: searchParams.get("user_id"),
       type,
-      since,
+      since: searchParams.get("since"),
       include_user_details: includeUserDetails,
     });
 
@@ -114,7 +112,7 @@ export async function GET(request: NextRequest) {
       offset: queryOffset,
       user_id,
       type: activityType,
-      since: sinceParam,
+      since,
     } = validation.data;
 
     // Build filter conditions
@@ -124,9 +122,9 @@ export async function GET(request: NextRequest) {
       conditions.push(eq(userActivityLog.userId, user_id));
     }
 
-    if (sinceParam) {
+    if (since) {
       try {
-        const sinceDate = new Date(sinceParam);
+        const sinceDate = new Date(since);
         conditions.push(gte(userActivityLog.createdAt, new Date(sinceDate)));
       } catch (error) {
         return NextResponse.json(
@@ -216,7 +214,11 @@ export async function GET(request: NextRequest) {
           has_more: false,
         },
         timestamp: new Date().toISOString(),
-        filters_applied: { type: activityType, user_id, since: sinceParam },
+        filters_applied: { 
+          type: activityType, 
+          ...(user_id && { user_id }),
+          ...(since && { since }),
+        },
       });
     }
 
@@ -259,8 +261,8 @@ export async function GET(request: NextRequest) {
                 const artist = artistData[0];
                 baseActivity.target_details = {
                   name: artist.name,
-                  slug: artist.slug || undefined,
-                  image_url: artist.imageUrl || undefined,
+                  ...(artist.slug && { slug: artist.slug }),
+                  ...(artist.imageUrl && { image_url: artist.imageUrl }),
                 };
               }
               break;
@@ -286,12 +288,10 @@ export async function GET(request: NextRequest) {
                 const show = showData[0];
                 baseActivity.target_details = {
                   name: show.name || `${show.artistName} at ${show.venueName}`,
-                  slug: show.slug || undefined,
-                  date: show.date || undefined,
-                  artist_name: show.artistName || undefined,
-                  venue_name: show.venueName
-                    ? `${show.venueName}, ${show.venueCity}`
-                    : undefined,
+                  ...(show.slug && { slug: show.slug }),
+                  ...(show.date && { date: show.date }),
+                  ...(show.artistName && { artist_name: show.artistName }),
+                  ...(show.venueName && { venue_name: `${show.venueName}, ${show.venueCity}` }),
                 };
               }
               break;
@@ -313,7 +313,7 @@ export async function GET(request: NextRequest) {
                 const venue = venueData[0];
                 baseActivity.target_details = {
                   name: venue.name,
-                  slug: venue.slug || undefined,
+                  ...(venue.slug && { slug: venue.slug }),
                   venue_name: `${venue.city}, ${venue.state}`,
                 };
               }
@@ -340,11 +340,11 @@ export async function GET(request: NextRequest) {
                 const setlist = setlistData[0];
                 baseActivity.target_details = {
                   name: `${setlist.artistName} setlist`,
-                  slug: setlist.showSlug || undefined,
-                  date: setlist.showDate || undefined,
-                  artist_name: setlist.artistName || undefined,
-                  venue_name: setlist.venueName || undefined,
-                  image_url: setlist.artistImageUrl || undefined,
+                  ...(setlist.showSlug && { slug: setlist.showSlug }),
+                  ...(setlist.showDate && { date: setlist.showDate }),
+                  ...(setlist.artistName && { artist_name: setlist.artistName }),
+                  ...(setlist.venueName && { venue_name: setlist.venueName }),
+                  ...(setlist.artistImageUrl && { image_url: setlist.artistImageUrl }),
                 };
               }
               break;
@@ -364,7 +364,7 @@ export async function GET(request: NextRequest) {
                 const song = songData[0];
                 baseActivity.target_details = {
                   name: song.songTitle,
-                  artist_name: song.artistName || undefined,
+                  ...(song.artistName && { artist_name: song.artistName }),
                 };
               }
               break;
@@ -408,8 +408,8 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
       filters_applied: {
         type: activityType,
-        user_id,
-        since: sinceParam,
+        ...(user_id && { user_id }),
+        ...(since && { since }),
       },
     };
 

@@ -76,7 +76,7 @@ export async function TrendingArtists() {
                 </div>
                 <Avatar className="h-16 w-16">
                   <AvatarImage
-                    src={artist.imageUrl || undefined}
+                    {...(artist.imageUrl && { src: artist.imageUrl })}
                     alt={artist.name}
                   />
                   <AvatarFallback>

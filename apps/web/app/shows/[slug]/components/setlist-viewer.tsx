@@ -32,7 +32,7 @@ import {
   MoreVertical,
   Music2,
   User,
-  X,
+
 } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";

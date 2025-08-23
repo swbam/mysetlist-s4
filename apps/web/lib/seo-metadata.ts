@@ -27,19 +27,19 @@ export function createPageMetadata(props: BaseMetadataProps): Metadata {
               alt: props.title,
             },
           ]
-        : undefined,
+        : {},
     },
     twitter: {
       card: "summary_large_image",
       title: props.title,
       description: props.description,
-      images: props.image ? [props.image] : undefined,
+      ...(props.image && { images: [props.image] }),
     },
     alternates: props.canonicalUrl
       ? {
           canonical: props.canonicalUrl,
         }
-      : undefined,
+      : {},
   });
 }
 

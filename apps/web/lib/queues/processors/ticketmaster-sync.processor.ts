@@ -14,10 +14,10 @@ import { TicketmasterClient } from "@repo/external-apis";
 import { db, artists, shows, venues } from "@repo/database";
 import { eq, sql } from "drizzle-orm";
 import { updateImportStatus } from "../../import-status";
-import { RedisCache } from "../redis-config";
+import { RedisClientFactory } from "../redis-config";
 import { queueManager, QueueName } from "../queue-manager";
 
-const cache = new RedisCache();
+const cache = RedisClientFactory.getClient('cache');
 
 export interface TicketmasterSyncJobData {
   artistId: string;

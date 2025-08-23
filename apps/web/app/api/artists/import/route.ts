@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+// NextResponse removed - unused import
 import { initiateImport } from "@repo/external-apis";
 
 export async function POST(req: Request) {

@@ -27,8 +27,8 @@ const parseRedisUrl = (url: string): any => {
     return {
       host: redisUrl.hostname,
       port: parseInt(redisUrl.port || '6379'),
-      password: redisUrl.password || undefined,
-      username: (redisUrl.username || undefined) as any,
+      ...(redisUrl.password && { password: redisUrl.password }),
+      ...(redisUrl.username && { username: redisUrl.username }),
       db: parseInt(redisUrl.pathname?.slice(1) || '0'),
       family: 4, // Force IPv4
       

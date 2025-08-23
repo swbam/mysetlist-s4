@@ -33,7 +33,7 @@ export function MobileVoteButton({
   // Use real-time voting hook for live updates
   const { votes } = useRealtimeVotes({
     songId,
-    userId: session?.user?.id ?? undefined,
+    ...(session?.user?.id && { userId: session.user.id }),
   });
 
   // Throttle votes to prevent spam

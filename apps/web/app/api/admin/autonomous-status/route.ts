@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import {
@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
  * Autonomous System Status Endpoint
  * Provides comprehensive monitoring of all autonomous pipelines
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Authenticate admin request
     await requireCronAuth();

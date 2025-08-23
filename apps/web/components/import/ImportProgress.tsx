@@ -314,7 +314,7 @@ export function ImportProgress({
   }
 
   const currentStage = progressData?.stage || "initializing";
-  const stageConfig = STAGE_CONFIG[currentStage] || STAGE_CONFIG.initializing;
+  const stageConfig = STAGE_CONFIG[currentStage] || STAGE_CONFIG['initializing'];
 
   if (compact) {
     return (

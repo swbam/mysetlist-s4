@@ -179,7 +179,7 @@ export function OptimizedImage({
     priority,
     quality,
     placeholder: placeholder as any,
-    blurDataURL: placeholder === "blur" ? getBlurDataURL() : undefined,
+    ...(placeholder === "blur" && { blurDataURL: getBlurDataURL() }),
     onLoad: handleLoad,
     onError: handleError,
     className: cn(

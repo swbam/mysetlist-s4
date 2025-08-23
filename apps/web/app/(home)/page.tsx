@@ -1,7 +1,6 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { ChevronRight, Music } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
 import { LiteSearch } from "./components/lite-search";
 import { RealActiveShows } from "./components/real-active-shows";
 import { RealPopularArtists } from "./components/real-popular-artists";

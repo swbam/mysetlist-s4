@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
         id: `tm_${attraction.id}`,
         type: "artist" as const,
         name: attraction.name,
-        imageUrl: attraction.images?.[0]?.url || undefined,
+        ...(attraction.images?.[0]?.url && { imageUrl: attraction.images[0].url }),
         description:
           attraction.classifications?.length > 0
             ? `Genres: ${attraction.classifications

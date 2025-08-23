@@ -64,7 +64,7 @@ export class ErrorBoundaryWrapper extends Component<
   }
 
   retry = () => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+    this.setState({ hasError: false });
   };
 
   override render() {

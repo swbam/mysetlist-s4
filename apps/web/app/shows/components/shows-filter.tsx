@@ -27,12 +27,12 @@ export const ShowsFilter = () => {
   const [dateFrom, setDateFrom] = useState<Date | undefined>(
     searchParams.get("dateFrom")
       ? new Date(searchParams.get("dateFrom")!)
-      : undefined,
+      : {},
   );
   const [dateTo, setDateTo] = useState<Date | undefined>(
     searchParams.get("dateTo")
       ? new Date(searchParams.get("dateTo")!)
-      : undefined,
+      : {},
   );
   const [orderBy, setOrderBy] = useState(searchParams.get("orderBy") || "date");
   const [availableCities, setAvailableCities] = useState<string[]>([]);

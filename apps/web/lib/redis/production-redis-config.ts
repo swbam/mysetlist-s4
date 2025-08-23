@@ -49,8 +49,8 @@ function buildRedisConfig(): RedisConfig {
     return {
       host: url.hostname,
       port: parseInt(url.port || '6379'),
-      password: url.password || undefined,
-      username: url.username || undefined,
+      ...(url.password && { password: url.password }),
+      ...(url.username && { username: url.username }),
       db: parseInt(url.pathname.slice(1) || '0'),
       maxRetriesPerRequest: null, // Required for BullMQ
       enableReadyCheck: false,

@@ -1,16 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getImportStatus } from "~/lib/import-status";
 import { Redis } from "ioredis";
-import { createRedisClient } from "~/lib/queues/redis-config";
+import { RedisClientFactory } from "~/lib/queues/redis-config";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
+export const runtime = 'nodejs';
+export const revalidate = 0;
 
 // Lazy-init Redis client via centralized config to avoid hardcoded secrets
 let _redis: Redis | null = null;
 function getRedis(): Redis {
   if (!_redis) {
-    _redis = createRedisClient();
+    _redis = RedisClientFactory.getClient('cache');
   }
   return _redis;
 }
@@ -37,7 +39,7 @@ export async function GET(
     const stream = new ReadableStream({
       async start(controller) {
         // Create a Redis subscriber for real-time updates
-        const subscriber = createRedisClient();
+        const subscriber = RedisClientFactory.getClient('pubsub');
         
         const channelName = `import:progress:${jobId}`;
         let heartbeatInterval: NodeJS.Timeout;
@@ -68,7 +70,7 @@ export async function GET(
             }
           } else {
             // Send initial status from database
-            const status = await getImportStatus(jobId);
+            const status = await getImportStatus(jobId, 'job');
             if (status) {
               controller.enqueue(
                 encoder.encode(`data: ${JSON.stringify(status)}\n\n`)
@@ -172,7 +174,7 @@ export async function GET(
 
   // Regular JSON response for polling
   try {
-    const status = await getImportStatus(jobId);
+    const status = await getImportStatus(jobId, 'job');
     
     if (!status) {
       return NextResponse.json(

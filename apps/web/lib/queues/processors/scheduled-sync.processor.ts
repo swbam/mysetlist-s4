@@ -11,9 +11,9 @@ import { Job } from "bullmq";
 import { db, artists, shows } from "@repo/database";
 import { eq, sql, desc } from "drizzle-orm";
 import { queueManager, QueueName, Priority } from "../queue-manager";
-import { RedisCache } from "../redis-config";
+import { RedisClientFactory } from "../redis-config";
 
-const cache = new RedisCache();
+const cache = RedisClientFactory.getClient('cache');
 
 export interface ScheduledSyncJobData {
   type: 'active' | 'trending' | 'stale' | 'new' | 'all';

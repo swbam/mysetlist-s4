@@ -449,8 +449,8 @@ const _getArtistSetlists = async (artistId: string, limit = 10) => {
 
           return {
             setlist,
-            show: show || undefined,
-            venue: venue || undefined,
+            ...(show && { show }),
+            ...(venue && { venue }),
             songCount: songCount || 0,
             voteCount: voteCount || 0,
             songs: setlistSongsData

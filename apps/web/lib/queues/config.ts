@@ -17,7 +17,7 @@ export const redisConnection: ConnectionOptions = CFG_REDIS_URL
       port: CFG_REDIS_PORT ? parseInt(CFG_REDIS_PORT, 10) : 6379,
       username: CFG_REDIS_USERNAME,
       password: CFG_REDIS_PASSWORD,
-      tls: CFG_REDIS_TLS === "true" ? {} : undefined,
+      ...(CFG_REDIS_TLS === "true" && { tls: {} }),
       maxRetriesPerRequest: null as any,
       enableReadyCheck: false,
     } as any);

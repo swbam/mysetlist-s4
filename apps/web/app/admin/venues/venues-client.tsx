@@ -40,7 +40,6 @@ import {
   Download,
   Edit,
   Eye,
-  Filter,
   Globe,
   Mail,
   MapPin,
@@ -53,7 +52,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { createClient } from "~/lib/supabase/client";
+
 import { toast } from "sonner";
 
 interface Venue {
@@ -89,12 +88,12 @@ interface VenuesClientProps {
 export default function VenuesClient({ initialVenues, initialStats }: VenuesClientProps) {
   const [venues, setVenues] = useState<Venue[]>(initialVenues);
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>(initialVenues);
-  const [stats, setStats] = useState(initialStats);
-  const [loading, setLoading] = useState(false);
+  const [stats] = useState(initialStats);
+  // Loading state removed as unused
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const supabase = createClient();
+  // Supabase client removed as unused
 
   useEffect(() => {
     // Filter venues based on search term and status filter

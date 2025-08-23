@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
-import { NextResponse } from "next/server";
+// NextResponse removed - unused import
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
   const headersList = await headers();
   const authHeader = headersList.get("authorization");
   const cronSecret = process.env.CRON_SECRET;

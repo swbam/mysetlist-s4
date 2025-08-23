@@ -78,7 +78,7 @@ export const useChartConfig = (type: string) => {
       // ... other configs
     };
 
-    return configs[type] || configs.growth;
+    return configs[type] || configs['growth'];
   }, [type]);
 };
 

@@ -172,14 +172,14 @@ const ArtistPage = async ({ params, searchParams }: {
       id: artist.id,
       name: artist.name,
       slug: artist.slug,
-      imageUrl: artist.imageUrl || undefined,
-      smallImageUrl: artist.smallImageUrl || undefined,
+      ...(artist.imageUrl && { imageUrl: artist.imageUrl }),
+      ...(artist.smallImageUrl && { smallImageUrl: artist.smallImageUrl }),
       genres: artist.genres || "[]",
       popularity: artist.popularity || 0,
       followers: artist.followers || 0,
       verified: artist.verified || false,
-      externalUrls: artist.externalUrls || undefined,
-      spotifyId: artist.spotifyId || undefined,
+      ...(artist.externalUrls && { externalUrls: artist.externalUrls }),
+      ...(artist.spotifyId && { spotifyId: artist.spotifyId }),
     };
 
     // Transform shows data to match component interfaces
@@ -240,7 +240,7 @@ const ArtistPage = async ({ params, searchParams }: {
           <ArtistPageWrapper
             artistId={artist.id}
             artistName={artist.name || "Unknown Artist"}
-            spotifyId={artist.spotifyId || undefined}
+            {...(artist.spotifyId && { spotifyId: artist.spotifyId })}
             initialData={{
               artist: artistData,
               shows: [...transformedUpcomingShows, ...transformedPastShows],
@@ -280,7 +280,7 @@ const ArtistPage = async ({ params, searchParams }: {
                       shows={transformedUpcomingShows}
                       artistName={artist.name || "Unknown Artist"}
                       artistId={artist.id}
-                      spotifyId={artist.spotifyId || undefined}
+                      {...(artist.spotifyId && { spotifyId: artist.spotifyId })}
                     />
                   </React.Suspense>
                 </TabsContent>

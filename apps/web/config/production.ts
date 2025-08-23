@@ -17,10 +17,10 @@ export const productionConfig = {
   // External services
   services: {
     supabase: {
-      projectRef: process.env.SUPABASE_PROJECT_REF || "yzwkimtdaabyjbpykquu",
+      projectRef: process.env['SUPABASE_PROJECT_REF'] || "yzwkimtdaabyjbpykquu",
     },
     spotify: {
-      clientId: process.env.SPOTIFY_CLIENT_ID,
+      clientId: process.env['SPOTIFY_CLIENT_ID'],
       redirectUri: "https://theset.live/auth/callback/spotify",
     },
   },
@@ -59,5 +59,5 @@ export function getAppUrl(): string {
   }
 
   // In development or preview, use environment variables or fallback
-  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+  return process.env['NEXT_PUBLIC_APP_URL'] || "http://localhost:3001";
 }

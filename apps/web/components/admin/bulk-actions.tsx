@@ -84,8 +84,8 @@ export default function BulkActions({
           action,
           items: selectedItems,
           options: {
-            reason: reason || undefined,
-            duration_days: duration ? Number.parseInt(duration) : undefined,
+            ...(reason && { reason }),
+            ...(duration && { duration_days: Number.parseInt(duration) }),
             hard_delete: options.hardDelete || false,
             ...options,
           },

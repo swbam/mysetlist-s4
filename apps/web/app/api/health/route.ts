@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
+// NextResponse removed - unused import
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";

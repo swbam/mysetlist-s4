@@ -11,9 +11,9 @@ import { Job } from "bullmq";
 import { db, venues, shows } from "@repo/database";
 import { eq, sql, inArray } from "drizzle-orm";
 import { TicketmasterClient } from "@repo/external-apis";
-import { RedisCache } from "../redis-config";
+import { RedisClientFactory } from "../redis-config";
 
-const cache = new RedisCache();
+const cache = RedisClientFactory.getClient('cache');
 
 export interface VenueSyncJobData {
   artistId?: string;

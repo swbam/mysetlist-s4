@@ -564,12 +564,12 @@ export class BatchApiOptimizer {
   getStatistics(): {
     pendingRequests: { [key: string]: number };
     rateLimits: { [key: string]: { used: number; total: number; resetIn: number } };
-    circuitBreakers: { [key: string]: string };
+    circuitBreakers: Record<string, ReturnType<CircuitBreaker['getState']>>;
   } {
     const stats = {
       pendingRequests: {} as { [key: string]: number },
       rateLimits: {} as { [key: string]: { used: number; total: number; resetIn: number } },
-      circuitBreakers: {} as { [key: string]: string },
+      circuitBreakers: {} as Record<string, ReturnType<CircuitBreaker['getState']>>,
     };
 
     // Pending requests

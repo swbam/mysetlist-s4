@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+// NextResponse removed - unused import
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
 
