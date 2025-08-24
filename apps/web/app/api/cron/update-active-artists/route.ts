@@ -1,6 +1,6 @@
 import { artists, db, shows } from "@repo/database";
 import { ArtistSyncService } from "@repo/external-apis";
-import { desc, gt, sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
