@@ -15,32 +15,52 @@
   },
   "crons": [
     {
-      "path": "/api/cron/update-active-artists",
-      "schedule": "0 */6 * * *"
+      "path": "/api/cron/warm-cache",
+      "schedule": "*/15 * * * *"
     },
     {
-      "path": "/api/cron/import-past-setlists",
-      "schedule": "0 6 * * *"
+      "path": "/api/cron/optimize-performance",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-old-data",
+      "schedule": "30 1 * * *"
+    },
+    {
+      "path": "/api/cron/calculate-trending",
+      "schedule": "5 */2 * * *"
+    },
+    {
+      "path": "/api/cron/update-active-artists",
+      "schedule": "15 */6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-artist-data",
+      "schedule": "30 */8 * * *"
     },
     {
       "path": "/api/cron/trending-artist-sync",
-      "schedule": "0 2 * * *"
+      "schedule": "45 2 * * *"
     },
     {
       "path": "/api/cron/complete-catalog-sync",
       "schedule": "0 3 * * 0"
     },
     {
-      "path": "/api/cron/calculate-trending",
+      "path": "/api/cron/master-sync",
+      "schedule": "15 4 * * *"
+    },
+    {
+      "path": "/api/cron/sync-us-shows",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-eu-shows",
       "schedule": "0 1 * * *"
     },
     {
-      "path": "/api/cron/master-sync",
-      "schedule": "0 4 * * *"
-    },
-    {
-      "path": "/api/cron/sync-artist-data",
-      "schedule": "0 */12 * * *"
+      "path": "/api/cron/import-past-setlists",
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/sync-artist-images",
