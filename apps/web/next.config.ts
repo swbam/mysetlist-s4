@@ -3,6 +3,7 @@ const nextConfig = {
   // Enable experimental features
   experimental: {
     optimizeCss: true,
+    serverComponentsExternalPackages: ['sharp'],
   },
 
   // Transpile packages from the monorepo
@@ -24,8 +25,12 @@ const nextConfig = {
   // Webpack configuration
   webpack: (config, { isServer }) => {
     if (isServer) {
-      // Add any server-side externals if needed
+      // Server-side: externalize problematic modules
       config.externals = config.externals || [];
+      config.externals.push({
+        'require-in-the-middle': 'commonjs require-in-the-middle',
+        '@opentelemetry/instrumentation': 'commonjs @opentelemetry/instrumentation',
+      });
     } else {
       // Client-side: externalize Node.js built-ins and server-only packages
       config.resolve.fallback = {
@@ -56,6 +61,9 @@ const nextConfig = {
         'node:tls': false,
         'node:http': false,
         'node:https': false,
+        // OpenTelemetry-related fallbacks
+        'require-in-the-middle': false,
+        '@opentelemetry/instrumentation': false,
       };
     }
 
@@ -94,6 +102,13 @@ const nextConfig = {
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
+
+  // Production optimizations
+  compress: true,
+  poweredByHeader: false,
+  
+  // Output optimization
+  output: 'standalone',
 
   // Bundle analyzer (for pnpm analyze)
   ...(process.env['ANALYZE'] === 'true' && {

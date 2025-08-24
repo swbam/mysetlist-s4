@@ -362,8 +362,8 @@ async function getTopTrendingArtists(limit: number = 10): Promise<Array<{
   }
 }
 
-// Health check endpoint for monitoring
-export async function HEAD(request: NextRequest) {
+// Health check endpoint for monitoring  
+export async function HEAD(_request: NextRequest) {
   try {
     // Quick health check - just verify database connection
     await db.execute(sql`SELECT 1`);
