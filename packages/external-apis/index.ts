@@ -85,3 +85,12 @@ export {
 
 // Export orchestrator class
 export { ArtistImportOrchestrator } from "./src/services/artist-import-orchestrator";
+
+// Export sync services
+export {
+  ArtistSyncService,
+  ShowSyncService,
+  SetlistSyncService,
+  SyncScheduler,
+  VenueSyncService,
+} from "./src/services";
