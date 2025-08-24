@@ -1,13 +1,13 @@
-// Redis/Upstash cache implementation (optional - not used in this project)
+// Production Redis cache implementation for MySetlist-S4
+import { RedisClientFactory } from "../queues/redis-config";
+import type { Redis } from "ioredis";
+
 export class CacheClient {
   private static instance: CacheClient;
-  private baseUrl: string;
-  private token: string;
+  private redisClient: Redis;
 
   private constructor() {
-    // Since we don't use Redis/Upstash, these will be empty
-    this.baseUrl = "";
-    this.token = "";
+    this.redisClient = RedisClientFactory.getClient('cache');
   }
 
   static getInstance(): CacheClient {
@@ -17,51 +17,21 @@ export class CacheClient {
     return CacheClient.instance;
   }
 
-  private async request(command: string[], pipeline = false) {
-    if (!this.baseUrl || !this.token) {
-      return null; // Gracefully handle missing Redis config
-    }
-
-    try {
-      const url = pipeline
-        ? `${this.baseUrl}/pipeline`
-        : `${this.baseUrl}/${command.join("/")}`;
-
-      const fetchInit: RequestInit = {
-        method: pipeline ? "POST" : "GET",
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          "Content-Type": "application/json",
-        },
-      };
-
-      if (pipeline) {
-        fetchInit.body = JSON.stringify(command);
-      }
-
-      const response = await fetch(url, fetchInit);
-
-      if (!response.ok) {
-        throw new Error(`Redis error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.result;
-    } catch (_error) {
-      return null;
-    }
-  }
-
   async get<T>(key: string): Promise<T | null> {
-    const result = await this.request(["GET", key]);
-    if (!result) {
-      return null;
-    }
-
     try {
-      return JSON.parse(result);
-    } catch {
-      return result as T;
+      const result = await this.redisClient.get(key);
+      if (!result) {
+        return null;
+      }
+
+      try {
+        return JSON.parse(result);
+      } catch {
+        return result as T;
+      }
+    } catch (error) {
+      console.error('Redis GET error:', error);
+      return null;
     }
   }
 
@@ -70,41 +40,68 @@ export class CacheClient {
     value: any,
     options?: { ex?: number; px?: number },
   ): Promise<boolean> {
-    const args = ["SET", key, JSON.stringify(value)];
-
-    if (options?.ex) {
-      args.push("EX", options.ex.toString());
-    } else if (options?.px) {
-      args.push("PX", options.px.toString());
+    try {
+      const serialized = JSON.stringify(value);
+      
+      if (options?.ex) {
+        await this.redisClient.setex(key, options.ex, serialized);
+      } else if (options?.px) {
+        await this.redisClient.psetex(key, options.px, serialized);
+      } else {
+        await this.redisClient.set(key, serialized);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Redis SET error:', error);
+      return false;
     }
-
-    const result = await this.request(args);
-    return result === "OK";
   }
 
   async del(key: string): Promise<number> {
-    const result = await this.request(["DEL", key]);
-    return result || 0;
+    try {
+      return await this.redisClient.del(key);
+    } catch (error) {
+      console.error('Redis DEL error:', error);
+      return 0;
+    }
   }
 
   async expire(key: string, seconds: number): Promise<boolean> {
-    const result = await this.request(["EXPIRE", key, seconds.toString()]);
-    return result === 1;
+    try {
+      const result = await this.redisClient.expire(key, seconds);
+      return result === 1;
+    } catch (error) {
+      console.error('Redis EXPIRE error:', error);
+      return false;
+    }
   }
 
   async ttl(key: string): Promise<number> {
-    const result = await this.request(["TTL", key]);
-    return result || -1;
+    try {
+      return await this.redisClient.ttl(key);
+    } catch (error) {
+      console.error('Redis TTL error:', error);
+      return -1;
+    }
   }
 
   async incr(key: string): Promise<number> {
-    const result = await this.request(["INCR", key]);
-    return result || 0;
+    try {
+      return await this.redisClient.incr(key);
+    } catch (error) {
+      console.error('Redis INCR error:', error);
+      return 0;
+    }
   }
 
   async zadd(key: string, score: number, member: string): Promise<number> {
-    const result = await this.request(["ZADD", key, score.toString(), member]);
-    return result || 0;
+    try {
+      return await this.redisClient.zadd(key, score, member);
+    } catch (error) {
+      console.error('Redis ZADD error:', error);
+      return 0;
+    }
   }
 
   async zrange(
@@ -113,73 +110,157 @@ export class CacheClient {
     stop: number,
     withScores = false,
   ): Promise<string[]> {
-    const args = ["ZRANGE", key, start.toString(), stop.toString()];
-    if (withScores) {
-      args.push("WITHSCORES");
+    try {
+      if (withScores) {
+        return await this.redisClient.zrange(key, start, stop, 'WITHSCORES');
+      }
+      return await this.redisClient.zrange(key, start, stop);
+    } catch (error) {
+      console.error('Redis ZRANGE error:', error);
+      return [];
     }
-
-    const result = await this.request(args);
-    return result || [];
   }
 
   async pipeline(commands: string[][]): Promise<any[]> {
-    if (!this.baseUrl || !this.token) {
+    try {
+      const pipeline = this.redisClient.pipeline();
+      
+      for (const command of commands) {
+        const [cmd, ...args] = command;
+        if (cmd) {
+          (pipeline as any)[cmd.toLowerCase()](...args);
+        }
+      }
+      
+      const results = await pipeline.exec();
+      return results?.map(([err, result]) => {
+        if (err) throw err;
+        return result;
+      }) || [];
+    } catch (error) {
+      console.error('Redis PIPELINE error:', error);
       return [];
     }
+  }
 
+  // Cache invalidation patterns using Redis SCAN (production-ready)
+  async invalidatePattern(pattern: string): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/pipeline`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(commands),
+      const stream = this.redisClient.scanStream({
+        match: `${pattern}*`,
+        count: 100,
       });
 
-      if (!response.ok) {
-        throw new Error(`Redis error: ${response.status}`);
+      const keysToDelete: string[] = [];
+
+      stream.on('data', (keys: string[]) => {
+        keysToDelete.push(...keys);
+      });
+
+      stream.on('end', async () => {
+        if (keysToDelete.length > 0) {
+          // Delete keys in batches
+          const batchSize = 100;
+          for (let i = 0; i < keysToDelete.length; i += batchSize) {
+            const batch = keysToDelete.slice(i, i + batchSize);
+            await this.redisClient.del(...batch);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Redis INVALIDATE_PATTERN error:', error);
+      // Fallback: try to get keys from our tracking sets
+      try {
+        const keys = await this.redisClient.smembers(`cache:keys:${pattern}`);
+        if (keys.length > 0) {
+          await this.del(`cache:keys:${pattern}`);
+          await this.redisClient.del(...keys);
+        }
+      } catch (fallbackError) {
+        console.error('Redis pattern invalidation fallback error:', fallbackError);
       }
-
-      const data = await response.json();
-      return data.result || [];
-    } catch (_error) {
-      return [];
     }
   }
 
-  // Cache invalidation patterns
-  async invalidatePattern(pattern: string): Promise<void> {
-    // Upstash doesn't support SCAN, so we track keys in a set
-    const keys = await this.request(["SMEMBERS", `cache:keys:${pattern}`]);
-    if (keys && keys.length > 0) {
-      await this.pipeline(keys.map((key: string) => ["DEL", key]));
-      await this.del(`cache:keys:${pattern}`);
-    }
-  }
-
-  // Helper for caching with patterns
+  // Helper for caching with patterns and tracking
   async setWithPattern(
     key: string,
     value: any,
     pattern: string,
     ttl?: number,
   ): Promise<boolean> {
-    const pipeline = [
-      ["SET", key, JSON.stringify(value)],
-      ["SADD", `cache:keys:${pattern}`, key],
-    ];
+    try {
+      const pipeline = this.redisClient.pipeline();
+      
+      pipeline.set(key, JSON.stringify(value));
+      pipeline.sadd(`cache:keys:${pattern}`, key);
 
-    if (ttl) {
-      const firstCommand = pipeline[0];
-      if (firstCommand) {
-        firstCommand.push("EX", ttl.toString());
+      if (ttl) {
+        pipeline.expire(key, ttl);
+        pipeline.expire(`cache:keys:${pattern}`, ttl + 60); // Extra time for the tracking set
       }
-      pipeline.push(["EXPIRE", `cache:keys:${pattern}`, (ttl + 60).toString()]); // Extra time for the set
-    }
 
-    const results = await this.pipeline(pipeline);
-    return results?.[0] === "OK";
+      const results = await pipeline.exec();
+      return results?.[0]?.[1] === 'OK';
+    } catch (error) {
+      console.error('Redis SET_WITH_PATTERN error:', error);
+      return false;
+    }
+  }
+
+  // Health check method
+  async ping(): Promise<boolean> {
+    try {
+      const result = await this.redisClient.ping();
+      return result === 'PONG';
+    } catch (error) {
+      console.error('Redis PING error:', error);
+      return false;
+    }
+  }
+
+  // Get connection status
+  getStatus(): string {
+    return this.redisClient.status;
+  }
+
+  // Remove range by score for rate limiting
+  async zremrangebyscore(key: string, min: number, max: number): Promise<number> {
+    try {
+      return await this.redisClient.zremrangebyscore(key, min, max);
+    } catch (error) {
+      console.error('Redis ZREMRANGEBYSCORE error:', error);
+      return 0;
+    }
+  }
+
+  // Pub/Sub methods for real-time features
+  async publish(channel: string, message: any): Promise<number> {
+    try {
+      return await this.redisClient.publish(channel, JSON.stringify(message));
+    } catch (error) {
+      console.error('Redis PUBLISH error:', error);
+      return 0;
+    }
+  }
+
+  async subscribe(channel: string, callback: (message: any) => void): Promise<void> {
+    try {
+      const pubsubClient = RedisClientFactory.getClient('pubsub');
+      await pubsubClient.subscribe(channel);
+      
+      pubsubClient.on('message', (receivedChannel, message) => {
+        if (receivedChannel === channel) {
+          try {
+            callback(JSON.parse(message));
+          } catch {
+            callback(message);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Redis SUBSCRIBE error:', error);
+    }
   }
 }
 
@@ -203,6 +284,13 @@ export const cacheKeys = {
 
   apiRateLimit: (apiName: string, identifier: string) =>
     `ratelimit:${apiName}:${identifier}`,
+
+  // Additional cache keys for performance
+  artistShows: (artistId: string) => `artist:${artistId}:shows`,
+  artistSongs: (artistId: string) => `artist:${artistId}:songs`,
+  showSetlists: (showId: string) => `show:${showId}:setlists`,
+  userProfile: (userId: string) => `user:${userId}:profile`,
+  popularContent: (type: string) => `popular:${type}`,
 };
 
 // Cache decorators for common patterns
@@ -233,7 +321,7 @@ export function withCache<T extends (...args: any[]) => Promise<any>>(
   }) as T;
 }
 
-// Rate limiting using Redis
+// Enhanced rate limiting using Redis
 export class RedisRateLimiter {
   private cache = CacheClient.getInstance();
 
@@ -246,17 +334,63 @@ export class RedisRateLimiter {
     const window = Math.floor(now / windowSeconds) * windowSeconds;
     const resetAt = window + windowSeconds;
 
-    const rateLimitKey = `${key}:${window}`;
-    const count = await this.cache.incr(rateLimitKey);
+    const rateLimitKey = `ratelimit:${key}:${window}`;
+    
+    try {
+      const count = await this.cache.incr(rateLimitKey);
 
-    if (count === 1) {
-      await this.cache.expire(rateLimitKey, windowSeconds + 60); // Extra buffer
+      if (count === 1) {
+        await this.cache.expire(rateLimitKey, windowSeconds + 60); // Extra buffer
+      }
+
+      return {
+        allowed: count <= maxRequests,
+        remaining: Math.max(0, maxRequests - count),
+        resetAt: resetAt * 1000,
+      };
+    } catch (error) {
+      console.error('Rate limiter error:', error);
+      // Fail open - allow requests if Redis is down
+      return {
+        allowed: true,
+        remaining: maxRequests,
+        resetAt: resetAt * 1000,
+      };
     }
+  }
 
-    return {
-      allowed: count <= maxRequests,
-      remaining: Math.max(0, maxRequests - count),
-      resetAt: resetAt * 1000,
-    };
+  // Sliding window rate limiter for more precise control
+  async checkSlidingWindowLimit(
+    key: string,
+    maxRequests: number,
+    windowSeconds: number,
+  ): Promise<{ allowed: boolean; remaining: number }> {
+    const now = Date.now();
+    const windowStart = now - windowSeconds * 1000;
+    
+    const rateLimitKey = `sliding:${key}`;
+    
+    try {
+      // Remove old entries and add current timestamp
+      await this.cache.zadd(rateLimitKey, now, `${now}`);
+      await this.cache.zremrangebyscore(rateLimitKey, 0, windowStart); // Remove old entries
+      
+      // Count current requests in window
+      const count = (await this.cache.zrange(rateLimitKey, 0, -1)).length;
+      
+      // Set expiry
+      await this.cache.expire(rateLimitKey, windowSeconds + 60);
+      
+      return {
+        allowed: count <= maxRequests,
+        remaining: Math.max(0, maxRequests - count),
+      };
+    } catch (error) {
+      console.error('Sliding window rate limiter error:', error);
+      return {
+        allowed: true,
+        remaining: maxRequests,
+      };
+    }
   }
 }

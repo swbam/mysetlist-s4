@@ -205,6 +205,18 @@ class EnvironmentValidator {
 
     // Check external APIs
     await this.checkExternalAPIs();
+
+    // Check database package
+    await this.checkDatabasePackage();
+
+    // Check queue system
+    await this.checkQueueSystem();
+
+    // Check service integration
+    await this.checkServiceIntegration();
+
+    // Check cron endpoints
+    await this.checkCronEndpoints();
   }
 
   private async checkSupabase(): Promise<void> {
@@ -273,6 +285,84 @@ class EnvironmentValidator {
 
     // Note: Ticketmaster and SetlistFM APIs require actual requests
     // which might count against rate limits, so we skip runtime checks
+  }
+
+  private async checkDatabasePackage(): Promise<void> {
+    console.log(chalk.yellow('\n💾 Checking database package...'));
+    
+    try {
+      const { db, sql } = await import('@repo/database');
+      await db.execute(sql`SELECT 1`);
+      this.info.push('✅ @repo/database package working');
+    } catch (error) {
+      this.errors.push(`❌ @repo/database package error: ${error}`);
+    }
+  }
+
+  private async checkQueueSystem(): Promise<void> {
+    console.log(chalk.yellow('\n🔄 Checking queue system...'));
+    
+    try {
+      const { queueManager } = await import('../lib/queues/queue-manager');
+      const health = await queueManager.getHealthStatus();
+      if (health.healthy) {
+        this.info.push('✅ Queue system healthy');
+      } else {
+        this.warnings.push(`⚠️ Queue system issues: ${health.errors.join(', ')}`);
+      }
+    } catch (error) {
+      this.warnings.push(`⚠️ Cannot verify queue system: ${error}`);
+    }
+  }
+
+  private async checkCronEndpoints(): Promise<void> {
+    console.log(chalk.yellow('\n⏰ Checking cron endpoints...'));
+    
+    const cronJobs = [
+      '/api/cron/warm-cache',
+      '/api/cron/optimize-performance',
+      '/api/cron/cleanup-old-data',
+      '/api/cron/calculate-trending',
+      '/api/cron/update-active-artists',
+      '/api/cron/sync-artist-data',
+      '/api/cron/trending-artist-sync',
+      '/api/cron/complete-catalog-sync',
+      '/api/cron/master-sync',
+      '/api/cron/sync-us-shows',
+      '/api/cron/sync-eu-shows',
+      '/api/cron/import-past-setlists',
+      '/api/cron/sync-artist-images',
+      '/api/cron/finish-mysetlist-sync',
+    ];
+    
+    for (const endpoint of cronJobs) {
+      const filePath = join(process.cwd(), 'app', endpoint, 'route.ts');
+      if (existsSync(filePath)) {
+        this.info.push(`✅ Cron endpoint exists: ${endpoint}`);
+      } else {
+        this.warnings.push(`⚠️ Missing cron endpoint: ${endpoint}`);
+      }
+    }
+  }
+
+  private async checkServiceIntegration(): Promise<void> {
+    console.log(chalk.yellow('\n🔧 Checking service integration...'));
+    
+    const services = [
+      { name: 'Cache Manager', path: '../lib/cache/cache-manager' },
+      { name: 'Import Status Manager', path: '../lib/import-status' },
+      { name: 'Data Freshness Manager', path: '../lib/services/data-freshness-manager' },
+      { name: 'Batch API Optimizer', path: '../lib/services/batch-api-optimizer' },
+    ];
+    
+    for (const service of services) {
+      try {
+        await import(service.path);
+        this.info.push(`✅ ${service.name} imports successfully`);
+      } catch (error) {
+        this.errors.push(`❌ ${service.name} import failed: ${error}`);
+      }
+    }
   }
 
   private checkCredentialsDirectory(): void {

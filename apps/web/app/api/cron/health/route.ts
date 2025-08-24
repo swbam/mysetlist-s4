@@ -1,11 +1,4 @@
-import { db } from "@repo/database";
-import { sql } from "drizzle-orm";
-
-import {
-  createErrorResponse,
-  createSuccessResponse,
-  requireCronAuth,
-} from "~/lib/api/auth-helpers";
+import { createCronJob } from "~/lib/cron/cron-wrapper";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -15,62 +8,73 @@ export const dynamic = "force-dynamic";
  * - Tests database connectivity
  * - Verifies authentication
  * - Tests logging functionality
+ * - Uses the new cron wrapper for standardized logging
  */
-export async function POST() {
+async function healthCheckHandler() {
+  const startTime = Date.now();
+  
+  // Import database dynamically to avoid import path issues
+  const { db, sql } = await import("@repo/database");
+  
+  const results = {
+    databaseConnected: false,
+    loggingWorking: false,
+    responseTime: 0,
+    timestamp: new Date().toISOString(),
+  };
+
+  // Test database connection
   try {
-    // Test authentication
-    await requireCronAuth();
-
-    const startTime = Date.now();
-    const results = {
-      databaseConnected: false,
-      loggingWorking: false,
-      responseTime: 0,
-      timestamp: new Date().toISOString(),
+    await db.execute(sql`SELECT 1 as test`);
+    results.databaseConnected = true;
+  } catch (error) {
+    console.error("Database connectivity test failed:", error);
+    return {
+      success: false,
+      error: "Database connection failed",
+      data: results,
     };
+  }
 
-    // Test database connection
-    try {
-      await db.execute(sql`SELECT 1 as test`);
-      results.databaseConnected = true;
-    } catch (error) {
-      console.error("Database connectivity test failed:", error);
-    }
+  // Test logging function (will be tested by the wrapper itself)
+  try {
+    await db.execute(sql`
+      SELECT log_cron_run(
+        'health-check-test', 
+        'success',
+        ${JSON.stringify({ test: true, timestamp: results.timestamp })}::jsonb
+      )
+    `);
+    results.loggingWorking = true;
+  } catch (error) {
+    console.error("Logging test failed:", error);
+    return {
+      success: false,
+      error: "Database logging failed",
+      data: results,
+    };
+  }
 
-    // Test logging function
-    try {
-      await db.execute(sql`
-        SELECT log_cron_run(
-          'health-check', 
-          'success',
-          ${JSON.stringify({ test: true, timestamp: results.timestamp })}
-        )
-      `);
-      results.loggingWorking = true;
-    } catch (error) {
-      console.error("Logging test failed:", error);
-    }
+  results.responseTime = Date.now() - startTime;
+  const isHealthy = results.databaseConnected && results.loggingWorking;
 
-    results.responseTime = Date.now() - startTime;
-
-    const isHealthy = results.databaseConnected && results.loggingWorking;
-
-    return createSuccessResponse({
-      message: `Health check ${isHealthy ? "passed" : "failed"}`,
+  return {
+    success: isHealthy,
+    message: `Health check ${isHealthy ? "passed" : "failed"}`,
+    data: {
       healthy: isHealthy,
       results,
-    });
-  } catch (error) {
-    console.error("Health check failed:", error);
-    return createErrorResponse(
-      "Health check failed",
-      500,
-      error instanceof Error ? error.message : "Unknown error",
-    );
-  }
+    },
+  };
 }
 
+// Create the cron job with proper logging
+const cronJob = createCronJob('health-check', healthCheckHandler);
+
+// Export the HTTP handlers
+export const { POST, HEAD } = cronJob;
+
+// Support GET requests for manual triggers
 export async function GET() {
-  // Support GET requests for manual triggers
   return POST();
 }

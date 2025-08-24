@@ -4,7 +4,7 @@
 // Tests complete sync and import flow end-to-end
 
 import chalk from 'chalk';
-import { queueManager } from '../lib/queues/queue-manager';
+import { queueManager, QueueManager } from '../lib/queues/queue-manager';
 import { ImportStatusManager } from '../lib/import-status';
 import { cacheManager } from '../lib/cache/cache-manager';
 import { dataFreshnessManager } from '../lib/services/data-freshness-manager';
@@ -55,7 +55,8 @@ class IntegrationTester {
 
     try {
       // Initialize queue manager
-      this.queueManager = QueueManager.getInstance();
+      this.queueManager = queueManager;
+      await this.queueManager.initialize();
       console.log(chalk.green('✅ Queue manager initialized'));
 
       // Start cache warming
@@ -63,6 +64,7 @@ class IntegrationTester {
       console.log(chalk.green('✅ Cache warming started'));
 
     } catch (error) {
+      console.warn(chalk.yellow('⚠️ Queue manager initialization failed:'), error);
       console.error(chalk.red('Failed to initialize services:'), error);
       process.exit(1);
     }
@@ -186,7 +188,7 @@ class IntegrationTester {
       }
 
       // Get queue statistics
-      const stats = await this.queueManager.getQueueStatistics();
+      const stats = await this.queueManager.getAllStats();
       
       // Test adding a job
       const testQueue = this.queueManager.getQueue('scheduled-sync');
@@ -234,7 +236,7 @@ class IntegrationTester {
       ];
 
       for (const update of stages) {
-        await ImportStatusManager.updateImportStatus(testJobId, update as any);
+        await ImportStatusManager.updateImportStatus(testArtistId, update as any);
         await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
       }
 
@@ -561,7 +563,7 @@ class IntegrationTester {
 
       // Close queue connections
       if (this.queueManager) {
-        await this.queueManager.closeAll();
+        await this.queueManager.shutdown();
       }
 
       console.log(chalk.green('✅ Cleanup complete'));

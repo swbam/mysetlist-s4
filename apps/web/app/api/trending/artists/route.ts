@@ -98,10 +98,28 @@ function transformArtist(artist: any) {
 }
 
 export async function GET(request: NextRequest) {
-  // Apply rate limiting
-  const rateLimitResult = await rateLimitMiddleware(request);
-  if (rateLimitResult) {
-    return rateLimitResult;
+  // Apply rate limiting with error handling
+  try {
+    const rateLimitResult = await rateLimitMiddleware(request);
+    
+    // Type safety assertion - ensure result is NextResponse or null
+    if (rateLimitResult !== null && !(rateLimitResult instanceof NextResponse)) {
+      console.error("Rate limit middleware returned unexpected type:", typeof rateLimitResult);
+      return NextResponse.json(
+        { error: "Internal server error - rate limiting" },
+        { status: 500 }
+      );
+    }
+    
+    if (rateLimitResult) {
+      return rateLimitResult;
+    }
+  } catch (rateLimitError) {
+    console.error("Rate limit middleware error:", rateLimitError);
+    return NextResponse.json(
+      { error: "Rate limiting service unavailable" },
+      { status: 503 }
+    );
   }
 
   try {

@@ -1,107 +1,98 @@
 // MySetlist-S4 Production Redis Configuration
 // File: apps/web/lib/queues/redis-config.ts
-// Production-ready Redis configuration with error handling and connection pooling
+// Production-ready implementation
 
-import Redis from 'ioredis';
-import { ConnectionOptions } from 'bullmq';
+import { Redis } from "ioredis";
 
-// Redis configuration based on environment - supports Upstash
+// Production-ready Redis configuration
 const getRedisUrl = (): string => {
-  // Check for direct Redis URL first
+  // Priority order: REDIS_URL > individual components > localhost fallback
   if (process.env['REDIS_URL']) {
     return process.env['REDIS_URL'];
   }
   
-  // Check for Upstash REST credentials and convert to Redis URL
-  const upstashUrl = process.env['UPSTASH_REDIS_REST_URL'];
-  const upstashToken = process.env['UPSTASH_REDIS_REST_TOKEN'];
+  const host = process.env['REDIS_HOST'] || "localhost";
+  const port = process.env['REDIS_PORT'] || "6379";
+  const password = process.env['REDIS_PASSWORD'];
+  const username = process.env['REDIS_USERNAME'] || "default";
   
-  if (upstashUrl && upstashToken) {
-    // Convert Upstash REST URL to Redis protocol URL
-    // Example: https://xxx.upstash.io -> redis://default:token@xxx.upstash.io:6379
-    try {
-      const url = new URL(upstashUrl);
-      return `redis://default:${upstashToken}@${url.hostname}:6379`;
-    } catch (error) {
-      console.error('Failed to parse Upstash URL:', error);
-      throw new Error('Invalid UPSTASH_REDIS_REST_URL format');
-    }
+  if (password) {
+    return `redis://${username}:${password}@${host}:${port}/0`;
   }
   
-  // Production fallback
-  if (process.env['NODE_ENV'] === 'production') {
-    throw new Error('Redis configuration required: set REDIS_URL or UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN');
-  }
-  
-  // Development defaults
-  return 'redis://localhost:6379';
+  return `redis://${host}:${port}/0`;
 };
 
-// Parse Redis URL into connection options
-const parseRedisUrl = (url: string): any => {
+// Base Redis configuration for production
+const baseRedisConfig = {
+  maxRetriesPerRequest: 3,
+  retryDelayOnFailover: 100,
+  connectTimeout: 10000,
+  commandTimeout: 5000,
+  lazyConnect: true,
+  family: 4 as const,
+  keepAlive: 30000, // 30 seconds keepalive
+  // Connection pool settings
+  enableReadyCheck: false,
+  // Error handling
+  retryOnFailover: true,
+  reconnectOnError: (err: Error) => {
+    console.log("Redis reconnect on error:", err.message);
+    return err.message.includes("READONLY");
+  },
+};
+
+// BullMQ specific configuration
+export const bullMQConnection = {
+  ...baseRedisConfig,
+  maxRetriesPerRequest: null, // Required for BullMQ
+  enableReadyCheck: false,    // Required for BullMQ
+  db: parseInt(process.env['REDIS_QUEUE_DB'] || "1"), // Separate DB for queues
+};
+
+// General Redis connection for caching
+export const cacheConnection = {
+  ...baseRedisConfig,
+  db: parseInt(process.env['REDIS_CACHE_DB'] || "0"), // Default DB for caching
+};
+
+// Parse Redis URL and create connection options
+export const getRedisConnection = () => {
+  const redisUrl = getRedisUrl();
+  
   try {
-    const redisUrl = new URL(url);
-    
+    const url = new URL(redisUrl);
     return {
-      host: redisUrl.hostname,
-      port: parseInt(redisUrl.port || '6379'),
-      ...(redisUrl.password && { password: redisUrl.password }),
-      ...(redisUrl.username && { username: redisUrl.username }),
-      db: parseInt(redisUrl.pathname?.slice(1) || '0'),
-      family: 4, // Force IPv4
-      
-      // Production optimizations
-      maxRetriesPerRequest: 3,
-      enableReadyCheck: false,
-      retryStrategy: (times: number) => {
-        if (times > 3) {
-          console.error('Redis connection failed after 3 attempts');
-          return null; // Stop retrying
-        }
-        return Math.min(times * 500, 2000); // exponential backoff
-      },
-      
-      // Performance settings
-      enableOfflineQueue: (process.env['NODE_ENV'] !== 'production') as any,
-      connectTimeout: 10000,
-      disconnectTimeout: 2000,
-      commandTimeout: 5000,
-      
-      // Reconnection settings
-      reconnectOnError: (err: Error) => {
-        const targetErrors = ['READONLY', 'ECONNRESET', 'ETIMEDOUT'];
-        return targetErrors.some(e => err.message.includes(e));
-      },
+      ...baseRedisConfig,
+      host: url.hostname,
+      port: parseInt(url.port || "6379"),
+      password: url.password || undefined,
+      username: url.username || "default",
+      db: parseInt(url.pathname.slice(1) || "0"),
     };
   } catch (error) {
-    console.error('Failed to parse Redis URL:', error);
-    throw new Error('Invalid REDIS_URL format');
+    console.warn("⚠️ Failed to parse Redis URL, using localhost fallback:", error);
+    return {
+      ...baseRedisConfig,
+      host: "localhost",
+      port: 6379,
+      maxRetriesPerRequest: 1, // Reduced for development
+    };
   }
 };
 
-// BullMQ connection configuration
-export const getRedisConnection = (): ConnectionOptions => {
-  const redisUrl = getRedisUrl();
-  const options = parseRedisUrl(redisUrl);
-  
+// Get BullMQ specific connection
+export const getBullMQConnection = () => {
+  const baseConnection = getRedisConnection();
   return {
-    host: options.host!,
-    port: options.port!,
-    password: options.password,
-    username: options.username as any,
-    db: options.db,
-    maxRetriesPerRequest: null as any,
-    retryStrategy: (times: number) => (times > 10 ? null : Math.min(times * 1000, 30000)) as any,
-  } as any;
+    ...baseConnection,
+    maxRetriesPerRequest: null, // Required for BullMQ
+    enableReadyCheck: false,    // Required for BullMQ
+    db: parseInt(process.env['REDIS_QUEUE_DB'] || "1"),
+  };
 };
 
-// Separate connection for BullMQ (recommended for production)
-export const getBullMQConnection = (): ConnectionOptions => {
-  const baseConfig = getRedisConnection();
-  return baseConfig;
-};
-
-// Redis client factory for different purposes
+// Redis client factory for different use cases
 export class RedisClientFactory {
   private static clients: Map<string, Redis> = new Map();
 
@@ -110,24 +101,25 @@ export class RedisClientFactory {
       return this.clients.get(purpose)!;
     }
 
-    const url = getRedisUrl();
-    const client = new Redis(url, { maxRetriesPerRequest: null as any, enableReadyCheck: false as any });
+    const config = purpose === 'queue' ? getBullMQConnection() : getRedisConnection();
+    const clientConfig = {
+      ...config,
+      // Add purpose-specific overrides
+      ...(purpose === 'pubsub' && { lazyConnect: false }), // PubSub needs immediate connection
+    };
+    const client = new Redis(clientConfig);
 
-    // Set up event listeners
+    // Error handling
+    client.on('error', (err) => {
+      console.error(`Redis ${purpose} client error:`, err);
+    });
+
     client.on('connect', () => {
-      console.log(`Redis client connected for ${purpose}`);
-    });
-
-    client.on('error', (error) => {
-      console.error(`Redis client error for ${purpose}:`, error);
-    });
-
-    client.on('close', () => {
-      console.log(`Redis client closed for ${purpose}`);
+      console.log(`✅ Redis ${purpose} client connected`);
     });
 
     client.on('reconnecting', () => {
-      console.log(`Redis client reconnecting for ${purpose}`);
+      console.log(`🔄 Redis ${purpose} client reconnecting...`);
     });
 
     this.clients.set(purpose, client);
@@ -135,21 +127,19 @@ export class RedisClientFactory {
   }
 
   static async closeAll(): Promise<void> {
-    const promises: Promise<unknown>[] = [];
+    const closePromises = Array.from(this.clients.values()).map(client => 
+      client.disconnect()
+    );
     
-    for (const [purpose, client] of this.clients) {
-      console.log(`Closing Redis client for ${purpose}`);
-      promises.push(client.quit() as unknown as Promise<void>);
-    }
-    
-    await Promise.all(promises);
+    await Promise.all(closePromises);
     this.clients.clear();
+    console.log('✅ All Redis clients closed');
   }
 
   static getHealthStatus(): Record<string, string> {
     const status: Record<string, string> = {};
     
-    for (const [purpose, client] of this.clients) {
+    for (const [purpose, client] of this.clients.entries()) {
       status[purpose] = client.status;
     }
     
@@ -157,20 +147,20 @@ export class RedisClientFactory {
   }
 }
 
-// Test connection utility
+// Test Redis connection
 export async function testRedisConnection(): Promise<boolean> {
   try {
-    const client = new Redis(getRedisUrl(), { maxRetriesPerRequest: null as any, enableReadyCheck: false as any });
-    const result = await client.ping();
-    await client.quit();
-    return result === 'PONG';
+    const client = RedisClientFactory.getClient('cache');
+    await client.ping();
+    console.log('✅ Redis connection test successful');
+    return true;
   } catch (error) {
-    console.error('Redis connection test failed:', error);
+    console.error('❌ Redis connection test failed:', error);
     return false;
   }
 }
 
-// Health check for monitoring
+// Health check function for monitoring
 export async function getRedisHealthCheck(): Promise<{
   connected: boolean;
   latency?: number;
@@ -179,23 +169,24 @@ export async function getRedisHealthCheck(): Promise<{
 }> {
   try {
     const client = RedisClientFactory.getClient('cache');
-    
-    // Test latency
     const start = Date.now();
     await client.ping();
     const latency = Date.now() - start;
-    
-    // Get memory usage
-    const info = await client.info('memory');
-    const memoryLines = info.split('\r\n');
-    const usedMemory = memoryLines
-      .find(line => line.startsWith('used_memory_human:'))
-      ?.split(':')[1];
-    
+
+    // Get memory info if available
+    let memory;
+    try {
+      const info = await client.memory('USAGE', 'test-key');
+      memory = { usage: info };
+    } catch {
+      // Memory command not available in all Redis versions
+      memory = null;
+    }
+
     return {
       connected: true,
       latency,
-      memory: { used: usedMemory },
+      memory,
       clients: RedisClientFactory.getHealthStatus(),
     };
   } catch (error) {
@@ -206,7 +197,7 @@ export async function getRedisHealthCheck(): Promise<{
   }
 }
 
-// Configuration validation - supports both Redis URL and Upstash
+// Configuration validation
 export function validateRedisConfig(): {
   valid: boolean;
   issues: string[];
@@ -214,28 +205,30 @@ export function validateRedisConfig(): {
 } {
   const issues: string[] = [];
   const recommendations: string[] = [];
-  
-  const hasRedisUrl = !!process.env['REDIS_URL'];
-  const hasUpstash = !!(process.env['UPSTASH_REDIS_REST_URL'] && process.env['UPSTASH_REDIS_REST_TOKEN']);
-  
+
+  // Check for Redis URL
+  if (!process.env['REDIS_URL'] && !process.env['REDIS_HOST']) {
+    issues.push("No Redis configuration found (REDIS_URL or REDIS_HOST)");
+    recommendations.push("Set REDIS_URL environment variable for production");
+  }
+
+  // Check for production settings
   if (process.env['NODE_ENV'] === 'production') {
-    if (!hasRedisUrl && !hasUpstash) {
-      issues.push('Redis configuration required: set REDIS_URL or (UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN)');
+    if (!process.env['REDIS_PASSWORD']) {
+      issues.push("No Redis password set for production");
+      recommendations.push("Set REDIS_PASSWORD for production security");
     }
-    
-    if (hasUpstash && !process.env['UPSTASH_REDIS_REST_TOKEN']) {
-      issues.push('UPSTASH_REDIS_REST_URL set but UPSTASH_REDIS_REST_TOKEN missing');
-    }
-    
-    if (hasRedisUrl && !(process.env['REDIS_URL'] || '').includes('rediss://')) {
-      recommendations.push('Consider using TLS (rediss://) for production Redis');
-    }
-    
-    if (hasUpstash) {
-      recommendations.push('Upstash Redis detected - excellent choice for production');
+
+    if (!process.env['REDIS_URL']?.includes('rediss://')) {
+      recommendations.push("Consider using SSL/TLS (rediss://) for production Redis connections");
     }
   }
-  
+
+  // Check queue database separation
+  if (process.env['REDIS_QUEUE_DB'] === process.env['REDIS_CACHE_DB']) {
+    recommendations.push("Consider using separate Redis databases for queues and cache");
+  }
+
   return {
     valid: issues.length === 0,
     issues,
@@ -243,21 +236,24 @@ export function validateRedisConfig(): {
   };
 }
 
-// Export connections for BullMQ
-export const connection = getBullMQConnection();
-export const queueConnection = connection;
+// Auto-validate on module load in development
+if (process.env['NODE_ENV'] === 'development') {
+  const validation = validateRedisConfig();
+  if (!validation.valid) {
+    console.warn('⚠️ Redis configuration issues:', validation.issues);
+  }
+  if (validation.recommendations.length > 0) {
+    console.info('💡 Redis configuration recommendations:', validation.recommendations);
+  }
+}
+
+// Exports for queue manager compatibility
+export { getBullMQConnection as connection };
+
+// Default job options for BullMQ
 export const defaultJobOptions = {
-  removeOnComplete: {
-    age: 3600, // 1 hour
-    count: 100, // Keep last 100 completed jobs
-  },
-  removeOnFail: {
-    age: 86400, // 24 hours
-    count: 500, // Keep last 500 failed jobs
-  },
   attempts: 3,
-  backoff: {
-    type: 'exponential' as const,
-    delay: 2000,
-  },
+  backoff: { type: "exponential" as const, delay: 2000 },
+  removeOnComplete: { age: 3600, count: 100 }, // Keep successful jobs for 1 hour, max 100
+  removeOnFail: { age: 86400, count: 50 },     // Keep failed jobs for 24 hours, max 50
 };
