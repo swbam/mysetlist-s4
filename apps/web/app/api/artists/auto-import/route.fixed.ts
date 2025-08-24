@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
           stage: "completed",
           progress: 100,
           message: "Artist already exists in database",
-          completedAt: new Date().toISOString(),
+          completed_at: new Date(),
         });
       }
 
@@ -109,13 +109,18 @@ export async function POST(request: NextRequest) {
           const orchestrator = new ArtistImportOrchestrator(async (progress) => {
             const targetArtistId = artistId || tempArtistId;
             if (targetArtistId) {
-              await updateImportStatus(targetArtistId, {
+              const statusUpdate: any = {
                 stage: progress.stage,
                 progress: progress.progress,
                 message: `${progress.message} (attempt ${retryCount + 1})`,
-                error: progress.error,
-                completedAt: progress.completedAt,
-              });
+                error: progress.error || '',
+              };
+              
+              if (progress.completedAt) {
+                statusUpdate.completed_at = new Date(progress.completedAt);
+              }
+              
+              await updateImportStatus(targetArtistId, statusUpdate);
             }
           });
 
@@ -237,7 +242,7 @@ export async function POST(request: NextRequest) {
           progress: 0,
           message: `Auto-import failed after ${retryCount} attempts`,
           error: errorMessage,
-          completedAt: new Date().toISOString(),
+          completed_at: new Date(),
         });
       } catch (statusError) {
         console.error(

@@ -1,6 +1,6 @@
 import { artists, db } from "@repo/database";
 import { ArtistImportOrchestrator } from "@repo/external-apis";
-import { eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import { CACHE_TAGS } from "~/lib/cache";
@@ -12,12 +12,10 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   let tempArtistId: string | null = null;
   let artistId: string | null = null;
-  let retryCount = 0;
-  const maxRetries = 2;
 
   try {
     const body = await request.json();
-    const { tmAttractionId, spotifyId, artistName, retryOnFailure = true } = body;
+    const { tmAttractionId, spotifyId, artistName } = body;
 
     // Require at least one identifier
     if (!tmAttractionId && !spotifyId && !artistName) {
@@ -81,7 +79,7 @@ export async function POST(request: NextRequest) {
           stage: "completed",
           progress: 100,
           message: "Artist already exists in database",
-          completedAt: new Date().toISOString(),
+          completed_at: new Date(),
         });
       }
 
@@ -131,13 +129,18 @@ export async function POST(request: NextRequest) {
       const orchestrator = new ArtistImportOrchestrator(async (progress) => {
         const targetArtistId = artistId || tempArtistId;
         if (targetArtistId) {
-          await updateImportStatus(targetArtistId, {
+          const statusUpdate: any = {
             stage: progress.stage,
             progress: progress.progress,
             message: progress.message,
-            error: progress.error,
-            completedAt: progress.completedAt,
-          });
+            error: progress.error || '',
+          };
+          
+          if (progress.completedAt) {
+            statusUpdate.completed_at = new Date(progress.completedAt);
+          }
+          
+          await updateImportStatus(targetArtistId, statusUpdate);
         }
       });
 
@@ -229,7 +232,7 @@ export async function POST(request: NextRequest) {
           progress: 0,
           message: "Auto-import failed due to unexpected error",
           error: errorMessage,
-          completedAt: new Date().toISOString(),
+          completed_at: new Date(),
         });
       } catch (statusError) {
         console.error(

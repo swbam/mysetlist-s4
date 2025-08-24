@@ -75,3 +75,13 @@ export {
 } from "./src/services/orchestrators/ArtistImportOrchestrator";
 
 export { EnhancedShowVenueSync } from "./src/services/enhanced-show-venue-sync";
+
+// Export progress utilities
+export {
+  onProgress,
+  offProgress,
+  report,
+} from "./src/services/progress/ProgressBus";
+
+// Export orchestrator class
+export { ArtistImportOrchestrator } from "./src/services/artist-import-orchestrator";
