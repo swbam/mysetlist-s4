@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   try {
     // Verify cron secret
     const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (authHeader !== `Bearer ${process.env['CRON_SECRET']}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
       const circuitBreakerHealth = Object.entries(batchStats.circuitBreakers).map(([api, state]) => ({
         api,
         state: state.state,
-        healthy: state.state === 'closed'
+        healthy: state.state === 'CLOSED'
       }));
 
       console.log(`📊 Batch API Statistics:

@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { mode = "daily", type = "all", limit = 10 } = body;
+    const { mode = "daily" } = body as { mode?: string };
 
     const scheduler = new SyncScheduler();
 

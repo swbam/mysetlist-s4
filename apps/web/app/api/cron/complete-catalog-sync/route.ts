@@ -100,7 +100,8 @@ export async function POST(request: NextRequest) {
             if (!artist.spotifyId) return;
 
             // Full artist sync including complete discography
-            await artistSyncService.syncFullDiscography(artist.spotifyId);
+            await artistSyncService.syncArtist(artist.spotifyId);
+            await artistSyncService.syncCatalog(artist.spotifyId);
 
             // Update sync timestamp
             await db

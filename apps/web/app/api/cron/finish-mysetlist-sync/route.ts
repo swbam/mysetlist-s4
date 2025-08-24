@@ -1,11 +1,7 @@
-import { SetlistSyncService, SyncScheduler } from "@repo/external-apis";
+import { SyncScheduler } from "@repo/external-apis";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
-import {
-  createErrorResponse,
-  createSuccessResponse,
-  requireCronAuth,
-} from "~/lib/api/auth-helpers";
+import { requireCronAuth } from "~/lib/api/auth-helpers";
 import { createClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering for API route
@@ -20,7 +16,6 @@ export async function POST(request: NextRequest) {
     const { mode = "daily", orchestrate = true } = body;
 
     const supabase = await createClient();
-    const setlistSync = new SetlistSyncService();
     const scheduler = new SyncScheduler();
 
     // If orchestrate is true, run the full sync pipeline first
@@ -225,9 +220,6 @@ export async function GET(request: NextRequest) {
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { searchParams } = new URL(request.url);
-    const mode = searchParams.get("mode") || "daily";
 
     // Forward to POST method
     const response = await POST(request);

@@ -27,7 +27,6 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const {
       data: { user },
-      error: authError,
     } = await supabase.auth.getUser();
 
     // CSRF tokens can be generated for both authenticated and anonymous users

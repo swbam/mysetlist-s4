@@ -9,13 +9,6 @@ import { batchApiOptimizer } from '~/lib/services/batch-api-optimizer';
 
 export const dynamic = 'force-dynamic';
 
-// Authentication helper
-async function requireCronAuth(): Promise<void> {
-  const authHeader = process.env.CRON_SECRET;
-  if (!authHeader) {
-    throw new Error('CRON_SECRET not configured');
-  }
-}
 
 // Response helpers
 function createSuccessResponse(data: any) {
@@ -44,7 +37,7 @@ export async function POST(request: NextRequest) {
   try {
     // Authentication check
     const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (authHeader !== `Bearer ${process.env['CRON_SECRET']}`) {
       return createErrorResponse('Unauthorized', 401);
     }
 
@@ -68,7 +61,7 @@ export async function POST(request: NextRequest) {
       LIMIT 100
     `);
 
-    const usShows = usShowsResult.rows;
+    const usShows = Array.isArray((usShowsResult as any).rows) ? (usShowsResult as any).rows : [];
     console.log(`Found ${usShows.length} US shows to sync`);
 
     if (usShows.length === 0) {
@@ -103,13 +96,16 @@ export async function POST(request: NextRequest) {
 
     // Group shows by priority (upcoming shows get higher priority)
     const now = new Date();
-    const priorityShows = usShows.filter(show => {
+    type USShow = { id: string; ticketmaster_id: string; date: string } & Record<string, any>;
+    const typedShows = (usShows as unknown as USShow[]);
+
+    const priorityShows = typedShows.filter((show) => {
       const showDate = new Date(show.date);
       const daysUntilShow = (showDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
       return daysUntilShow <= 7; // Shows within a week
     });
 
-    const regularShows = usShows.filter(show => {
+    const regularShows = typedShows.filter((show) => {
       const showDate = new Date(show.date);
       const daysUntilShow = (showDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
       return daysUntilShow > 7;
@@ -153,8 +149,8 @@ export async function POST(request: NextRequest) {
 
     // Add bulk sync job to queue for any failed individual requests
     const failedShows = [
-      ...priorityShows.filter((_, i) => priorityResults[i].status === 'rejected'),
-      ...regularShows.filter((_, i) => regularResults[i].status === 'rejected')
+      ...priorityShows.filter((_, i) => i < priorityResults.length && (priorityResults[i] as PromiseSettledResult<any>)?.status === 'rejected'),
+      ...regularShows.filter((_, i) => i < regularResults.length && (regularResults[i] as PromiseSettledResult<any>)?.status === 'rejected')
     ];
 
     if (failedShows.length > 0) {
@@ -177,7 +173,7 @@ export async function POST(request: NextRequest) {
       QueueName.TICKETMASTER_SYNC,
       'sync-us-shows',
       { 
-        showIds: usShows.map(s => s.id), 
+        showIds: typedShows.map((s) => s.id), 
         region: 'US',
         timezone: 'America/New_York',
         syncType: 'scheduled'
@@ -187,8 +183,12 @@ export async function POST(request: NextRequest) {
 
     // Update last sync timestamp for successfully processed shows
     const successfulShowIds = [
-      ...priorityShows.filter((_, i) => priorityResults[i].status === 'fulfilled').map(s => s.id),
-      ...regularShows.filter((_, i) => regularResults[i].status === 'fulfilled').map(s => s.id)
+      ...priorityShows
+        .filter((_, i) => i < priorityResults.length && (priorityResults[i] as PromiseSettledResult<any>)?.status === 'fulfilled')
+        .map((s: USShow) => s.id),
+      ...regularShows
+        .filter((_, i) => i < regularResults.length && (regularResults[i] as PromiseSettledResult<any>)?.status === 'fulfilled')
+        .map((s: USShow) => s.id)
     ];
 
     if (successfulShowIds.length > 0) {

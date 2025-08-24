@@ -94,7 +94,7 @@ async function getEUShowsToSync(): Promise<EUShow[]> {
     LIMIT 100
   `);
 
-  const shows = result.rows as EUShow[];
+  const shows = Array.isArray((result as any).rows) ? (result as any).rows as EUShow[] : [];
   console.log(`📊 Found ${shows.length} EU shows to sync`);
   
   // Log country distribution
@@ -117,7 +117,7 @@ async function syncShowWithTicketmaster(show: EUShow): Promise<SyncResult> {
     console.log(`🎫 Syncing show ${show.id} (${show.country}) - ${show.artist_name} at ${show.venue_name}`);
     
     // Use batch API optimizer for efficient API calls
-    const eventData = await batchApiOptimizer.request('ticketmaster', 'getEvent', {
+    const eventData = await batchApiOptimizer.request<any>('ticketmaster', 'getEvent', {
       id: show.ticketmaster_id,
       locale,
       domain,
@@ -175,7 +175,7 @@ async function syncShowWithTicketmaster(show: EUShow): Promise<SyncResult> {
       success: true,
       showId: show.id,
       country: show.country,
-      updated: updateResult.rowsAffected > 0,
+      updated: (updateResult as any).rowsAffected > 0,
       cached: eventData._cached || false,
     };
 
@@ -229,15 +229,17 @@ async function processEUShowsInBatches(shows: EUShow[]): Promise<SyncResult[]> {
     
     // Collect results
     for (let j = 0; j < batchResults.length; j++) {
-      const result = batchResults[j];
-      if (result.status === 'fulfilled') {
-        results.push(result.value);
+      const outcome = batchResults[j] as PromiseSettledResult<SyncResult>;
+      if (outcome && outcome.status === 'fulfilled') {
+        results.push(outcome.value);
       } else {
+        const reason = (outcome as PromiseRejectedResult)?.reason;
+        const fallback = batch[j] as EUShow;
         results.push({
           success: false,
-          showId: batch[j].id,
-          country: batch[j].country,
-          error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+          showId: fallback?.id || 'unknown',
+          country: fallback?.country || 'GB',
+          error: reason instanceof Error ? reason.message : String(reason),
         });
       }
     }
@@ -316,7 +318,7 @@ export async function POST(request: NextRequest) {
   try {
     // Verify cron secret
     const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
+    const cronSecret = process.env['CRON_SECRET'];
     
     if (!cronSecret) {
       console.error('❌ CRON_SECRET not configured');
@@ -383,13 +385,14 @@ export async function POST(request: NextRequest) {
     
     // Country-specific stats
     const countryStats = syncResults.reduce((acc, result) => {
-      if (!acc[result.country]) {
-        acc[result.country] = { success: 0, failed: 0 };
+      const key = result.country || 'GB';
+      if (!acc[key]) {
+        acc[key] = { success: 0, failed: 0 };
       }
       if (result.success) {
-        acc[result.country].success++;
+        acc[key]!.success++;
       } else {
-        acc[result.country].failed++;
+        acc[key]!.failed++;
       }
       return acc;
     }, {} as Record<string, { success: number; failed: number }>);
@@ -446,7 +449,7 @@ export async function GET() {
       AND run_at > NOW() - INTERVAL '24 hours'
     `);
     
-    const stats = recentSyncs.rows[0] || { total_runs: 0, successful_runs: 0, last_run: null };
+    const stats = Array.isArray((recentSyncs as any).rows) ? (recentSyncs as any).rows[0] : { total_runs: 0, successful_runs: 0, last_run: null };
     
     return NextResponse.json({
       healthy: true,
