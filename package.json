@@ -35,7 +35,16 @@
       "react-dom": "^19.1.0",
       "@types/react": "19.1.5",
       "@types/react-dom": "19.1.5"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "@biomejs/biome",
+      "@sentry/cli",
+      "@tailwindcss/oxide",
+      "es5-ext",
+      "esbuild",
+      "msgpackr-extract",
+      "sharp"
+    ]
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
