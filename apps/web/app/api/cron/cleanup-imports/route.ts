@@ -10,6 +10,7 @@ import {
   requireCronAuth,
 } from '~/lib/api/auth-helpers';
 import { db, sql } from '@repo/database';
+import type { NextRequest } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
@@ -81,6 +82,6 @@ export async function POST() {
   }
 }
 
-export async function GET(request: NextRequest) {
-  return POST(request);
+export async function GET(_request: NextRequest) {
+  return POST();
 }

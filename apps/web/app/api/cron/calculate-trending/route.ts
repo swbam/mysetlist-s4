@@ -3,6 +3,7 @@
 // REPLACE existing stub with complete implementation
 
 import { db, sql, artists, desc } from "@repo/database";
+import type { NextRequest } from "next/server";
 
 import {
   createErrorResponse,
