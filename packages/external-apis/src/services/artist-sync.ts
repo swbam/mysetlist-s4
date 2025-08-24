@@ -317,6 +317,16 @@ export class ArtistSyncService {
   }
 
   /**
+   * Sync full Spotify discography for an artist.
+   * This is a lightweight wrapper around SpotifyCompleteCatalog.importEntireDiscography
+   * so higher-level callers can depend on ArtistSyncService only.
+   */
+  async syncFullDiscography(spotifyArtistId: string) {
+    const catalogService = new (await import("./spotify-complete-catalog")).SpotifyCompleteCatalog();
+    return catalogService.importEntireDiscography(spotifyArtistId);
+  }
+
+  /**
    * Fetches full Spotify catalog excluding "live" tracks with deduplication
    */
   async syncCatalog(artistId: string): Promise<{
