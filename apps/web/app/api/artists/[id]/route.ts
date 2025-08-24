@@ -1,6 +1,5 @@
-// NextResponse removed - unused import
-import { db, artists } from "@repo/database";
-import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { db, artists, eq } from "@repo/database";
 
 export async function GET(
   _request: Request,
@@ -8,9 +7,11 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const artist = await db.query.artists.findFirst({
-      where: eq(artists.id, id),
-    });
+    const [artist] = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.id, id))
+      .limit(1);
 
     if (!artist) {
       return NextResponse.json(

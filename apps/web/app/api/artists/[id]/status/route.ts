@@ -1,14 +1,17 @@
-// NextResponse removed - unused import
-import { db, syncProgress } from "@repo/database";
-import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { db, syncProgress, eq } from "@repo/database";
 
 export async function GET(
   _request: Request,
-  { params }: any,
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const status = await db.query.syncProgress.findFirst({
-    where: eq(syncProgress.jobId, params.id),
-  });
+  const { id } = await params;
+  const [status] = await db
+    .select()
+    .from(syncProgress)
+    .where(eq(syncProgress.jobId, id))
+    .limit(1);
+    
   return NextResponse.json(
     status ?? { stage: "unknown", progress: 0, message: "No status" },
   );
