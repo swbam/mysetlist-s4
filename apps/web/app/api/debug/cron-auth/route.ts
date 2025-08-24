@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-// NextResponse removed - unused import
+import { NextResponse } from "next/server";
 
 export async function POST(_request: Request) {
   const headersList = await headers();

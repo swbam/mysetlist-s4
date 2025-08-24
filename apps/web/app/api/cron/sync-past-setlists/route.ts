@@ -1,7 +1,6 @@
-// NextResponse removed - unused import
-import { db } from "@repo/database";
-import { shows, artists, venues, setlists, songs, setlistSongs } from "@repo/database";
-import { eq, and, gte, lte, sql } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { db, shows, artists, venues, songs } from "@repo/database";
+import { and, gte, lte, sql, eq } from "drizzle-orm";
 import { SetlistFmClient } from "@repo/external-apis/src/clients/setlistfm";
 import { requireCronAuth } from "~/lib/api/auth-helpers";
 
@@ -22,8 +21,16 @@ export async function GET(request: Request) {
     });
 
     for (const show of recentShows) {
-      const artist = await db.query.artists.findFirst({ where: eq(artists.id, show.headlinerArtistId!) });
-      const venue = await db.query.venues.findFirst({ where: eq(venues.id, show.venueId!) });
+      const [artist] = await db
+        .select()
+        .from(artists)
+        .where(eq(artists.id, show.headlinerArtistId!))
+        .limit(1);
+      const [venue] = await db
+        .select()
+        .from(venues)
+        .where(eq(venues.id, show.venueId!))
+        .limit(1);
 
       if (!artist || !venue) {
         continue;
@@ -50,7 +57,11 @@ export async function GET(request: Request) {
         if (newSetlist) {
           for (const set of setlist.sets.set) {
             for (const song of set.song) {
-              let dbSong = await db.query.songs.findFirst({ where: eq(songs.name, song.name) });
+              let [dbSong] = await db
+                .select()
+                .from(songs)
+                .where(eq(songs.name, song.name))
+                .limit(1);
               if (!dbSong) {
                 [dbSong] = await db.insert(songs).values({ name: song.name, artist: artist.name }).returning();
               }

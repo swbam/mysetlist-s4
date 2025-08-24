@@ -2,7 +2,7 @@
 // File: apps/web/app/api/cron/calculate-trending/route.ts
 // REPLACE existing stub with complete implementation
 
-import { db, sql, artists, shows, votes, userFollowsArtists, desc } from "@repo/database";
+import { db, sql, artists, desc } from "@repo/database";
 
 import {
   createErrorResponse,

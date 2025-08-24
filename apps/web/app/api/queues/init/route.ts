@@ -1,4 +1,4 @@
-// NextResponse removed - unused import
+import { NextResponse } from "next/server";
 import { initializeWorkers } from "~/lib/queues/workers";
 
 export async function GET() {
