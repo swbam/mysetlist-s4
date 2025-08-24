@@ -2,6 +2,7 @@
 // File: apps/web/app/api/cron/calculate-trending/route.ts
 // REPLACE existing stub with complete implementation
 
+import { NextRequest } from "next/server";
 import { db, sql, artists, desc } from "@repo/database";
 
 import {

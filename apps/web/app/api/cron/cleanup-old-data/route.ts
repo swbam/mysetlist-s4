@@ -48,8 +48,9 @@ export async function POST() {
         DELETE FROM import_status 
         WHERE stage IN ('completed', 'failed') 
         AND updated_at < NOW() - INTERVAL '7 days'
+        RETURNING id
       `);
-      results.importStatuses = importResult.rowCount || 0;
+      results.importStatuses = Array.isArray((importResult as any).rows) ? (importResult as any).rows.length : 0;
       console.log(`✅ Cleaned ${results.importStatuses} old import statuses`);
     } catch (error) {
       console.error('Failed to clean import statuses:', error);
@@ -62,8 +63,9 @@ export async function POST() {
         DELETE FROM sync_jobs 
         WHERE status = 'completed' 
         AND completed_at < NOW() - INTERVAL '30 days'
+        RETURNING id
       `);
-      results.syncJobs = syncResult.rowCount || 0;
+      results.syncJobs = Array.isArray((syncResult as any).rows) ? (syncResult as any).rows.length : 0;
       console.log(`✅ Cleaned ${results.syncJobs} old sync jobs`);
     } catch (error) {
       console.error('Failed to clean sync jobs:', error);
@@ -76,8 +78,9 @@ export async function POST() {
         DELETE FROM cron_logs 
         WHERE created_at < NOW() - INTERVAL '14 days'
         AND status = 'success'
+        RETURNING id
       `);
-      results.cronLogs = cronResult.rowCount || 0;
+      results.cronLogs = Array.isArray((cronResult as any).rows) ? (cronResult as any).rows.length : 0;
       console.log(`✅ Cleaned ${results.cronLogs} old cron logs`);
     } catch (error) {
       console.error('Failed to clean cron logs:', error);
@@ -90,8 +93,9 @@ export async function POST() {
         DELETE FROM queue_jobs 
         WHERE status IN ('completed', 'failed') 
         AND updated_at < NOW() - INTERVAL '7 days'
+        RETURNING id
       `);
-      results.queueJobLogs = queueResult.rowCount || 0;
+      results.queueJobLogs = Array.isArray((queueResult as any).rows) ? (queueResult as any).rows.length : 0;
       console.log(`✅ Cleaned ${results.queueJobLogs} old queue job logs`);
     } catch (error) {
       console.error('Failed to clean queue job logs:', error);
@@ -104,8 +108,9 @@ export async function POST() {
         DELETE FROM error_logs 
         WHERE created_at < NOW() - INTERVAL '30 days'
         AND severity NOT IN ('critical', 'fatal')
+        RETURNING id
       `);
-      results.errorLogs = errorResult.rowCount || 0;
+      results.errorLogs = Array.isArray((errorResult as any).rows) ? (errorResult as any).rows.length : 0;
       console.log(`✅ Cleaned ${results.errorLogs} old error logs`);
     } catch (error) {
       console.error('Failed to clean error logs:', error);
@@ -118,8 +123,9 @@ export async function POST() {
         DELETE FROM temp_uploads 
         WHERE created_at < NOW() - INTERVAL '24 hours'
         AND status != 'processing'
+        RETURNING id
       `);
-      results.tempFiles = tempResult.rowCount || 0;
+      results.tempFiles = Array.isArray((tempResult as any).rows) ? (tempResult as any).rows.length : 0;
       console.log(`✅ Cleaned ${results.tempFiles} temporary files`);
     } catch (error) {
       console.error('Failed to clean temporary files:', error);
@@ -244,6 +250,6 @@ export async function POST() {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   return POST();
 }

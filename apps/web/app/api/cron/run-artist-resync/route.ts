@@ -26,9 +26,8 @@ export async function POST(request: NextRequest) {
     const { 
       limit = 10, 
       mode = "auto", 
-      forceResync = false,
       maxAge = 24 // hours
-    } = body;
+    } = body as { limit?: number; mode?: "all"|"stale"|"auto"; maxAge?: number };
 
     const startTime = Date.now();
 
@@ -169,7 +168,7 @@ export async function POST(request: NextRequest) {
             name: artist.name,
             status: 'failed',
             duration: artistDuration,
-            error: importResult.error
+            error: importResult.error || 'Unknown error'
           });
           
           console.error(`[RESYNC] ${errorMsg}`);
@@ -186,7 +185,7 @@ export async function POST(request: NextRequest) {
           status: 'failed',
           duration: artistDuration,
           error: errorMsg
-        });
+        } as { id: string; name: string; status: string; duration?: number; error: string });
         
         console.error(`[RESYNC] ${errorMsg}`, error);
       }

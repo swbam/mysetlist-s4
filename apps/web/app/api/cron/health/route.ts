@@ -74,7 +74,9 @@ const cronJob = createCronJob('health-check', healthCheckHandler);
 // Export the HTTP handlers
 export const { POST, HEAD } = cronJob;
 
+import type { NextRequest } from "next/server";
+
 // Support GET requests for manual triggers
-export async function GET() {
-  return POST();
+export async function GET(request: NextRequest) {
+  return POST(request);
 }

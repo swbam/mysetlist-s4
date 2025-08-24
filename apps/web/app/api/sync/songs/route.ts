@@ -95,8 +95,8 @@ export async function POST(request: NextRequest) {
 
       if (fullDiscography) {
         // Sync the full discography
-        syncResult =
-          await artistSyncService.syncFullDiscography(targetSpotifyId);
+        await artistSyncService.syncArtist(targetSpotifyId);
+        syncResult = await artistSyncService.syncCatalog(targetSpotifyId);
         console.log(
           `✅ Full discography sync completed for ${targetArtist.name}:`,
           syncResult,
