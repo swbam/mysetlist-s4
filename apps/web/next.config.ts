@@ -3,8 +3,8 @@ const nextConfig = {
   // Enable experimental features
   experimental: {
     optimizeCss: true,
-    serverComponentsExternalPackages: ['sharp'],
   },
+  serverExternalPackages: ['sharp'],
 
   // Transpile packages from the monorepo
   transpilePackages: [
