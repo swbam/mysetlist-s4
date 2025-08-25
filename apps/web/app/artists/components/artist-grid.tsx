@@ -107,14 +107,16 @@ export const ArtistGrid = () => {
               name: artist.name,
               slug: artist.slug,
               imageUrl: artist.imageUrl,
-              smallImageUrl: artist.smallImageUrl || null,
-              genres: artist.genres,
+              smallImageUrl: artist.smallImageUrl ?? null,
+              genres: artist.genres ?? null,
               verified: artist.verified,
-              followers: artist.followers,
-              followerCount: artist.followerCount,
-              trendingScore: artist.trendingScore,
-              popularity: artist.popularity,
-              upcomingShows: artist.upcomingShows,
+              followers: artist.followers ?? null,
+              followerCount: artist.followerCount ?? null,
+              trendingScore: artist.trendingScore ?? null,
+              popularity: artist.popularity ?? null,
+              ...(artist.upcomingShows !== undefined && {
+                upcomingShows: artist.upcomingShows,
+              }),
             }}
             variant="default"
             showFollowButton={true}
