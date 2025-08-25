@@ -11,11 +11,13 @@ export { TicketmasterClient } from "./src/clients/ticketmaster";
 
 // Setlist.fm
 export * from "./src/clients/setlistfm";
+export { SetlistFmClient } from "./src/clients/setlistfm";
 
 // Re-export commonly used types
 export type {
   SpotifyArtist,
   SpotifyTrack,
+  SpotifyAlbum,
   SpotifySearchResult,
 } from "./src/types/spotify";
 
@@ -87,4 +89,17 @@ export {
 export { ArtistImportOrchestrator } from "./src/services/artist-import-orchestrator";
 
 // Export sync services
-export { ArtistSyncService, ShowSyncService, SetlistSyncService, SyncScheduler } from "./src/services";
+export {
+  ArtistSyncService,
+  ShowSyncService,
+  SetlistSyncService,
+  SyncScheduler,
+  VenueSyncService,
+} from "./src/services";
+
+// Export Spotify complete catalog
+export { SpotifyCompleteCatalog } from "./src/services/spotify-complete-catalog";
+
+// Export ingest functions
+export { ingestShowsAndVenues } from "./src/services/ingest/TicketmasterIngest";
+export { ingestStudioCatalog } from "./src/services/ingest/SpotifyCatalogIngest";

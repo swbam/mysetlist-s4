@@ -107,7 +107,7 @@ export const ArtistGrid = () => {
               name: artist.name,
               slug: artist.slug,
               imageUrl: artist.imageUrl,
-              smallImageUrl: artist.smallImageUrl,
+              smallImageUrl: artist.smallImageUrl || null,
               genres: artist.genres,
               verified: artist.verified,
               followers: artist.followers,
