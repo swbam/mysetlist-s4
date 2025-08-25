@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+// Skeleton import removed - not used
 import { format } from "date-fns";
 import { Calendar, MapPin, Ticket } from "lucide-react";
 import Link from "next/link";
@@ -43,22 +43,7 @@ interface UpcomingShowsProps {
   spotifyId?: string;
 }
 
-function ShowSkeleton() {
-  return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-          <Skeleton className="h-10 w-24" />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+// ShowSkeleton component removed - not used
 
 export const UpcomingShows = React.memo(function UpcomingShows({
   shows,
@@ -87,9 +72,9 @@ export const UpcomingShows = React.memo(function UpcomingShows({
             </p>
             {/* Trigger background import once if we have IDs */}
             <AutoSyncOnEmptyShows
-              artistId={artistId}
+              {...(artistId && { artistId })}
               artistName={artistName}
-              spotifyId={spotifyId}
+              {...(spotifyId && { spotifyId })}
             />
           </div>
         </CardContent>

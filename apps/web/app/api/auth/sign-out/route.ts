@@ -1,10 +1,10 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createAuthenticatedClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
-export async function POST(_request: NextRequest) {
+export async function POST() {
   try {
     // Sign out with Supabase
     const supabase = await createAuthenticatedClient();

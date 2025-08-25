@@ -1,32 +1,23 @@
 import { db } from "@repo/database";
 import { SyncScheduler } from "@repo/external-apis";
 import { sql } from "drizzle-orm";
-import { headers } from "next/headers";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  requireCronAuth,
+} from "~/lib/api/auth-helpers";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    // Check for authorization
-    const headersList = await headers();
-    const authHeader = headersList.get("authorization");
-    const validTokens = [
-      process.env['CRON_SECRET'],
-      process.env['SUPABASE_SERVICE_ROLE_KEY'],
-      process.env['ADMIN_API_KEY'],
-    ].filter(Boolean) as string[];
-
-    if (
-      validTokens.length > 0 &&
-      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Standardized authentication
+    await requireCronAuth();
 
     const body = await request.json().catch(() => ({}));
-    const { mode = "daily", type = "all", limit = 10 } = body;
+    const { mode = "daily" } = body as { mode?: string };
 
     const scheduler = new SyncScheduler();
 
@@ -46,9 +37,9 @@ export async function POST(request: NextRequest) {
         });
         break;
       default:
-        return NextResponse.json(
-          { error: "Invalid sync mode. Use: initial, daily, hourly" },
-          { status: 400 },
+        return createErrorResponse(
+          "Invalid sync mode. Use: initial, daily, hourly",
+          400
         );
     }
 
@@ -57,43 +48,24 @@ export async function POST(request: NextRequest) {
       await db.execute(sql`SELECT log_cron_run('master-sync', 'success')`);
     } catch {}
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       mode,
       result,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Master sync failed:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Master sync failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
+    return createErrorResponse(
+      "Master sync failed",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    // Check for authorization
-    const headersList = await headers();
-    const authHeader = headersList.get("authorization");
-    const validTokens = [
-      process.env['CRON_SECRET'],
-      process.env['SUPABASE_SERVICE_ROLE_KEY'],
-      process.env['ADMIN_API_KEY'],
-    ].filter(Boolean) as string[];
-
-    if (
-      validTokens.length > 0 &&
-      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Standardized authentication
+    await requireCronAuth();
 
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode") || "daily";
@@ -115,9 +87,9 @@ export async function GET(request: NextRequest) {
         });
         break;
       default:
-        return NextResponse.json(
-          { error: "Invalid sync mode. Use: initial, daily, hourly" },
-          { status: 400 },
+        return createErrorResponse(
+          "Invalid sync mode. Use: initial, daily, hourly",
+          400
         );
     }
 
@@ -126,22 +98,16 @@ export async function GET(request: NextRequest) {
       await db.execute(sql`SELECT log_cron_run('master-sync', 'success')`);
     } catch {}
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       mode,
       result,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Master sync failed:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Master sync failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
+    return createErrorResponse(
+      "Master sync failed",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }

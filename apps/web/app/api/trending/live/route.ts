@@ -1,5 +1,5 @@
 import { db, userActivityLog } from "@repo/database";
-import { and, desc, eq, gte, inArray } from "drizzle-orm";
+import { and, desc, gte, inArray } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { type TrendingItem, getTrendingContent } from "~/lib/trending";

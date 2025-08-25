@@ -1,5 +1,5 @@
 import { db, venues } from "@repo/database";
-import { and, asc, desc, eq, ilike, sql } from "drizzle-orm";
+import { and, eq, ilike, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
     const country = searchParams.get("country") || "US";
     const venueType = searchParams.get("venueType");
     const search = searchParams.get("search");
-    const orderBy = searchParams.get("orderBy") || "name";
 
     // Build dynamic filter conditions
     const conditions: SQL[] = [];
@@ -41,15 +40,7 @@ export async function GET(request: NextRequest) {
 
     const whereClause = conditions.length ? and(...conditions) : sql`TRUE`;
 
-    // Decide ordering expression
-    const orderExpr =
-      orderBy === "totalShows"
-        ? desc(venues.totalShows)
-        : orderBy === "upcomingShows"
-          ? desc(venues.upcomingShows)
-          : orderBy === "capacity"
-            ? desc(venues.capacity)
-            : asc(venues.name);
+    // Ordering expression - currently not used in simplified query
 
     // Execute query - simplified for debugging
     const venuesData = await db

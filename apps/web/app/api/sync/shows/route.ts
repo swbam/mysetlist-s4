@@ -38,12 +38,12 @@ export async function POST(request: NextRequest) {
     } else {
       // Sync general upcoming shows
       const syncOptions = {
-        city: body.city,
-        stateCode: body.stateCode,
-        keyword: body.keyword,
+        ...(body.city && { city: body.city }),
+        ...(body.stateCode && { stateCode: body.stateCode }),
+        ...(body.keyword && { keyword: body.keyword }),
         classificationName: body.classificationName || "music",
         startDateTime: body.startDateTime || new Date().toISOString(),
-        endDateTime: body.endDateTime,
+        ...(body.endDateTime && { endDateTime: body.endDateTime }),
       };
 
       await showSyncService.syncUpcomingShows(syncOptions);

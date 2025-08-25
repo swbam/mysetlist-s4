@@ -224,6 +224,19 @@ export class ArtistSyncService {
     await this.syncArtistTracks(artistId, topTracks.tracks);
   }
 
+  // NEW: High-level helper used by routes to perform a complete artist sync
+  async syncFullDiscography(artistSpotifyId: string): Promise<{
+    totalSongs: number;
+    totalAlbums: number;
+    processedAlbums: number;
+  }> {
+    // Sync core artist details and top tracks first
+    await this.syncArtist(artistSpotifyId);
+    // Then sync full catalog (albums/tracks)
+    const catalog = await this.syncCatalog(artistSpotifyId);
+    return catalog;
+  }
+
   private async syncArtistTracks(
     artistId: string,
     tracks: any[],

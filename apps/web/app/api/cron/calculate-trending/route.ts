@@ -2,7 +2,8 @@
 // File: apps/web/app/api/cron/calculate-trending/route.ts
 // REPLACE existing stub with complete implementation
 
-import { db, sql, artists, desc } from "@repo/database";
+import { db, artists } from "@repo/database";
+import { desc, sql } from "drizzle-orm";
 
 import {
   createErrorResponse,
@@ -363,7 +364,7 @@ async function getTopTrendingArtists(limit: number = 10): Promise<Array<{
 }
 
 // Health check endpoint for monitoring
-export async function HEAD(request: NextRequest) {
+export async function HEAD() {
   try {
     // Quick health check - just verify database connection
     await db.execute(sql`SELECT 1`);

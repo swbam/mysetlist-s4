@@ -32,7 +32,6 @@ interface ArtistImportLoadingProps {
 }
 
 export function ArtistImportLoading({
-  artistSlug,
   jobId,
   onComplete,
 }: ArtistImportLoadingProps) {

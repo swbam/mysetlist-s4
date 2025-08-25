@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
       // If we only know TM or name, resolve the rest into DB and locals
       const idResult = await artistSyncService.syncIdentifiers({
-        artistName,
+        ...(artistName && { artistName }),
         ...(tmAttractionId && { ticketmasterAttractionId: tmAttractionId }),
       });
 

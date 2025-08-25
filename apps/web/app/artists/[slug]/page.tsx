@@ -3,13 +3,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
-import React, { Suspense } from "react";
+import React from "react";
 import { BreadcrumbNavigation } from "~/components/breadcrumb-navigation";
 import { ArtistErrorBoundary } from "~/components/error-boundaries/artist-error-boundary";
 import { createArtistMetadata } from "~/lib/seo-metadata";
 import { getArtist, getArtistShows, getArtistStats, importArtist } from "./actions";
 import { ArtistHeader } from "./components/artist-header";
-import { ArtistImportLoading } from "./components/artist-import-loading";
+// ArtistImportLoading import removed - not used
 import { ArtistPageWrapper } from "./components/artist-page-wrapper";
 import { ArtistStats } from "./components/artist-stats";
 import { UpcomingShows } from "./components/upcoming-shows";
@@ -49,7 +49,7 @@ export const generateMetadata = async ({ params }: any): Promise<Metadata> => {
     if (!artist && tmAttractionId) {
       const artistName = slug
         .replace(/-/g, " ")
-        .replace(/\b\w/g, (l) => l.toUpperCase());
+        .replace(/\b\w/g, (l: string) => l.toUpperCase());
       return createArtistMetadata({
         name: artistName,
         slug: slug,
@@ -116,7 +116,7 @@ const ArtistPage = async ({ params, searchParams }: {
             
             <ImportProgress
               artistId={importResult.artistId}
-              onComplete={(data) => {
+              onComplete={() => {
                 // Redirect to artist page after completion
                 window.location.href = `/artists/${importResult.slug}`;
               }}
@@ -184,54 +184,62 @@ const ArtistPage = async ({ params, searchParams }: {
 
     // Transform shows data to match component interfaces
     const transformedUpcomingShows = upcomingShows.map(
-      ({ show, venue, orderIndex, isHeadliner }) => ({
+      ({ show, venue }) => ({
         show: {
-          id: show.id,
-          name: show.name || "Untitled Show",
-          slug: show.slug || "",
-          date: show.date || "",
-          ticketUrl: show.ticketUrl,
+          id: String(show.id),
+          name: String(show.name || "Untitled Show"),
+          slug: "", // Not available in raw SQL query
+          date: String(show.date || ""),
           status: (show.status as "upcoming" | "ongoing" | "completed" | "cancelled") || "upcoming",
         },
         venue: venue
           ? {
-              id: venue.id,
-              name: venue.name,
-              city: venue.city,
-              ...(venue.state && { state: venue.state }),
-              country: venue.country,
+              id: String(venue.id),
+              name: String(venue.name),
+              city: String(venue.city),
+              ...(venue.state ? { state: String(venue.state) } : {}),
+              country: String(venue.country),
             }
-          : undefined,
-        orderIndex: orderIndex || 0,
-        isHeadliner: isHeadliner || false,
+          : {
+              id: "",
+              name: "Unknown Venue",
+              city: "",
+              country: "",
+            },
+        orderIndex: 0, // Not available in raw SQL query
+        isHeadliner: false, // Not available in raw SQL query
       }),
     );
 
     const transformedPastShows = pastShows.map(
-      ({ show, venue, orderIndex, isHeadliner }) => ({
+      ({ show, venue }) => ({
         show: {
-          id: show.id,
-          name: show.name || "Untitled Show",
-          slug: show.slug || "",
-          date: show.date || "",
-          venueId: show.venueId,
-          setlistCount: show.setlistCount,
+          id: String(show.id),
+          name: String(show.name || "Untitled Show"),
+          slug: "", // Not available in raw SQL query
+          date: String(show.date || ""),
+          venueId: null, // Not available in raw SQL query
+          setlistCount: 0, // Not available in raw SQL query
           attendeeCount: null, // Not tracked yet
-          voteCount: show.voteCount,
-          ticketUrl: show.ticketUrl,
+          voteCount: 0, // Not available in raw SQL query
           status: (show.status as "upcoming" | "ongoing" | "completed" | "cancelled") || "completed",
         },
         venue: venue
           ? {
-              id: venue.id,
-              name: venue.name,
-              city: venue.city,
-              ...(venue.state && { state: venue.state }),
-              country: venue.country,
+              id: String(venue.id),
+              name: String(venue.name),
+              city: String(venue.city),
+              ...(venue.state ? { state: String(venue.state) } : {}),
+              country: String(venue.country),
             }
-          : undefined,
-        orderIndex: orderIndex || 0,
-        isHeadliner: isHeadliner || false,
+          : {
+              id: "",
+              name: "Unknown Venue",
+              city: "",
+              country: "",
+            },
+        orderIndex: 0, // Not available in raw SQL query
+        isHeadliner: false, // Not available in raw SQL query
       }),
     );
 

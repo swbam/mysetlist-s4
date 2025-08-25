@@ -1,29 +1,20 @@
 import { artists, db } from "@repo/database";
 import { ArtistSyncService } from "@repo/external-apis";
-import { desc, isNull, sql } from "drizzle-orm";
-import { headers } from "next/headers";
-import { type NextRequest, NextResponse } from "next/server";
+import { desc, sql } from "drizzle-orm";
+import { type NextRequest } from "next/server";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  requireCronAuth,
+} from "~/lib/api/auth-helpers";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    // Check for authorization
-    const headersList = await headers();
-    const authHeader = headersList.get("authorization");
-    const validTokens = [
-      process.env['CRON_SECRET'],
-      process.env['SUPABASE_SERVICE_ROLE_KEY'],
-      process.env['ADMIN_API_KEY'],
-    ].filter(Boolean) as string[];
-
-    if (
-      validTokens.length > 0 &&
-      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Standardized authentication
+    await requireCronAuth();
 
     const body = await request.json().catch(() => ({}));
     const { limit = 20, mode = "auto", artistId } = body;
@@ -40,9 +31,9 @@ export async function POST(request: NextRequest) {
         .limit(1);
 
       if (artist.length === 0) {
-        return NextResponse.json(
-          { error: `Artist not found with ID: ${artistId}` },
-          { status: 404 },
+        return createErrorResponse(
+          `Artist not found with ID: ${artistId}`,
+          404
         );
       }
 
@@ -82,43 +73,24 @@ export async function POST(request: NextRequest) {
       result = { syncedCount: synced, totalFound: outdatedArtists.length };
     }
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       mode,
       result,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Artist sync failed:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Artist sync failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
+    return createErrorResponse(
+      "Artist sync failed",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    // Check for authorization
-    const headersList = await headers();
-    const authHeader = headersList.get("authorization");
-    const validTokens = [
-      process.env['CRON_SECRET'],
-      process.env['SUPABASE_SERVICE_ROLE_KEY'],
-      process.env['ADMIN_API_KEY'],
-    ].filter(Boolean) as string[];
-
-    if (
-      validTokens.length > 0 &&
-      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Standardized authentication
+    await requireCronAuth();
 
     const { searchParams } = new URL(request.url);
     const limit = Number.parseInt(searchParams.get("limit") || "20");
@@ -155,22 +127,16 @@ export async function GET(request: NextRequest) {
       result = { syncedCount: synced, totalFound: outdatedArtists.length };
     }
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       mode,
       result,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Artist sync failed:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Artist sync failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
+    return createErrorResponse(
+      "Artist sync failed",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }

@@ -1,6 +1,5 @@
-import { SetlistSyncService, SyncScheduler } from "@repo/external-apis";
-import { headers } from "next/headers";
-import { type NextRequest, NextResponse } from "next/server";
+import { SyncScheduler } from "@repo/external-apis";
+import { type NextRequest } from "next/server";
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -20,7 +19,6 @@ export async function POST(request: NextRequest) {
     const { mode = "daily", orchestrate = true } = body;
 
     const supabase = await createClient();
-    const setlistSync = new SetlistSyncService();
     const scheduler = new SyncScheduler();
 
     // If orchestrate is true, run the full sync pipeline first
@@ -180,8 +178,7 @@ export async function POST(request: NextRequest) {
       created_at: new Date().toISOString(),
     });
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       result,
     });
   } catch (error) {
@@ -203,45 +200,28 @@ export async function POST(request: NextRequest) {
       console.error("Failed to log error:", logError);
     }
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Finish TheSet sync failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
+    return createErrorResponse(
+      "Finish TheSet sync failed",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    // Check for authorization
-    const headersList = await headers();
-    const authHeader = headersList.get("authorization");
-    const cronSecret = process.env['CRON_SECRET'];
-
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const mode = searchParams.get("mode") || "daily";
+    // Standardized authentication
+    await requireCronAuth();
 
     // Forward to POST method
     const response = await POST(request);
     return response;
   } catch (error) {
     console.error("Finish TheSet sync failed:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Finish TheSet sync failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
+    return createErrorResponse(
+      "Finish TheSet sync failed",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }

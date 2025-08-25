@@ -2,7 +2,7 @@
 // File: apps/web/app/api/cron/cleanup-imports/route.ts
 // Cleans up old completed/failed import statuses
 
-
+// NextRequest not used since POST() takes no parameters
 import { cleanupCompletedImports } from '~/lib/import-status';
 import {
   createErrorResponse,
@@ -81,6 +81,6 @@ export async function POST() {
   }
 }
 
-export async function GET(request: NextRequest) {
-  return POST(request);
+export async function GET() {
+  return POST();
 }

@@ -1,4 +1,4 @@
-import { type NextRequest } from "next/server";
+// NextRequest not used since POST() takes no parameters
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
  * Admin Cache Cleanup Endpoint
  * Performs comprehensive cache maintenance and optimization
  */
-export async function POST(_request: NextRequest) {
+export async function POST() {
   try {
     // Authenticate admin request
     await requireCronAuth();
@@ -85,6 +85,6 @@ export async function POST(_request: NextRequest) {
 }
 
 // Support GET for manual triggers
-export async function GET(request: NextRequest) {
-  return POST(request);
+export async function GET() {
+  return POST();
 }

@@ -20,12 +20,10 @@ interface ArtistPageWrapperProps {
 
 export function ArtistPageWrapper({
   artistId,
-  artistName,
-  spotifyId,
   initialData,
   children,
 }: ArtistPageWrapperProps) {
-  const { data, syncProgress, isConnected } = useArtistRealtime(artistId, {
+  const { syncProgress, isConnected } = useArtistRealtime(artistId, {
     ...initialData,
     isLoading: false,
   });

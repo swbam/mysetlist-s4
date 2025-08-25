@@ -2,7 +2,7 @@
 // File: apps/web/app/api/import/progress/route.ts
 // Server-Sent Events endpoint for real-time import status updates
 
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { RedisClientFactory } from '~/lib/queues/redis-config';
 import { ImportStatusManager } from '~/lib/import-status';
 import { createServiceClient } from '~/lib/supabase/server';
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Support OPTIONS for CORS
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return new Response(null, {
     status: 200,
     headers: {

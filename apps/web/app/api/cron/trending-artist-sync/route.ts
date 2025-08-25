@@ -1,6 +1,6 @@
 import { artists, db } from "@repo/database";
 import { ArtistSyncService } from "@repo/external-apis";
-import { desc, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { type NextRequest } from "next/server";
 import {
   createErrorResponse,
@@ -100,9 +100,8 @@ export async function POST(request: NextRequest) {
           // 1. Artist profile update
           // 2. Complete discography refresh
           // 3. Song popularity updates
-          const syncResult = await syncService.syncFullDiscography(
-            artist.spotifyId,
-          );
+          await syncService.syncArtist(artist.spotifyId);
+          const syncResult = await syncService.syncCatalog(artist.spotifyId);
 
           results.processed++;
 

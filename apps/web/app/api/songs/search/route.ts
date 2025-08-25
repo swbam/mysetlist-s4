@@ -1,4 +1,4 @@
-import { getUser } from "@repo/auth/server";
+// getUser not used in this route
 import { db, songs } from "@repo/database";
 import { and, ilike, or, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";

@@ -19,10 +19,10 @@ export function AutoSyncOnEmptyShows({
 }: AutoSyncProps) {
   // Ensure CSRF cookie exists before auto-import
   useCSRFToken();
-  const { loading, error } = useAutoImportOnMount({
-    artistId,
-    artistName,
-    spotifyId,
+  useAutoImportOnMount({
+    ...(artistId && { artistId }),
+    ...(artistName && { artistName }),
+    ...(spotifyId && { spotifyId }),
     enabled,
   });
 

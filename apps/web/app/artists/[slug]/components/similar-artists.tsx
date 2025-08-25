@@ -44,7 +44,7 @@ export async function SimilarArtists({
             >
               <Avatar>
                 <AvatarImage
-                  {...((artist.smallImageUrl || artist.imageUrl) && { src: (artist.smallImageUrl || artist.imageUrl) })}
+                  src={artist.smallImageUrl || artist.imageUrl || undefined}
                 />
                 <AvatarFallback>
                   <Music className="h-4 w-4" />

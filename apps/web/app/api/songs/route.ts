@@ -1,6 +1,4 @@
-import { db } from "@repo/database";
-import { songs } from "@repo/database";
-import { and, ilike, or, sql } from "drizzle-orm";
+import { db, songs } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "~/lib/supabase/server";
 
@@ -14,7 +12,6 @@ export async function GET(request: NextRequest) {
     const page = Number.parseInt(searchParams.get("page") || "1");
     const limit = Number.parseInt(searchParams.get("limit") || "20");
     const search = searchParams.get("search");
-    const artistId = searchParams.get("artistId");
     const artistName = searchParams.get("artistName");
 
     const supabase = createServiceClient();

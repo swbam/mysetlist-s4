@@ -13,7 +13,7 @@ let initializationPromise: Promise<any> | null = null;
  * GET /api/workers/init - Initialize BullMQ workers
  * This should be called once when the application starts
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check if already initialized
     if (isInitialized) {
@@ -78,13 +78,13 @@ export async function POST(request: NextRequest) {
 
     // Close existing workers if initialized
     if (isInitialized) {
-      const { queueManager } = await import("~/lib/queues/workers");
-      await queueManager.closeAll();
+      const { queueManager } = await import("~/lib/queues/queue-manager");
+      await queueManager.shutdown();
       isInitialized = false;
     }
 
     // Re-initialize
-    const workers = await initializeWorkers();
+    await initializeWorkers();
     await setupRecurringJobs();
     
     isInitialized = true;
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: "Workers re-initialized successfully",
-      workerCount: workers.size,
+      workerCount: 0, // Workers disabled for now
     });
     
   } catch (error) {

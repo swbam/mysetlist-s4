@@ -39,35 +39,35 @@ export async function POST(request: NextRequest) {
     if (spotifyId) {
       // Build update set only with provided fields
       const updateSet: Record<string, any> = { updatedAt: new Date() };
-      if (name != null) updateSet.name = name;
-      if (artist != null) updateSet.artist = artist;
-      if (album != null) updateSet.albumName = album;
-      if (albumArtUrl != null) updateSet.albumArtUrl = albumArtUrl;
-      if (durMs != null) updateSet.durationMs = durMs;
-      if (typeof popularity === "number") updateSet.popularity = popularity;
-      if (previewUrl != null) updateSet.previewUrl = previewUrl;
-      if (typeof isExplicit === "boolean") updateSet.isExplicit = isExplicit;
-      if (releaseDate != null) updateSet.releaseDate = releaseDate;
-      if (albumType != null) updateSet.albumType = albumType;
-      if (externalUrls != null) updateSet.externalUrls = externalUrls;
-      if (spotifyUri != null) updateSet.spotifyUri = spotifyUri;
+      if (name != null) updateSet['name'] = name;
+      if (artist != null) updateSet['artist'] = artist;
+      if (album != null) updateSet['albumName'] = album;
+      if (albumArtUrl != null) updateSet['albumArtUrl'] = albumArtUrl;
+      if (durMs != null) updateSet['durationMs'] = durMs;
+      if (typeof popularity === "number") updateSet['popularity'] = popularity;
+      if (previewUrl != null) updateSet['previewUrl'] = previewUrl;
+      if (typeof isExplicit === "boolean") updateSet['isExplicit'] = isExplicit;
+      if (releaseDate != null) updateSet['releaseDate'] = releaseDate;
+      if (albumType != null) updateSet['albumType'] = albumType;
+      if (externalUrls != null) updateSet['externalUrls'] = externalUrls;
+      if (spotifyUri != null) updateSet['spotifyUri'] = spotifyUri;
 
       const [row] = await db
         .insert(songs)
         .values({
           spotifyId,
-          name: name ?? undefined,
-          artist: artist ?? undefined,
-          albumName: album ?? undefined,
-          albumArtUrl: albumArtUrl ?? undefined,
-          durationMs: durMs ?? undefined,
-          popularity: typeof popularity === "number" ? popularity : undefined,
-          previewUrl: previewUrl ?? undefined,
-          isExplicit: typeof isExplicit === "boolean" ? isExplicit : undefined,
-          releaseDate: releaseDate ?? undefined,
-          albumType: albumType ?? undefined,
-          externalUrls: externalUrls ?? undefined,
-          spotifyUri: spotifyUri ?? undefined,
+          name: name ?? null,
+          artist: artist ?? null,
+          albumName: album ?? null,
+          albumArtUrl: albumArtUrl ?? null,
+          durationMs: durMs ?? null,
+          popularity: typeof popularity === "number" ? popularity : null,
+          previewUrl: previewUrl ?? null,
+          isExplicit: typeof isExplicit === "boolean" ? isExplicit : null,
+          releaseDate: releaseDate ?? null,
+          albumType: albumType ?? null,
+          externalUrls: externalUrls ?? null,
+          spotifyUri: spotifyUri ?? null,
         })
         .onConflictDoUpdate({
           target: songs.spotifyId,
@@ -90,16 +90,16 @@ export async function POST(request: NextRequest) {
 
       if (existing.length) {
         const updateSet: Record<string, any> = { updatedAt: new Date() };
-        if (album != null) updateSet.albumName = album;
-        if (albumArtUrl != null) updateSet.albumArtUrl = albumArtUrl;
-        if (durMs != null) updateSet.durationMs = durMs;
-        if (typeof popularity === "number") updateSet.popularity = popularity;
-        if (previewUrl != null) updateSet.previewUrl = previewUrl;
-        if (typeof isExplicit === "boolean") updateSet.isExplicit = isExplicit;
-        if (releaseDate != null) updateSet.releaseDate = releaseDate;
-        if (albumType != null) updateSet.albumType = albumType;
-        if (externalUrls != null) updateSet.externalUrls = externalUrls;
-        if (spotifyUri != null) updateSet.spotifyUri = spotifyUri;
+        if (album != null) updateSet['albumName'] = album;
+        if (albumArtUrl != null) updateSet['albumArtUrl'] = albumArtUrl;
+        if (durMs != null) updateSet['durationMs'] = durMs;
+        if (typeof popularity === "number") updateSet['popularity'] = popularity;
+        if (previewUrl != null) updateSet['previewUrl'] = previewUrl;
+        if (typeof isExplicit === "boolean") updateSet['isExplicit'] = isExplicit;
+        if (releaseDate != null) updateSet['releaseDate'] = releaseDate;
+        if (albumType != null) updateSet['albumType'] = albumType;
+        if (externalUrls != null) updateSet['externalUrls'] = externalUrls;
+        if (spotifyUri != null) updateSet['spotifyUri'] = spotifyUri;
 
         const [row] = await db
           .update(songs)
@@ -113,16 +113,16 @@ export async function POST(request: NextRequest) {
           .values({
             name,
             artist,
-            albumName: album ?? undefined,
-            albumArtUrl: albumArtUrl ?? undefined,
-            durationMs: durMs ?? undefined,
-            popularity: typeof popularity === "number" ? popularity : undefined,
-            previewUrl: previewUrl ?? undefined,
-            isExplicit: typeof isExplicit === "boolean" ? isExplicit : undefined,
-            releaseDate: releaseDate ?? undefined,
-            albumType: albumType ?? undefined,
-            externalUrls: externalUrls ?? undefined,
-            spotifyUri: spotifyUri ?? undefined,
+            albumName: album ?? null,
+            albumArtUrl: albumArtUrl ?? null,
+            durationMs: durMs ?? null,
+            popularity: typeof popularity === "number" ? popularity : null,
+            previewUrl: previewUrl ?? null,
+            isExplicit: typeof isExplicit === "boolean" ? isExplicit : null,
+            releaseDate: releaseDate ?? null,
+            albumType: albumType ?? null,
+            externalUrls: externalUrls ?? null,
+            spotifyUri: spotifyUri ?? null,
           })
           .returning();
         upserted = row;

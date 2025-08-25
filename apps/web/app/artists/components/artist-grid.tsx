@@ -67,7 +67,7 @@ export const ArtistGrid = () => {
     }
   };
 
-  const handleFollow = (artistId: string) => {
+  const handleFollow = (_artistId: string) => {
     // TODO: Implement follow functionality
     // Follow artist action
   };

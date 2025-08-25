@@ -1,4 +1,4 @@
-import { artists, db, shows, setlists } from "@repo/database";
+import { artists, db, shows } from "@repo/database";
 import { sql } from "drizzle-orm";
 import { 
   SetlistSyncService,
@@ -95,7 +95,6 @@ export async function POST(request: NextRequest) {
         results.processed++;
 
         // 1. Update artist data if missing
-        let dataUpdated = false;
         
         // Get Spotify data if missing
         if (!artist.spotifyId && artist.name) {
@@ -123,7 +122,6 @@ export async function POST(request: NextRequest) {
                   })
                   .where(eq(artists.id, artist.id));
                 artist.spotifyId = spotifyArtist.id;
-                dataUpdated = true;
                 }
               }
             }
@@ -159,7 +157,6 @@ export async function POST(request: NextRequest) {
                   })
                   .where(eq(artists.id, artist.id));
                 artist.tmAttractionId = attraction.id;
-                dataUpdated = true;
               }
             }
           } catch (error: any) {
@@ -293,7 +290,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET endpoint to check sync status
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const stats = await db.execute(sql`
       SELECT 

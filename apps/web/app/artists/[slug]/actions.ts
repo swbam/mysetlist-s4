@@ -11,10 +11,10 @@ import {
   venues,
 } from "@repo/database";
 import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
-import { and, desc, sql, eq, or, gte, lt } from "drizzle-orm";
+import { and, desc, sql, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS, REVALIDATION_TIMES } from "~/lib/cache";
-import { absoluteUrl } from "~/lib/absolute-url";
+// absoluteUrl not used in this file
 import { initiateImport } from "@repo/external-apis/src/services/orchestrators/ArtistImportOrchestrator";
 
 export async function importArtist(tmAttractionId: string) {
@@ -267,7 +267,6 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
     }
     // Enhanced query with better data handling and validation
     // SIMPLIFIED: Use direct artist→show relationship
-    const today = new Date().toISOString().split('T')[0];
     const dateCondition = type === "upcoming" ? ">=" : "<";
     
     const rawQuery = `
@@ -283,10 +282,10 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
       LIMIT 25
     `;
     
-    const artistShows = await db.execute(sql.raw(rawQuery, [artistId, today]));
+    const artistShows = await db.execute(sql`${sql.raw(rawQuery)}`);
 
-    // Raw SQL returns { rows: [...] } structure
-    const showRows = artistShows.rows || artistShows || [];
+    // Raw SQL returns array structure
+    const showRows = artistShows || [];
     
     // If no shows found and we're looking for upcoming shows, log for monitoring
     if ((!showRows || showRows.length === 0) && type === "upcoming") {
@@ -302,20 +301,20 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
 
     // Transform raw SQL results to expected format
     return showRows
-      .filter((row) => row.id) // Ensure valid show data
+      .filter((row) => row['id']) // Ensure valid show data
       .map((row) => ({
         show: {
-          id: row.id,
-          date: row.date,
-          name: row.name,
+          id: row['id'],
+          date: row['date'],
+          name: row['name'],
           status: type === "upcoming" ? "confirmed" : "completed",
         },
-        venue: row.venue_id ? {
-          id: row.venue_id,
-          name: row.venue_name,
-          city: row.venue_city,
-          state: row.venue_state,
-          country: row.venue_country,
+        venue: row['venue_id'] ? {
+          id: row['venue_id'],
+          name: row['venue_name'],
+          city: row['venue_city'],
+          state: row['venue_state'],
+          country: row['venue_country'],
         } : undefined,
       }));
   } catch (error) {
@@ -375,7 +374,7 @@ const _getSimilarArtists = async (artistId: string, _genres: string | null) => {
     .select()
     .from(artists)
     .where(
-      and(eq(artists.verified, true), drizzleSql`${artists.id} != ${artistId}`),
+      and(eq(artists.verified, true), sql`${artists.id} != ${artistId}`),
     )
     .orderBy(desc(artists.popularity))
     .limit(5);
@@ -413,12 +412,12 @@ const _getArtistSetlists = async (artistId: string, limit = 10) => {
         setlist: setlists,
         show: shows,
         venue: venues,
-        songCount: drizzleSql<number>`(
+        songCount: sql<number>`(
           SELECT COUNT(*)::int 
           FROM setlist_songs 
           WHERE setlist_songs.setlist_id = ${setlists.id}
         )`,
-        voteCount: drizzleSql<number>`(
+        voteCount: sql<number>`(
           SELECT COUNT(*)::int 
           FROM votes v 
           JOIN setlist_songs ss ON v.setlist_song_id = ss.id 

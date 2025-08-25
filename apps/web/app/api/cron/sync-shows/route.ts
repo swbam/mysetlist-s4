@@ -27,9 +27,8 @@ export async function POST(request: NextRequest) {
     const { 
       limit = 50, 
       daysAhead = 90,
-      syncMode = "upcoming", // "upcoming", "active_artists", "all"
-      includePastShows = false
-    } = body;
+      syncMode = "upcoming" // "upcoming", "active_artists", "all"
+    } = body as { limit?: number; daysAhead?: number; syncMode?: "upcoming"|"active_artists"|"all" };
 
     const showSyncService = new ShowSyncService();
     const startTime = Date.now();
@@ -96,7 +95,6 @@ export async function POST(request: NextRequest) {
         // Use general upcoming shows sync
         try {
           const upcomingResult = await showSyncService.syncUpcomingShows({
-            classificationName: "Music",
             startDateTime: new Date().toISOString(),
             endDateTime: new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000).toISOString(),
           });

@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
         const existing = await db
           .select({ tmAttractionId: artists.tmAttractionId, slug: artists.slug, popularity: artists.popularity })
           .from(artists)
-          .where(inArray(artists.tmAttractionId, tmIds));
+          .where(inArray(artists.tmAttractionId, tmIds.filter((id): id is string => id !== undefined)));
 
         const slugMap = new Map(existing.map(e => [e.tmAttractionId, e]));
         results = results.map(r => {
@@ -160,9 +160,9 @@ export async function GET(request: NextRequest) {
                 ...r.metadata,
                 slug: info.slug,
                 popularity: info.popularity,
-                source: "database",
+                source: "database" as const,
               },
-            } as typeof r;
+            } as unknown as typeof r;
           }
           return r;
         });

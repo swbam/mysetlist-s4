@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { action, alertRule, jobName } = body;
+    const { action, jobName } = body;
 
     let result: any = {};
 

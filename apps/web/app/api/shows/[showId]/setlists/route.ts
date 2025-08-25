@@ -19,7 +19,7 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching setlists:", error);
     return NextResponse.json(
-      { error: "Failed to fetch setlists", details: error.message },
+      { error: "Failed to fetch setlists", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
