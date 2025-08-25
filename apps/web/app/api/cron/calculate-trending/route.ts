@@ -9,7 +9,7 @@ import {
   createErrorResponse,
   createSuccessResponse,
   requireCronAuth,
-} from "~/lib/api/auth-helpers";
+} from "@/lib/api/auth-helpers";
 
 export const dynamic = "force-dynamic";
 

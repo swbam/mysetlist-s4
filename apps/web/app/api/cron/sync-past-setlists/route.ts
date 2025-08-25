@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { db, shows, artists, venues, songs, setlists, setlistSongs } from "@repo/database";
 import { and, gte, lte, sql, eq } from "drizzle-orm";
-import { SetlistFmClient } from "@repo/external-apis/src/clients/setlistfm";
-import { requireCronAuth } from "~/lib/api/auth-helpers";
+import { SetlistFmClient } from "@repo/external-apis";
+import { requireCronAuth } from "@/lib/api/auth-helpers";
 
 export async function GET(_request: Request) {
 	try {

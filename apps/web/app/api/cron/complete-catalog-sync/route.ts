@@ -6,7 +6,7 @@ import {
   createErrorResponse,
   createSuccessResponse,
   requireCronAuth,
-} from "~/lib/api/auth-helpers";
+} from "@/lib/api/auth-helpers";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";

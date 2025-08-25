@@ -3,12 +3,12 @@
 // Cleans up old completed/failed import statuses
 
 // NextRequest not used since POST() takes no parameters
-import { cleanupCompletedImports } from '~/lib/import-status';
+import { cleanupCompletedImports } from '@/lib/import-status';
 import {
   createErrorResponse,
   createSuccessResponse,
   requireCronAuth,
-} from '~/lib/api/auth-helpers';
+} from '@/lib/api/auth-helpers';
 import { db, sql } from '@repo/database';
 
 export const dynamic = 'force-dynamic';

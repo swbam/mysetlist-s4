@@ -1,5 +1,5 @@
 import { artists, db } from "@repo/database";
-import { initiateImport } from "@repo/external-apis/src/services/orchestrators/ArtistImportOrchestrator";
+import { initiateImport } from "@repo/external-apis";
 import { desc, sql } from "drizzle-orm";
 import { type NextRequest } from "next/server";
 import {

@@ -1,6 +1,6 @@
 import { Job } from "bullmq";
 import { QueueName, SpotifySyncJob, createWorker } from "../config";
-import { SpotifyCompleteCatalog } from "@repo/external-apis/src/services/spotify-complete-catalog";
+import { SpotifyCompleteCatalog } from "@repo/external-apis";
 import { SpotifyClient } from "@repo/external-apis";
 import { db, artists, songs, artistSongs } from "@repo/database";
 import { eq, sql } from "drizzle-orm";

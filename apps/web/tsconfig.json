@@ -3,6 +3,7 @@
   "compilerOptions": {
     "plugins": [{ "name": "next" }],
     "baseUrl": ".",
+    "skipLibCheck": true,
     "paths": {
       "@/*": ["./*"],
       "@/components/*": ["./components/*"],
@@ -10,6 +11,8 @@
       "@/app/*": ["./app/*"],
       "@/hooks/*": ["./hooks/*"],
       "@repo/*": ["../../packages/*"],
+      "@repo/external-apis": ["../../packages/external-apis/index.ts"],
+      "@repo/external-apis/*": ["../../packages/external-apis/*"],
       "~/components/*": ["./components/*"],
       "~/lib/*": ["./lib/*"],
       "~/app/*": ["./app/*"],

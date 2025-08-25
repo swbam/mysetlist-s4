@@ -1,6 +1,5 @@
 import { Job } from "bullmq";
-import { ingestShowsAndVenues } from "@repo/external-apis/src/services/ingest/TicketmasterIngest";
-import { ingestStudioCatalog } from "@repo/external-apis/src/services/ingest/SpotifyCatalogIngest";
+import { ingestShowsAndVenues, ingestStudioCatalog } from "@repo/external-apis";
 import { db } from "@repo/database";
 import { artists } from "@repo/database";
 import { eq } from "drizzle-orm";

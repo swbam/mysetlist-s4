@@ -17,7 +17,6 @@ export { SetlistFmClient } from "./src/clients/setlistfm";
 export type {
   SpotifyArtist,
   SpotifyTrack,
-  SpotifyAlbum,
   SpotifySearchResult,
 } from "./src/types/spotify";
 

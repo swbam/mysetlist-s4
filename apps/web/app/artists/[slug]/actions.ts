@@ -15,7 +15,7 @@ import { and, desc, sql, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS, REVALIDATION_TIMES } from "~/lib/cache";
 // absoluteUrl not used in this file
-import { initiateImport } from "@repo/external-apis/src/services/orchestrators/ArtistImportOrchestrator";
+import { initiateImport } from "@repo/external-apis";
 
 export async function importArtist(tmAttractionId: string) {
   return await initiateImport(tmAttractionId);

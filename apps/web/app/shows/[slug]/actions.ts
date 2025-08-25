@@ -511,9 +511,7 @@ export async function importActualSetlistFromSetlistFm(showId: string) {
 
   // Try to import from SetlistFM using the setlist sync service
   try {
-    const { SetlistSyncService } = await import(
-      "@repo/external-apis/src/services/setlist-sync"
-    );
+    const { SetlistSyncService } = await import("@repo/external-apis");
     const syncService = new SetlistSyncService();
 
     await syncService.syncSetlistByShowId(showId);

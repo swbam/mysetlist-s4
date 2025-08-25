@@ -1,4 +1,4 @@
-import { createCronJob } from "~/lib/cron/cron-wrapper";
+import { createCronJob } from "@/lib/cron/cron-wrapper";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
