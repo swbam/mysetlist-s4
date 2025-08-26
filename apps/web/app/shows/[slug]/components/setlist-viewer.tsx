@@ -4,22 +4,22 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/avatar";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/components/ui/dropdown-menu";
+} from "@repo/design-system/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import {
   ArrowUpDown,

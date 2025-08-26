@@ -1,6 +1,6 @@
 "use client";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
+import { Button } from "@repo/design-system/button";
+import { Input } from "@repo/design-system/input";
 import { ChevronRight, Loader2, Music, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

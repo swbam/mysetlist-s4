@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
-import { Progress } from "@repo/design-system/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/card";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
+import { ScrollArea } from "@repo/design-system/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/tabs";
+import { Progress } from "@repo/design-system/progress";
 import { format } from "date-fns";
 import {
   Activity,

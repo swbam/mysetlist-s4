@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { cn } from "@repo/design-system/lib/utils";
+import { Button } from "@repo/design-system/button";
+import { cn } from "@repo/design-system";
 import { Loader2 } from "lucide-react";
 import type * as React from "react";
 

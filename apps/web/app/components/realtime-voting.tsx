@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/button";
 import { ChevronUp } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useRealtimeConnection } from "~/app/providers/realtime-provider";

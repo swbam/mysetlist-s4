@@ -4,14 +4,14 @@ import {
   Card,
   CardContent,
   CardHeader,
-} from "@repo/design-system/components/ui/card";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+} from "@repo/design-system/card";
+import { Skeleton } from "@repo/design-system/skeleton";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
+} from "@repo/design-system/tabs";
 
 export function ArtistHeaderSkeleton() {
   return (

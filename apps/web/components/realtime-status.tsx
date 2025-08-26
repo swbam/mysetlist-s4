@@ -5,8 +5,8 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@repo/design-system/components/ui/tooltip";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/tooltip";
+import { cn } from "@repo/design-system";
 import { AlertCircle, Wifi, WifiOff } from "lucide-react";
 import React, { useMemo } from "react";
 import { useRealtimeConnection } from "~/app/providers/realtime-provider";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Progress } from "@repo/design-system/components/ui/progress";
+import { Progress } from "@repo/design-system/progress";
 
 interface ImportStatus {
   stage: string;

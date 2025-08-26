@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/button";
 import { motion } from "framer-motion";
 import { ChevronRight, Music, TrendingUp } from "lucide-react";
 import Link from "next/link";

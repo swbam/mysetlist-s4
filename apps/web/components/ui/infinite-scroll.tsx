@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@repo/design-system/lib/utils";
+import { cn } from "@repo/design-system";
 import React, { useEffect, useRef, useCallback } from "react";
 import { LoadingSpinner } from "~/components/loading-states";
 

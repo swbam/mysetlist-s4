@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/button";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import React from "react";

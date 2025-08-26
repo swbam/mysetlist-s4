@@ -3,18 +3,18 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/components/ui/alert";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/alert";
+import { Button } from "@repo/design-system/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Label } from "@repo/design-system/components/ui/label";
-import { Switch } from "@repo/design-system/components/ui/switch";
-import { toast } from "@repo/design-system/components/ui/use-toast";
+} from "@repo/design-system/card";
+import { Label } from "@repo/design-system/label";
+import { Switch } from "@repo/design-system/switch";
+import { toast } from "@repo/design-system/use-toast";
 import { Download, Eye, Shield, UserX } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "~/lib/supabase/client";

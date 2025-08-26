@@ -1,4 +1,4 @@
-import { cn } from "@repo/design-system/lib/utils";
+import { cn } from "@repo/design-system";
 import React from "react";
 import { focusRing, generateGridClasses, gridAriaLabels } from "./grid-utils";
 

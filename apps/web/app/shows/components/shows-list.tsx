@@ -1,13 +1,13 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
 import {
   Card,
   CardContent,
   CardHeader,
-} from "@repo/design-system/components/ui/card";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+} from "@repo/design-system/card";
+import { Skeleton } from "@repo/design-system/skeleton";
 import { format } from "date-fns";
 import {
   Calendar,

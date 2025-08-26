@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/button";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/design-system/components/ui/dialog";
+} from "@repo/design-system/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,15 +16,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/components/ui/dropdown-menu";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
+} from "@repo/design-system/dropdown-menu";
+import { Input } from "@repo/design-system/input";
+import { Label } from "@repo/design-system/label";
 import {
   RadioGroup,
   RadioGroupItem,
-} from "@repo/design-system/components/ui/radio-group";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { toast } from "@repo/design-system/components/ui/use-toast";
+} from "@repo/design-system/radio-group";
+import { Textarea } from "@repo/design-system/textarea";
+import { toast } from "@repo/design-system/use-toast";
 import { addDays } from "date-fns";
 import {
   AlertTriangle,

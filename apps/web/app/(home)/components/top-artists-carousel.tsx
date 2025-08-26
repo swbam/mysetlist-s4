@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/badge";
 import {
   Carousel,
   type CarouselApi,
@@ -8,7 +8,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@repo/design-system/components/ui/carousel";
+} from "@repo/design-system/carousel";
 import { Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

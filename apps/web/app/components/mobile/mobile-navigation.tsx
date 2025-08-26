@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/button";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
-} from "@repo/design-system/components/ui/sheet";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/sheet";
+import { cn } from "@repo/design-system";
 import {
   Calendar,
   Home,

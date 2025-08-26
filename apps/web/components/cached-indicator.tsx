@@ -5,7 +5,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@repo/design-system/components/ui/tooltip";
+} from "@repo/design-system/tooltip";
 import { formatDistanceToNow } from "date-fns";
 import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";

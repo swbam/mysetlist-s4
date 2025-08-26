@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/button";
 import { Music } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ArtistCard } from "~/components/cards/artist-card";

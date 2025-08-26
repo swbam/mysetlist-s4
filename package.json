@@ -7,9 +7,11 @@
     "pnpm": ">=9.0.0"
   },
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "start": "turbo start",
+    "build": "turbo build --filter=web",
+    "build:all": "turbo build",
+    "dev": "turbo dev --filter=web",
+    "dev:all": "turbo dev",
+    "start": "turbo start --filter=web",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
@@ -22,6 +24,7 @@
     "db:push": "cd packages/database && npx drizzle-kit push",
     "db:studio": "cd packages/database && npx drizzle-kit studio",
     "db:pull": "cd packages/database && npx drizzle-kit pull",
+    "validate:env": "cd apps/web && pnpm validate:env",
     "boundaries": "pnpm dlx @repo/boundaries check",
     "bump-deps": "pnpm dlx @repo/bump-deps"
   },
@@ -49,6 +52,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@repo/typescript-config": "workspace:*",
+    "@types/node": "^24.3.0",
     "turbo": "^2.3.3",
     "typescript": "^5.8.3"
   },
@@ -56,6 +60,8 @@
     "@paralleldrive/cuid2": "^2.2.2",
     "@react-email/components": "0.0.3",
     "@supabase/supabase-js": "^2.55.0",
-    "dotenv": "^17.2.1"
+    "bullmq": "^5.58.1",
+    "dotenv": "^17.2.1",
+    "ioredis": "^5.7.0"
   }
 }

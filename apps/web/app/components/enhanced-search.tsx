@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
 import {
   Command,
   CommandEmpty,
@@ -9,13 +9,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@repo/design-system/components/ui/command";
-import { Input } from "@repo/design-system/components/ui/input";
+} from "@repo/design-system/command";
+import { Input } from "@repo/design-system/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@repo/design-system/components/ui/popover";
+} from "@repo/design-system/popover";
 import { Calendar, Filter, MapPin, Music, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";

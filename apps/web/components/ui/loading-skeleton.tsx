@@ -1,5 +1,5 @@
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import { cn } from "@repo/design-system/lib/utils";
+import { Skeleton } from "@repo/design-system/skeleton";
+import { cn } from "@repo/design-system";
 
 interface LoadingSkeletonProps {
   className?: string;

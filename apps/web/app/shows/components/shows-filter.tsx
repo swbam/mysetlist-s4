@@ -1,18 +1,18 @@
 "use client";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Calendar } from "@repo/design-system/components/ui/calendar";
+import { Button } from "@repo/design-system/button";
+import { Calendar } from "@repo/design-system/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@repo/design-system/components/ui/popover";
+} from "@repo/design-system/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/components/ui/select";
+} from "@repo/design-system/select";
 import { addDays, format, startOfWeek } from "date-fns";
 import { CalendarIcon, MapPin, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";

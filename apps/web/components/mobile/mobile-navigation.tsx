@@ -1,10 +1,10 @@
 "use client";
 
 import { ModeToggle } from "@repo/design-system/components/mode-toggle";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import { cn } from "@repo/design-system/lib/utils";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
+import { Separator } from "@repo/design-system/separator";
+import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,

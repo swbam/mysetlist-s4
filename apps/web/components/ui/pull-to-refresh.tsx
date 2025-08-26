@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@repo/design-system/lib/utils";
+import { cn } from "@repo/design-system";
 import { ChevronDown, RefreshCw } from "lucide-react";
 import type React from "react";
 import { useCallback, useRef, useState } from "react";

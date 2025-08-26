@@ -1,12 +1,12 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/card";
 import { CheckCircle2, Clock, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

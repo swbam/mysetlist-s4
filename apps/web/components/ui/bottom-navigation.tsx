@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@repo/design-system/lib/utils";
+import { cn } from "@repo/design-system";
 import { Calendar, Home, Music, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

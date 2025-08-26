@@ -1,23 +1,23 @@
 "use client";
 
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/components/ui/dropdown-menu";
-import { Input } from "@repo/design-system/components/ui/input";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/dropdown-menu";
+import { Input } from "@repo/design-system/input";
+import { cn } from "@repo/design-system";
 import {
   Edit3,
   GripVertical,

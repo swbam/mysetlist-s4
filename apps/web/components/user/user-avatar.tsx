@@ -4,8 +4,8 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { Badge } from "@repo/design-system/components/ui/badge";
+} from "@repo/design-system/avatar";
+import { Badge } from "@repo/design-system/badge";
 import { Crown, Music, Shield, User } from "lucide-react";
 import { cn } from "~/lib/utils";
 

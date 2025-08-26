@@ -5,8 +5,8 @@ import {
   type CarouselApi,
   CarouselContent,
   CarouselItem,
-} from "@repo/design-system/components/ui/carousel";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+} from "@repo/design-system/carousel";
+import { Skeleton } from "@repo/design-system/skeleton";
 import { Music, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";

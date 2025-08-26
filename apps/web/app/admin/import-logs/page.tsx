@@ -4,9 +4,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
+} from "@repo/design-system/card";
+import { Badge } from "@repo/design-system/badge";
+import { ScrollArea } from "@repo/design-system/scroll-area";
 import { format } from "date-fns";
 import { AlertCircle, CheckCircle, Clock, Activity, Music, MapPin, Calendar } from "lucide-react";
 import { AdminSearchBar } from "./components/admin-search-bar";

@@ -4,10 +4,10 @@ import React, { Suspense } from "react";
 import {
   EnhancedContentSlider,
   EnhancedContentSliderItem,
-} from "~/components/ui/enhanced-content-slider";
-import EnhancedErrorBoundary from "~/components/ui/enhanced-error-boundary";
-import EnhancedLoadingSkeleton from "~/components/ui/enhanced-loading-skeleton";
-import OptimizedArtistCard from "~/components/ui/optimized-artist-card";
+} from "~/@repo/design-system/components/ui/enhanced-content-slider";
+import EnhancedErrorBoundary from "~/@repo/design-system/components/ui/enhanced-error-boundary";
+import EnhancedLoadingSkeleton from "~/@repo/design-system/components/ui/enhanced-loading-skeleton";
+import OptimizedArtistCard from "~/@repo/design-system/components/ui/optimized-artist-card";
 
 interface TrendingArtist {
   id: string;

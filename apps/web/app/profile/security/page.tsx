@@ -3,18 +3,18 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/components/ui/alert";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/alert";
+import { Button } from "@repo/design-system/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
-import { Switch } from "@repo/design-system/components/ui/switch";
+} from "@repo/design-system/card";
+import { Input } from "@repo/design-system/input";
+import { Label } from "@repo/design-system/label";
+import { Switch } from "@repo/design-system/switch";
 import { Loader2, Lock, Shield, Smartphone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "~/app/providers/auth-provider";

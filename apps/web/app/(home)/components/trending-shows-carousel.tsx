@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/badge";
+import { Card, CardContent } from "@repo/design-system/card";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { Calendar, MapPin, TrendingUp, Users } from "lucide-react";
@@ -11,7 +11,7 @@ import React from "react";
 import {
   ContentSlider,
   ContentSliderItem,
-} from "~/components/ui/content-slider";
+} from "~/@repo/design-system/components/ui/content-slider";
 import type { TrendingShow } from "~/types/api";
 
 interface TrendingShowsCarouselProps {

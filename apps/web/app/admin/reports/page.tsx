@@ -1,17 +1,17 @@
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/badge";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
+} from "@repo/design-system/tabs";
 import { AlertTriangle, CheckCircle, Clock, Flag } from "lucide-react";
 import { createClient } from "~/lib/supabase/server";
 import ReportItem from "./components/report-item";

@@ -5,10 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/components/ui/alert";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
+} from "@repo/design-system/alert";
+import { Button } from "@repo/design-system/button";
+import { Input } from "@repo/design-system/input";
+import { Label } from "@repo/design-system/label";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";

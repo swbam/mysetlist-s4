@@ -1,14 +1,14 @@
 "use client";
 
 import { VoteButton } from "@repo/design-system";
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Progress } from "@repo/design-system/components/ui/progress";
+} from "@repo/design-system/card";
+import { Progress } from "@repo/design-system/progress";
 import {
   CheckCircle,
   Clock,

@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Card } from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/badge";
+import { Card } from "@repo/design-system/card";
 import {
   Calendar,
   Clock,

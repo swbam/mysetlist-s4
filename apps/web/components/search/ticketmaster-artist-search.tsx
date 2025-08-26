@@ -1,9 +1,9 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import { cn } from "@repo/design-system/lib/utils";
+import { Badge } from "@repo/design-system/badge";
+import { Input } from "@repo/design-system/input";
+import { Skeleton } from "@repo/design-system/skeleton";
+import { cn } from "@repo/design-system";
 import { Music, Search, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";

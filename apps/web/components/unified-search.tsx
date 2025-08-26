@@ -4,17 +4,17 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardHeader } from "@repo/design-system/components/ui/card";
-import { Input } from "@repo/design-system/components/ui/input";
+} from "@repo/design-system/avatar";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
+import { Card, CardHeader } from "@repo/design-system/card";
+import { Input } from "@repo/design-system/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@repo/design-system/components/ui/popover";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/popover";
+import { cn } from "@repo/design-system";
 import { Loader2, Music, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";

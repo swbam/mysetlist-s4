@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/button";
+import { Card, CardContent } from "@repo/design-system/card";
 import { format } from "date-fns";
 import { Calendar, Heart, MapPin, Share2, Users } from "lucide-react";
 import { useState } from "react";

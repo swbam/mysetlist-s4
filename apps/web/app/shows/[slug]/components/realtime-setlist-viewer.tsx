@@ -1,7 +1,7 @@
 "use client";
 
-import { Card } from "@repo/design-system/components/ui/card";
-import { cn } from "@repo/design-system/lib/utils";
+import { Card } from "@repo/design-system/card";
+import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import { Music } from "lucide-react";
 import { LiveIndicator } from "~/components/live-indicator";

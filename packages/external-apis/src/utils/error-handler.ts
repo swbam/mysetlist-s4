@@ -1,13 +1,13 @@
 export class SyncServiceError extends Error {
   public service: string;
   public operation: string;
-  public cause?: Error;
+  public override cause?: unknown;
   
   constructor(
     message: string,
     service: string,
     operation: string,
-    cause?: Error,
+    cause?: unknown,
   ) {
     super(message);
     this.name = "SyncServiceError";

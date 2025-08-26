@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { cn } from "@repo/design-system/lib/utils";
+import { Button } from "@repo/design-system/button";
+import { Input } from "@repo/design-system/input";
+import { cn } from "@repo/design-system";
 import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";

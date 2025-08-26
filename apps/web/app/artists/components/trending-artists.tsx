@@ -2,9 +2,9 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Card } from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/avatar";
+import { Badge } from "@repo/design-system/badge";
+import { Card } from "@repo/design-system/card";
 import { Calendar, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
 import { parseGenres } from "~/lib/parse-genres";

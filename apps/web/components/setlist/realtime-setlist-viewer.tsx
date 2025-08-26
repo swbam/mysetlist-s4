@@ -3,15 +3,15 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/components/ui/alert";
-import { Badge } from "@repo/design-system/components/ui/badge";
+} from "@repo/design-system/alert";
+import { Badge } from "@repo/design-system/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/card";
+import { cn } from "@repo/design-system";
 import { Music2, TrendingUp, Wifi, WifiOff } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";

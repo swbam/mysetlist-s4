@@ -4,13 +4,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
+} from "@repo/design-system/tabs";
 import { CheckCircle, Clock, FileText, Image } from "lucide-react";
 import { createClient } from "~/lib/supabase/server";
 import ModerationItem from "./components/moderation-item";

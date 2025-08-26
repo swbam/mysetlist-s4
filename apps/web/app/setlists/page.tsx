@@ -10,16 +10,16 @@ import {
   shows,
   venues,
 } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+} from "@repo/design-system/card";
+import { Input } from "@repo/design-system/input";
+import { Skeleton } from "@repo/design-system/skeleton";
 import { createMetadata } from "@repo/seo/metadata";
 import { Calendar, MapPin, Music, Search, Users } from "lucide-react";
 import type { Metadata } from "next";

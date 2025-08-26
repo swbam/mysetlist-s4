@@ -3,7 +3,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
+} from "@repo/design-system/tabs";
 import { BarChart, Calendar, Music, TrendingUp } from "lucide-react";
 import {
   ArtistGridSkeleton,

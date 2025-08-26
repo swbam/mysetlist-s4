@@ -1,13 +1,13 @@
 "use client";
 
 import { SearchBox } from "@repo/design-system";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import { cn } from "@repo/design-system/lib/utils";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
+import { cn } from "@repo/design-system";
 import { Clock, Search, SlidersHorizontal, TrendingUp, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { InfiniteScroll } from "~/components/ui/infinite-scroll";
-import { PullToRefresh } from "~/components/ui/pull-to-refresh";
+import { InfiniteScroll } from "~/@repo/design-system/components/ui/infinite-scroll";
+import { PullToRefresh } from "~/@repo/design-system/components/ui/pull-to-refresh";
 import { SearchResultCard } from "./search-result-card";
 
 interface RecentSearch {

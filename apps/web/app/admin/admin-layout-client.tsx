@@ -6,8 +6,8 @@ import {
   Shield,
 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@repo/design-system/components/ui/sheet";
+import { Button } from "@repo/design-system/button";
+import { Sheet, SheetContent, SheetTrigger } from "@repo/design-system/sheet";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 

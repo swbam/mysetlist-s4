@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { cn } from "@repo/design-system/lib/utils";
+import { Button } from "@repo/design-system/button";
+import { cn } from "@repo/design-system";
 import { ChevronUp, Loader2, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useState, useTransition } from "react";

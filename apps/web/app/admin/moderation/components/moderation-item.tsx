@@ -1,6 +1,6 @@
 "use client";
 
-import { toast } from "@repo/design-system/components/ui/use-toast";
+import { toast } from "@repo/design-system/use-toast";
 import { format } from "date-fns";
 import {
   Calendar,

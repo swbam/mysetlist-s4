@@ -1,6 +1,6 @@
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
+import { Card, CardContent } from "@repo/design-system/card";
 import { Music, TrendingUp, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

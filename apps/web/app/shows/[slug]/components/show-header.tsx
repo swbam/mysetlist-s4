@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/button";
 import { format } from "date-fns";
 import Link from "next/link";
 import { useRealtimeShow } from "~/hooks/use-realtime-show";

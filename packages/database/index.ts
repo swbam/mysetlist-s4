@@ -1,18 +1,5 @@
 // Re-export database client and utilities
-export {
-  db,
-  getDb,
-  sql,
-  eq,
-  and,
-  or,
-  desc,
-  asc,
-  ilike,
-  isNull,
-  isNotNull,
-  inArray,
-} from "./src/client";
+export * from "./src/client";
 export type { Database } from "./src/client";
 
 // Re-export from main index

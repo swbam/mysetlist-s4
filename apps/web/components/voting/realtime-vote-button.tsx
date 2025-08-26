@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@repo/design-system/components/ui/tooltip";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/tooltip";
+import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronUp, Loader2, Wifi, WifiOff, Zap } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";

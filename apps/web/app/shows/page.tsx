@@ -3,7 +3,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
+} from "@repo/design-system/tabs";
 import { createMetadata } from "@repo/seo/metadata";
 import { Grid3X3, List } from "lucide-react";
 import type { Metadata } from "next";

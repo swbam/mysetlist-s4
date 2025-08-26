@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { cn } from "@repo/design-system/lib/utils";
+import { Card, CardContent } from "@repo/design-system/card";
+import { cn } from "@repo/design-system";
 import { motion } from "framer-motion";
 import { useRef, useState } from "react";
 import { useTouchGestures } from "~/hooks/use-touch-gestures";

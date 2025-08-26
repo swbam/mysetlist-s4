@@ -7,8 +7,8 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@repo/design-system/components/ui/carousel";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/carousel";
+import { cn } from "@repo/design-system";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";

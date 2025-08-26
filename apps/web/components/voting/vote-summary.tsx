@@ -1,13 +1,13 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/card";
+import { cn } from "@repo/design-system";
 import { BarChart3, TrendingDown, TrendingUp, Users } from "lucide-react";
 
 interface VoteSummaryProps {

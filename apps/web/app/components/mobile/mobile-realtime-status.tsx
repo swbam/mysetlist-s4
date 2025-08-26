@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import { cn } from "@repo/design-system/lib/utils";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
+import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,

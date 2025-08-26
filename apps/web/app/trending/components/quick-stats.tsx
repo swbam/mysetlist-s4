@@ -3,7 +3,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/card";
 import { Clock, Eye, TrendingUp, Users } from "lucide-react";
 import { createServiceClient } from "~/lib/supabase/server";
 

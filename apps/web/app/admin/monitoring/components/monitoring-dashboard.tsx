@@ -4,21 +4,21 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@repo/design-system/components/ui/alert";
-import { Badge } from "@repo/design-system/components/ui/badge";
+} from "@repo/design-system/alert";
+import { Badge } from "@repo/design-system/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Progress } from "@repo/design-system/components/ui/progress";
+} from "@repo/design-system/card";
+import { Progress } from "@repo/design-system/progress";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
+} from "@repo/design-system/tabs";
 import { format } from "date-fns";
 import {
   Activity,

@@ -7,14 +7,14 @@ export {
   Avatar,
   AvatarImage,
   AvatarFallback,
-} from "@repo/design-system/components/ui/avatar";
+} from "@repo/design-system/avatar";
 
 export {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
+} from "@repo/design-system/tabs";
 
 export {
   DropdownMenu,
@@ -32,7 +32,7 @@ export {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuCheckboxItem,
-} from "@repo/design-system/components/ui/dropdown-menu";
+} from "@repo/design-system/dropdown-menu";
 
 export {
   Table,
@@ -43,7 +43,7 @@ export {
   TableRow,
   TableCell,
   TableCaption,
-} from "@repo/design-system/components/ui/table";
+} from "@repo/design-system/table";
 
 export {
   Select,
@@ -51,23 +51,23 @@ export {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/components/ui/select";
+} from "@repo/design-system/select";
 
-export { Badge } from "@repo/design-system/components/ui/badge";
-export { Button } from "@repo/design-system/components/ui/button";
-export { Input } from "@repo/design-system/components/ui/input";
-export { Label } from "@repo/design-system/components/ui/label";
-export { Switch } from "@repo/design-system/components/ui/switch";
-export { Textarea } from "@repo/design-system/components/ui/textarea";
-export { Separator } from "@repo/design-system/components/ui/separator";
-export { toast } from "@repo/design-system/components/ui/use-toast";
+export { Badge } from "@repo/design-system/badge";
+export { Button } from "@repo/design-system/button";
+export { Input } from "@repo/design-system/input";
+export { Label } from "@repo/design-system/label";
+export { Switch } from "@repo/design-system/switch";
+export { Textarea } from "@repo/design-system/textarea";
+export { Separator } from "@repo/design-system/separator";
+export { toast } from "@repo/design-system/use-toast";
 export {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/card";
 
 export {
   Dialog,
@@ -77,4 +77,4 @@ export {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@repo/design-system/components/ui/dialog";
+} from "@repo/design-system/dialog";

@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { Card, CardContent } from "@repo/design-system/card";
+import { Skeleton } from "@repo/design-system/skeleton";
 
 export function SearchResultSkeleton() {
   return (

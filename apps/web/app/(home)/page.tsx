@@ -1,4 +1,4 @@
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/button";
 import { ChevronRight, Music } from "lucide-react";
 import Link from "next/link";
 import { LiteSearch } from "./components/lite-search";

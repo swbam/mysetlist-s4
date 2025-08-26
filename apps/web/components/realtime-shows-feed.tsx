@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@repo/design-system/lib/utils";
+import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell, BellRing } from "lucide-react";
 import { useState } from "react";

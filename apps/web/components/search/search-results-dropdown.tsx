@@ -4,10 +4,10 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/avatar";
+import { Badge } from "@repo/design-system/badge";
+import { Card, CardContent } from "@repo/design-system/card";
+import { cn } from "@repo/design-system";
 import { Loader2, Music, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 

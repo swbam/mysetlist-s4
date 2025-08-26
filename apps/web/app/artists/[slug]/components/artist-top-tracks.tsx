@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+} from "@repo/design-system/card";
+import { Skeleton } from "@repo/design-system/skeleton";
 import { Music, Play } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";

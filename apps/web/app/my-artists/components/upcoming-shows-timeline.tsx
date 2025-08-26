@@ -1,6 +1,6 @@
 import { artists, db, shows, venues } from "@repo/database";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/button";
+import { Card, CardContent } from "@repo/design-system/card";
 import { format, isThisWeek, isToday, isTomorrow } from "date-fns";
 import { asc, desc, eq, gte } from "drizzle-orm";
 import { Calendar, Clock, MapPin, Music, Ticket } from "lucide-react";

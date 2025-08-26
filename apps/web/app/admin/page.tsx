@@ -4,7 +4,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/card";
 import { endOfDay, format, startOfDay, subDays } from "date-fns";
 import {
   AlertCircle,

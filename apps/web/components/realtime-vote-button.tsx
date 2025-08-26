@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { cn } from "@repo/design-system/lib/utils";
+import { Button } from "@repo/design-system/button";
+import { cn } from "@repo/design-system";
 import { ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

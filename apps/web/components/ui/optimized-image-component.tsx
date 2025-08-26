@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@repo/design-system/lib/utils";
+import { cn } from "@repo/design-system";
 import Image, { type ImageProps } from "next/image";
 import { useState } from "react";
 

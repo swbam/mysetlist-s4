@@ -4,21 +4,21 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { Badge } from "@repo/design-system/components/ui/badge";
+} from "@repo/design-system/avatar";
+import { Badge } from "@repo/design-system/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/tabs";
+import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Award,

@@ -2,7 +2,7 @@ import { db, artists, setlists, shows, songs, artistSongs, setlistSongs } from "
 import { report } from "../progress/ProgressBus";
 import { ingestShowsAndVenues } from "../ingest/TicketmasterIngest";
 import { ingestStudioCatalog } from "../ingest/SpotifyCatalogIngest";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and } from "@repo/database";
 
 export async function initiateImport(tmAttractionId: string) {
   const artistResults = await db

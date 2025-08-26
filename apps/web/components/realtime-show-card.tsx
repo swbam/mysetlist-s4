@@ -1,12 +1,12 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/badge";
 import {
   Card,
   CardContent,
   CardHeader,
-} from "@repo/design-system/components/ui/card";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/card";
+import { cn } from "@repo/design-system";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 import { Calendar, MapPin } from "lucide-react";

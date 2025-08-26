@@ -54,7 +54,7 @@
   },
   "files": {
     "ignore": [
-      "packages/design-system/components/ui/**",
+      "packages/design-system/@repo/design-system/components/ui/**",
       "packages/design-system/lib/**",
       "packages/design-system/hooks/**",
       "packages/collaboration/config.ts",

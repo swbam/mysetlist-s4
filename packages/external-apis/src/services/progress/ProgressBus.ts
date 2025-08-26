@@ -1,5 +1,4 @@
 import { db, importStatus } from "@repo/database";
-import { eq } from "drizzle-orm";
 import { EventEmitter } from "events";
 
 const bus = new EventEmitter();

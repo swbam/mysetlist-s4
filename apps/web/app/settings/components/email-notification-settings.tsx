@@ -3,26 +3,26 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/components/ui/alert";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/alert";
+import { Button } from "@repo/design-system/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Label } from "@repo/design-system/components/ui/label";
+} from "@repo/design-system/card";
+import { Label } from "@repo/design-system/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
-import { Switch } from "@repo/design-system/components/ui/switch";
-import { useToast } from "@repo/design-system/components/ui/use-toast";
+} from "@repo/design-system/select";
+import { Separator } from "@repo/design-system/separator";
+import { Switch } from "@repo/design-system/switch";
+import { useToast } from "@repo/design-system/use-toast";
 import {
   AlertCircle,
   Bell,

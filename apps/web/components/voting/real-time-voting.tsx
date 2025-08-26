@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card } from "@repo/design-system/components/ui/card";
-import { Progress } from "@repo/design-system/components/ui/progress";
-import { cn } from "@repo/design-system/lib/utils";
+import { Button } from "@repo/design-system/button";
+import { Card } from "@repo/design-system/card";
+import { Progress } from "@repo/design-system/progress";
+import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Music, Sparkles, Users } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@repo/design-system/components/ui/card";
+import { Card } from "@repo/design-system/card";
 import { Music } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";

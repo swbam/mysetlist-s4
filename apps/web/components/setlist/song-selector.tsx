@@ -1,10 +1,10 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { Input } from "@repo/design-system/components/ui/input";
-import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
+import { Card, CardContent } from "@repo/design-system/card";
+import { Input } from "@repo/design-system/input";
+import { ScrollArea } from "@repo/design-system/scroll-area";
 import { Loader2, Music, Plus, Search } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";

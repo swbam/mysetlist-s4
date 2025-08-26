@@ -34,11 +34,15 @@
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
-    "alwaysStrict": true
+    "alwaysStrict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@repo/*": ["packages/*/src"]
+    }
   },
   "exclude": [
     "apps",
-    "packages",
+
     "components",
     "lib",
     "node_modules",

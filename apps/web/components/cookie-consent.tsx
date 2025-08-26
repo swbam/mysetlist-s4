@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card } from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/button";
+import { Card } from "@repo/design-system/card";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";

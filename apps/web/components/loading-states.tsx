@@ -2,9 +2,9 @@ import {
   Card,
   CardContent,
   CardHeader,
-} from "@repo/design-system/components/ui/card";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/card";
+import { Skeleton } from "@repo/design-system/skeleton";
+import { cn } from "@repo/design-system";
 import { Activity } from "lucide-react";
 
 interface LoadingSpinnerProps {

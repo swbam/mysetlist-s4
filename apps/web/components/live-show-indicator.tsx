@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { cn } from "@repo/design-system/lib/utils";
+import { Badge } from "@repo/design-system/badge";
+import { cn } from "@repo/design-system";
 import { formatDistanceToNow, isFuture, isPast, isToday } from "date-fns";
 import { Calendar, Pause, Radio } from "lucide-react";
 

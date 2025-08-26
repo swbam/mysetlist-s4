@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@repo/design-system/lib/utils";
+import { cn } from "@repo/design-system";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 

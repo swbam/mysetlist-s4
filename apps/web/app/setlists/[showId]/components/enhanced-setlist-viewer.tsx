@@ -3,17 +3,17 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/components/ui/alert";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/alert";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Progress } from "@repo/design-system/components/ui/progress";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/card";
+import { Progress } from "@repo/design-system/progress";
+import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,

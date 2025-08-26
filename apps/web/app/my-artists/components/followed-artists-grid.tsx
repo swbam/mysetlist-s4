@@ -1,6 +1,6 @@
 import { artistStats, artists, db, shows } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/badge";
+import { Card, CardContent } from "@repo/design-system/card";
 import { desc, eq, sql } from "drizzle-orm";
 import { Calendar, Music, Users } from "lucide-react";
 import Image from "next/image";

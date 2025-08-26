@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/design-system";
-import { cn } from "@repo/design-system/lib/utils";
+import { cn } from "@repo/design-system";
 import {
   Filter,
   Grid3X3,

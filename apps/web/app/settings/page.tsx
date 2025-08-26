@@ -3,24 +3,24 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/components/ui/alert";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/alert";
+import { Button } from "@repo/design-system/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
-import { Switch } from "@repo/design-system/components/ui/switch";
+} from "@repo/design-system/card";
+import { Input } from "@repo/design-system/input";
+import { Label } from "@repo/design-system/label";
+import { Switch } from "@repo/design-system/switch";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
+} from "@repo/design-system/tabs";
 import { Shield, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ProtectedRoute } from "../components/protected-route";

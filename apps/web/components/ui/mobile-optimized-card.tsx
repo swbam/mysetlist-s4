@@ -4,8 +4,8 @@ import {
   Card,
   CardContent,
   CardHeader,
-} from "@repo/design-system/components/ui/card";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/card";
+import { cn } from "@repo/design-system";
 import * as React from "react";
 
 interface MobileOptimizedCardProps {

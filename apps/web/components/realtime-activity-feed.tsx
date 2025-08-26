@@ -1,14 +1,14 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/card";
+import { ScrollArea } from "@repo/design-system/scroll-area";
+import { cn } from "@repo/design-system";
 import { formatDistanceToNow } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
 import {

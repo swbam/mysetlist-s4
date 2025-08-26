@@ -9,7 +9,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import {
   Button,
   buttonVariants,
-} from "@repo/design-system/components/ui/button";
+} from "./button";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (

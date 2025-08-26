@@ -1,21 +1,21 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/badge";
+import { Button } from "@repo/design-system/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Progress } from "@repo/design-system/components/ui/progress";
+} from "@repo/design-system/card";
+import { Progress } from "@repo/design-system/progress";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
-import { cn } from "@repo/design-system/lib/utils";
+} from "@repo/design-system/tabs";
+import { cn } from "@repo/design-system";
 import {
   Activity,
   AlertTriangle,

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/button";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 
