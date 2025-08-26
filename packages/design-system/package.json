@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./index.tsx",
+  "types": "./index.tsx",
   "exports": {
-    ".": "./src/index.ts",
+    ".": "./index.tsx",
     "./button": "./components/ui/button.tsx",
     "./input": "./components/ui/input.tsx",
     "./badge": "./components/ui/badge.tsx",

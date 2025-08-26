@@ -1,16 +1,11 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Card, CardContent } from "@repo/design-system/card";
+import { Badge, Card, CardContent, Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@repo/design-system";
 import { motion } from "framer-motion";
 import { Building2, Calendar, MapPin, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import {
-  ContentSlider,
-  ContentSliderItem,
-} from "~/@repo/design-system/components/ui/content-slider";
 
 interface FeaturedVenue {
   id: string;
@@ -46,23 +41,15 @@ function FeaturedVenuesSlider({ venues }: FeaturedVenuesSliderProps) {
   }
 
   return (
-    <ContentSlider
-      title="Featured Venues"
-      subtitle="Discover the best venues hosting incredible shows"
-      viewAllLink="/venues"
-      viewAllText="Explore All Venues"
-      autoPlay={true}
-      autoPlayInterval={4500}
-      itemsPerView={{
-        mobile: 1.2,
-        tablet: 2.5,
-        desktop: 4,
-        wide: 6,
-      }}
-      className="bg-gradient-to-t from-background via-background/95 to-background"
-    >
-      {venues.map((venue, index) => (
-        <ContentSliderItem key={venue.id}>
+    <div className="relative w-full">
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold">Featured Venues</h2>
+        <p className="text-muted-foreground">Discover the best venues hosting incredible shows</p>
+      </div>
+      <Carousel className="w-full">
+        <CarouselContent className="-ml-1">
+          {venues.map((venue, index) => (
+            <CarouselItem key={venue.id} className="pl-1 basis-1/2 md:basis-1/3 lg:basis-1/4">
           <Link href={`/venues/${venue.slug}`} className="group block">
             <Card className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:bg-card/80">
               <CardContent className="relative p-0">
@@ -151,9 +138,13 @@ function FeaturedVenuesSlider({ venues }: FeaturedVenuesSliderProps) {
               </CardContent>
             </Card>
           </Link>
-        </ContentSliderItem>
-      ))}
-    </ContentSlider>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    </div>
   );
 }
 

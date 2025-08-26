@@ -3,18 +3,16 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/components/ui/alert";
-import { Button } from "@repo/design-system/components/ui/button";
-import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
+  Input,
+  Label,
+} from "@repo/design-system";
 import { CheckCircle, Mail } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../hooks/use-auth";
