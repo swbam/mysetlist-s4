@@ -1,13 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
-import {
-  EnhancedContentSlider,
-  EnhancedContentSliderItem,
-} from "~/@repo/design-system/components/ui/enhanced-content-slider";
-import EnhancedErrorBoundary from "~/@repo/design-system/components/ui/enhanced-error-boundary";
-import EnhancedLoadingSkeleton from "~/@repo/design-system/components/ui/enhanced-loading-skeleton";
-import OptimizedArtistCard from "~/@repo/design-system/components/ui/optimized-artist-card";
+import { ArtistCard, Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, Skeleton } from "@repo/design-system";
 
 interface TrendingArtist {
   id: string;
@@ -29,13 +23,31 @@ interface OptimizedTopArtistsSliderProps {
   error?: string | null;
 }
 
+function LoadingSkeleton() {
+  return (
+    <div className="py-16 md:py-24">
+      <div className="container mx-auto px-4">
+        <div className="mb-8">
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="flex gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-64 w-48 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function OptimizedTopArtistsSlider({
   artists,
   isLoading = false,
   error = null,
 }: OptimizedTopArtistsSliderProps) {
   if (isLoading) {
-    return <EnhancedLoadingSkeleton variant="artists" count={6} />;
+    return <LoadingSkeleton />;
   }
 
   if (error) {
@@ -71,50 +83,48 @@ function OptimizedTopArtistsSlider({
   }
 
   return (
-    <EnhancedContentSlider
-      title="Trending Artists"
-      subtitle="Vote for your favorite artists and shape their setlists"
-      viewAllLink="/artists"
-      viewAllText="Discover More Artists"
-      autoPlay={true}
-      autoPlayInterval={4000}
-      itemsPerView={{
-        mobile: 1.5,
-        tablet: 3,
-        desktop: 5,
-        wide: 7,
-      }}
-      className="bg-gradient-to-b from-background via-background/95 to-background"
-      isLoading={isLoading}
-      error={error}
-    >
-      {artists.map((artist, index) => (
-        <EnhancedContentSliderItem key={artist.id}>
-          <OptimizedArtistCard
-            artist={artist}
-            index={index}
-            priority={index < 4}
-            showRank={true}
-            showStats={true}
-            variant="default"
-          />
-        </EnhancedContentSliderItem>
-      ))}
-    </EnhancedContentSlider>
+    <div className="py-16 md:py-24">
+      <div className="container mx-auto px-4">
+        <div className="mb-8">
+          <h2 className="mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text font-bold text-3xl text-transparent tracking-tight md:text-4xl">
+            Trending Artists
+          </h2>
+          <p className="text-muted-foreground">
+            Vote for your favorite artists and shape their setlists
+          </p>
+        </div>
+        
+        <Carousel className="w-full">
+          <CarouselContent className="-ml-1">
+            {artists.map((artist, index) => (
+              <CarouselItem key={artist.id} className="pl-1 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                <ArtistCard
+                  id={artist.id}
+                  name={artist.name}
+                  slug={artist.slug}
+                  imageUrl={artist.imageUrl}
+                  genres={artist.genres}
+                  followers={artist.followers}
+                  popularity={artist.popularity}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </div>
+    </div>
   );
 }
 
-// Export with error boundary and suspense
+// Export with simple error boundary
 export default function OptimizedTopArtistsSliderWithBoundary(
   props: OptimizedTopArtistsSliderProps,
 ) {
   return (
-    <EnhancedErrorBoundary level="section">
-      <Suspense
-        fallback={<EnhancedLoadingSkeleton variant="artists" count={6} />}
-      >
-        <OptimizedTopArtistsSlider {...props} />
-      </Suspense>
-    </EnhancedErrorBoundary>
+    <Suspense fallback={<LoadingSkeleton />}>
+      <OptimizedTopArtistsSlider {...props} />
+    </Suspense>
   );
 }

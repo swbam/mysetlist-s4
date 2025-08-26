@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { Inter } from "next/font/google";
 import { ResponsiveHeader } from "../components/layout/responsive-header";
-import { ThemeProvider } from "../@repo/design-system/components/ui/theme-provider";
+import { ThemeProvider } from "@repo/design-system";
 import { AuthProvider } from "./providers/auth-provider";
 // import { CacheManager } from "../components/cache-manager";
 import "@repo/design-system/styles/globals.css";

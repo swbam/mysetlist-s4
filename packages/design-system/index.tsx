@@ -104,9 +104,21 @@ export {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./components/ui/collapsible";
+export {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+  type CarouselApi,
+} from "./components/ui/carousel";
+export { Skeleton } from "./components/ui/skeleton";
 
 // Music design tokens
 export { musicTokens, type MusicTokens } from "./lib/design-tokens";
+
+// Theme provider
+export { ThemeProvider } from "./providers/theme";
 
 // Utilities
 export { cn, capitalize, handleError } from "./lib/utils";

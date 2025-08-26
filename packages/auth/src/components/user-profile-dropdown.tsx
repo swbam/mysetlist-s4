@@ -5,7 +5,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@repo/design-system/components/ui/avatar";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
