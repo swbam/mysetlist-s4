@@ -1,4 +1,4 @@
-import { db, sql } from "@repo/database";
+import { db, sql } from "~/lib/database";
 import { Calendar, Music, TrendingUp, Users } from "lucide-react";
 
 interface ArtistStatsProps {

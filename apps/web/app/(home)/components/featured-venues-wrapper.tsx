@@ -1,6 +1,6 @@
 import React from "react";
 import { absoluteUrl } from "~/lib/absolute-url";
-import FeaturedVenuesSlider from "./featured-venues-slider";
+import { FeaturedVenuesSlider } from "./featured-venues-slider";
 
 interface FeaturedVenue {
   id: string;

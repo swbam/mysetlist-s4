@@ -336,7 +336,7 @@ const ArtistPage = async ({ params, searchParams }: {
 // Generate static params for popular artists
 export async function generateStaticParams() {
   try {
-    const { db, artists } = await import("@repo/database");
+    const { createConvexClient } = await import("~/lib/database");
     const { desc, sql } = await import("drizzle-orm");
 
     // Get top 50 most popular artists for static generation

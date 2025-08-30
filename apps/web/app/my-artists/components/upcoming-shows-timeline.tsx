@@ -1,4 +1,4 @@
-import { artists, db, shows, venues } from "@repo/database";
+import { artists, db, shows, venues } from "~/lib/database";
 import { Button } from "@repo/design-system";
 import { Card, CardContent } from "@repo/design-system";
 import { format, isThisWeek, isToday, isTomorrow } from "date-fns";

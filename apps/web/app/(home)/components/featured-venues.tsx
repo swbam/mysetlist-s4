@@ -1,132 +1,97 @@
-import { db } from "@repo/database";
-import { venues } from "@repo/database/src/schema";
-import { Badge } from "@repo/design-system";
 import { Button } from "@repo/design-system";
 import { Card, CardContent } from "@repo/design-system";
-import { desc, isNotNull } from "drizzle-orm";
 import { Building, MapPin, Users } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import React from "react";
+import { createConvexClient } from "~/lib/database";
+import { api } from "~/lib/convex-api";
 
-async function getFeaturedVenues() {
-  const featuredVenues = await db
-    .select({
-      id: venues.id,
-      name: venues.name,
-      slug: venues.slug,
-      imageUrl: venues.imageUrl,
-      city: venues.city,
-      state: venues.state,
-      country: venues.country,
-      capacity: venues.capacity,
-      venueType: venues.venueType,
-    })
-    .from(venues)
-    .where(isNotNull(venues.capacity))
-    .orderBy(desc(venues.capacity))
-    .limit(4);
-
-  return featuredVenues;
+interface FeaturedVenue {
+  id: string;
+  name: string;
+  city: string;
+  state?: string | undefined;
+  capacity?: number | undefined;
 }
 
-export async function FeaturedVenues() {
-  const formatCapacity = (capacity: number | null) => {
-    if (!capacity) {
-      return "N/A";
-    }
-    if (capacity >= 1000) {
-      return `${(capacity / 1000).toFixed(1)}K`;
-    }
-    return capacity.toString();
-  };
+async function getFeaturedVenues(): Promise<FeaturedVenue[]> {
+  try {
+    const convex = createConvexClient();
+    const venues = await convex.query(api.venues.getAll, { limit: 6 });
+    
+    return venues?.map((venue) => ({
+      id: venue._id,
+      name: venue.name,
+      city: venue.city,
+      state: venue.state,
+      capacity: venue.capacity,
+    })) || [];
+  } catch (error) {
+    console.error("Failed to fetch featured venues:", error);
+    return [];
+  }
+}
 
-  const featuredVenues = await getFeaturedVenues();
+export default async function FeaturedVenues() {
+  const venues = await getFeaturedVenues();
 
-  if (featuredVenues.length === 0) {
-    return null; // Don't show the section if no venues
+  if (!venues || venues.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">No featured venues available</p>
+      </div>
+    );
   }
 
   return (
-    <section className="py-16 md:py-24">
-      <div className="container mx-auto px-4">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h2 className="mb-2 font-bold text-3xl tracking-tight md:text-4xl">
-              Featured Venues
-            </h2>
-            <p className="text-muted-foreground">
-              Explore iconic venues from around the world
-            </p>
-          </div>
-          <Button variant="outline" asChild>
-            <Link href="/venues">View All Venues</Link>
-          </Button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-bold text-2xl tracking-tight">Featured Venues</h2>
+          <p className="text-muted-foreground">
+            Popular venues hosting amazing concerts
+          </p>
         </div>
+        <Button variant="ghost" asChild>
+          <Link href="/venues">View all venues</Link>
+        </Button>
+      </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* biome-ignore lint/suspicious/noExplicitAny: Database query result */}
-          {featuredVenues.map((venue: any) => (
-            <Card
-              key={venue.id}
-              className="overflow-hidden transition-shadow hover:shadow-lg"
-            >
-              <Link href={`/venues/${venue.slug}`}>
-                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-                  {venue.imageUrl ? (
-                    <Image
-                      src={venue.imageUrl}
-                      alt={venue.name}
-                      fill
-                      className="object-cover transition-transform hover:scale-105"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-                      <Building className="h-16 w-16 text-primary/30" />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {venues.map((venue) => (
+          <Card key={venue.id} className="transition-all hover:shadow-lg">
+            <Link href={`/venues/${venue.id}`}>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-lg">{venue.name}</h3>
+                    <div className="flex items-center space-x-1 text-muted-foreground text-sm">
+                      <MapPin className="h-4 w-4" />
+                      <span>
+                        {venue.city}
+                        {venue.state && `, ${venue.state}`}
+                      </span>
                     </div>
-                  )}
-                  {venue.venueType && (
-                    <div className="absolute top-2 left-2">
-                      <Badge
-                        variant="secondary"
-                        className="bg-background/90 backdrop-blur"
-                      >
-                        {venue.venueType}
-                      </Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Building className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm">Venue</span>
                     </div>
-                  )}
-                </div>
-              </Link>
-              <CardContent className="p-4">
-                <Link href={`/venues/${venue.slug}`}>
-                  <h3 className="mb-1 font-semibold text-lg transition-colors hover:text-primary">
-                    {venue.name}
-                  </h3>
-                </Link>
-
-                <div className="mb-3 flex items-center gap-2 text-muted-foreground text-sm">
-                  <MapPin className="h-3 w-3" />
-                  <span>
-                    {venue.city}
-                    {venue.state && `, ${venue.state}`}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    {formatCapacity(venue.capacity)} capacity
-                  </span>
-                  {venue.venueType && (
-                    <Badge variant="outline" className="text-xs">
-                      {venue.venueType}
-                    </Badge>
-                  )}
+                    {venue.capacity && (
+                      <div className="flex items-center space-x-1">
+                        <Users className="h-4 w-4 text-green-500" />
+                        <span className="text-sm">{venue.capacity.toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
-            </Card>
-          ))}
-        </div>
+            </Link>
+          </Card>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }

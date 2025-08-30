@@ -10,7 +10,7 @@ import { ScrollArea } from "@repo/design-system";
 import { format } from "date-fns";
 import { AlertCircle, CheckCircle, Clock, Activity, Music, MapPin, Calendar } from "lucide-react";
 import { AdminSearchBar } from "./components/admin-search-bar";
-import { db, importStatus, importLogs, desc, sql } from "@repo/database";
+import { db, importStatus, importLogs, desc, sql } from "~/lib/database";
 
 export const dynamic = "force-dynamic";
 

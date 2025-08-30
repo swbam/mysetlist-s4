@@ -1,4 +1,4 @@
-import { artistStats, artists, db, shows, venues } from "@repo/database";
+import { artistStats, artists, db, shows, venues } from "~/lib/database";
 import { Badge } from "@repo/design-system";
 import { Button } from "@repo/design-system";
 import { Card, CardContent } from "@repo/design-system";

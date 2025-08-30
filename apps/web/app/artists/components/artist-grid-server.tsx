@@ -1,5 +1,5 @@
-import { db } from "@repo/database";
-import { artists } from "@repo/database/src/schema";
+import { db } from "~/lib/database";
+import { artists } from "~/lib/database";
 import { desc } from "drizzle-orm";
 import { Music } from "lucide-react";
 import { ArtistCard } from "~/components/cards/artist-card";

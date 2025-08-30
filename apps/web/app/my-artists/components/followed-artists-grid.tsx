@@ -1,4 +1,4 @@
-import { artistStats, artists, db, shows } from "@repo/database";
+import { artistStats, artists, db, shows } from "~/lib/database";
 import { Badge } from "@repo/design-system";
 import { Card, CardContent } from "@repo/design-system";
 import { desc, eq, sql } from "drizzle-orm";

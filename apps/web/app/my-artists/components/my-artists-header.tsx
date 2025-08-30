@@ -1,4 +1,4 @@
-import { db, shows } from "@repo/database";
+import { db, shows } from "~/lib/database";
 import { Card, CardContent } from "@repo/design-system";
 import { gte, sql } from "drizzle-orm";
 import { Calendar, Heart, TrendingUp } from "lucide-react";

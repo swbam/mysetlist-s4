@@ -9,7 +9,7 @@ import {
   setlists,
   shows,
   venues,
-} from "@repo/database";
+} from "~/lib/database";
 import { Badge } from "@repo/design-system";
 import { Button } from "@repo/design-system";
 import {
