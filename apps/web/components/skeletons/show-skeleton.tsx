@@ -4,8 +4,8 @@ import {
   Card,
   CardContent,
   CardHeader,
-} from "@repo/design-system/card";
-import { Skeleton } from "@repo/design-system/skeleton";
+} from "@repo/design-system";
+import { Skeleton } from "@repo/design-system";
 
 export function ShowCardSkeleton() {
   return (

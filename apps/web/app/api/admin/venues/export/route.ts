@@ -23,7 +23,7 @@ export async function GET() {
 
     // Fetch all venues for export
     const { data: venues, error } = await supabase
-      .from("venues")
+      api.venues
       .select(`
         id,
         name,
@@ -39,10 +39,10 @@ export async function GET() {
         phone,
         email,
         website,
-        created_at,
+        _creationTime,
         updated_at
       `)
-      .order("created_at", { ascending: false });
+      .order("_creationTime", { ascending: false });
 
     if (error) {
       throw error;
@@ -82,7 +82,7 @@ export async function GET() {
       venue.phone || "",
       venue.email || "",
       venue.website || "",
-      venue.created_at
+      venue._creationTime
     ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")) || [];
 
     const csvContent = [csvHeaders, ...csvRows].join("\n");

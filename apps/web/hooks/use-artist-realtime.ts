@@ -100,7 +100,7 @@ export function useArtistRealtime(
           event: "*",
           schema: "public",
           table: "user_follows_artists",
-          filter: `artist_id=eq.${artistId}`,
+          filter: `artistId=eq.${artistId}`,
         },
         (payload: any) => {
           if (payload.eventType === "UPDATE" && payload.new) {
@@ -132,7 +132,7 @@ export function useArtistRealtime(
           event: "*",
           schema: "public",
           table: "show_artists",
-          filter: `artist_id=eq.${artistId}`,
+          filter: `artistId=eq.${artistId}`,
         },
         (payload: any) => {
           // Refresh shows data when artist's shows change

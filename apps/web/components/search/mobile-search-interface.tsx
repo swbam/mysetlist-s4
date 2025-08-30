@@ -1,8 +1,8 @@
 "use client";
 
 import { SearchBox } from "@repo/design-system";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { Clock, Search, SlidersHorizontal, TrendingUp, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";

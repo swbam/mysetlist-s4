@@ -28,19 +28,19 @@ export async function DELETE(
 
     // Get show details for logging
     const { data: show } = await supabase
-      .from("shows")
+      api.shows
       .select("title, artist:artists(name)")
       .eq("id", showId)
       .single();
 
     // Delete related records first (setlists, votes, etc.)
-    await supabase.from("setlist_songs").delete().eq("show_id", showId);
-    await supabase.from("setlists").delete().eq("show_id", showId);
-    await supabase.from("votes").delete().eq("show_id", showId);
+    await supabase.from("setlist_songs").delete().eq("showId", showId);
+    await supabase.from("setlists").delete().eq("showId", showId);
+    await supabase.from("votes").delete().eq("showId", showId);
 
     // Delete the show
     const { error } = await supabase
-      .from("shows")
+      api.shows
       .delete()
       .eq("id", showId);
 

@@ -1,10 +1,9 @@
-import { db } from "@repo/database";
-import { artists, shows, venues } from "@repo/database/src/schema";
 import { createMetadata } from "@repo/seo/metadata";
-import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RealtimeActivityFeed } from "~/components/realtime-activity-feed";
+import { createConvexClient } from "~/lib/database";
+import { api } from "../../../../convex/_generated/api";
 import { EnhancedSetlistViewer } from "./components/enhanced-setlist-viewer";
 import { ShowInfo } from "./components/show-info";
 

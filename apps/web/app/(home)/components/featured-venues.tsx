@@ -1,8 +1,8 @@
 import { db } from "@repo/database";
 import { venues } from "@repo/database/src/schema";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Card, CardContent } from "@repo/design-system/card";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
 import { desc, isNotNull } from "drizzle-orm";
 import { Building, MapPin, Users } from "lucide-react";
 import Image from "next/image";

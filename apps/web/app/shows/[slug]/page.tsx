@@ -39,7 +39,7 @@ export const generateMetadata = async ({
     city: show.venue?.city,
     date: new Date(show.date),
     slug: show.slug,
-    image: show.headliner_artist.image_url,
+    image: show.headliner_artist.imageUrl,
   });
 };
 
@@ -102,7 +102,7 @@ export async function generateStaticParams() {
 
     // Get recent and upcoming shows for static generation
     const { data: shows } = await supabase
-      .from("shows")
+      api.shows
       .select("slug")
       .gte("date", twoWeeksAgo.toISOString())
       .lte("date", oneMonthFromNow.toISOString())

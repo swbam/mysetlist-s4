@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

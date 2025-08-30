@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Dialog,
   DialogContent,
@@ -8,13 +8,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/design-system/dialog";
-import { Input } from "@repo/design-system/input";
-import { Label } from "@repo/design-system/label";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
 import {
   RadioGroup,
   RadioGroupItem,
-} from "@repo/design-system/radio-group";
+} from "@repo/design-system";
 import { Music } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";

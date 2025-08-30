@@ -1,15 +1,15 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Progress } from "@repo/design-system/progress";
+} from "@repo/design-system";
+import { Progress } from "@repo/design-system";
 import { Activity, Clock, TrendingUp, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 

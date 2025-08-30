@@ -1,5 +1,5 @@
 import { db, shows } from "@repo/database";
-import { Card, CardContent } from "@repo/design-system/card";
+import { Card, CardContent } from "@repo/design-system";
 import { gte, sql } from "drizzle-orm";
 import { Calendar, Heart, TrendingUp } from "lucide-react";
 

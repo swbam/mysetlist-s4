@@ -39,7 +39,7 @@ export default async function ActivityPage({
       )
     `,
     )
-    .order("created_at", { ascending: false })
+    .order("_creationTime", { ascending: false })
     .limit(100);
 
   // Get activity stats
@@ -49,7 +49,7 @@ export default async function ActivityPage({
   await supabase
     .from("moderation_logs")
     .select("action", { count: "exact", head: true })
-    .gte("created_at", weekAgo.toISOString());
+    .gte("_creationTime", weekAgo.toISOString());
 
   // Group logs by action type
   const actionCounts =
@@ -133,7 +133,7 @@ export default async function ActivityPage({
           </CardHeader>
           <CardContent>
             <div className="font-bold text-2xl">
-              {logs?.filter((log) => new Date(log.created_at) >= weekAgo)
+              {logs?.filter((log) => new Date(log._creationTime) >= weekAgo)
                 .length ?? 0}
             </div>
             <p className="text-muted-foreground text-xs">actions taken</p>
@@ -263,7 +263,7 @@ export default async function ActivityPage({
                       </Badge>
                       <span className="text-muted-foreground text-sm">•</span>
                       <span className="text-muted-foreground text-sm">
-                        {format(new Date(log.created_at), "MMM d, h:mm a")}
+                        {format(new Date(log._creationTime), "MMM d, h:mm a")}
                       </span>
                     </div>
 

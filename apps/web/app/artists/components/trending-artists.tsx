@@ -2,9 +2,9 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
-import { Card } from "@repo/design-system/card";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Card } from "@repo/design-system";
 import { Calendar, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
 import { parseGenres } from "~/lib/parse-genres";
@@ -15,10 +15,10 @@ async function getTrendingArtists() {
 
   // Get artists with high trending scores
   const { data: trendingArtists, error } = await supabase
-    .from("artists")
+    api.artists
     .select("*")
-    .gt("trending_score", 0)
-    .order("trending_score", { ascending: false })
+    .gt("trendingScore", 0)
+    .order("trendingScore", { ascending: false })
     .limit(5);
 
   if (error) {
@@ -32,10 +32,10 @@ async function getTrendingArtists() {
       id: artist.id,
       name: artist.name,
       slug: artist.slug,
-      imageUrl: artist.image_url,
+      imageUrl: artist.imageUrl,
       genres: artist.genres,
       verified: artist.verified,
-      trendingScore: artist.trending_score,
+      trendingScore: artist.trendingScore,
       upcomingShows: 0, // Simplified for now
       totalAttendees: 0, // Simplified for now
     })) || [];

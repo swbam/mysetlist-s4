@@ -3,18 +3,18 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Label } from "@repo/design-system/label";
-import { Switch } from "@repo/design-system/switch";
-import { toast } from "@repo/design-system/use-toast";
+} from "@repo/design-system";
+import { Label } from "@repo/design-system";
+import { Switch } from "@repo/design-system";
+import { toast } from "@repo/design-system";
 import { Download, Eye, Shield, UserX } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "~/lib/supabase/client";
@@ -48,7 +48,7 @@ export function PrivacySettings({
 
     try {
       const { error } = await supabase.from("user_privacy_settings").upsert({
-        user_id: userId,
+        userId: userId,
         profile_visibility: settings.profileVisibility,
         show_attended_shows: settings.showAttendedShows,
         show_followed_artists: settings.showFollowedArtists,
@@ -106,12 +106,12 @@ export function PrivacySettings({
         { data: reviews },
       ] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", userId).single(),
-        supabase.from("user_shows").select("*, shows(*)").eq("user_id", userId),
+        supabase.from("user_shows").select("*, shows(*)").eq("userId", userId),
         supabase
           .from("user_artists")
           .select("*, artists(*)")
-          .eq("user_id", userId),
-        supabase.from("song_votes").select("*, songs(*)").eq("user_id", userId),
+          .eq("userId", userId),
+        supabase.from("song_votes").select("*, songs(*)").eq("userId", userId),
     Promise.resolve({ data: [] }),
       ]);
 
@@ -164,7 +164,7 @@ export function PrivacySettings({
 
     try {
       const { error } = await supabase.rpc("delete_user_account", {
-        p_user_id: userId,
+        p_userId: userId,
       });
 
       if (error) {

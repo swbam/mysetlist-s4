@@ -14,9 +14,9 @@ async function TrendingCard({ item }: { item: TrendingItem }) {
       className="group flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700"
     >
       <div className="relative h-16 w-16 overflow-hidden rounded-lg">
-        {item.image_url ? (
+        {item.imageUrl ? (
           <Image
-            src={item.image_url}
+            src={item.imageUrl}
             alt={item.name}
             fill
             className="object-cover transition-transform group-hover:scale-105"

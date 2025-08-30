@@ -1,22 +1,22 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@repo/design-system/dialog";
+} from "@repo/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/dropdown-menu";
-import { Input } from "@repo/design-system/input";
-import { Label } from "@repo/design-system/label";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
 import {
   Check,
   Facebook,

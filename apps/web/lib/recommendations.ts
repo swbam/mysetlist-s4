@@ -7,7 +7,7 @@ export interface RecommendedItem {
   name: string;
   reason: string;
   score: number;
-  image_url?: string;
+  imageUrl?: string;
   slug?: string;
   metadata?: Record<string, any>;
 }
@@ -44,19 +44,19 @@ export const getUserPreferences = cache(
     // Get user's voted shows
     const { data: votedShows } = await supabase
       .from("show_votes")
-      .select("show_id")
-      .eq("user_id", userId);
+      .select("showId")
+      .eq("userId", userId);
 
     // Get user's attended shows
     const { data: attendedShows } = await supabase
       .from("show_attendees")
-      .select("show_id")
-      .eq("user_id", userId);
+      .select("showId")
+      .eq("userId", userId);
 
     // Get favorite artists from votes and attendance
     const showIds = [
-      ...(votedShows?.map((v) => v.show_id) || []),
-      ...(attendedShows?.map((a) => a.show_id) || []),
+      ...(votedShows?.map((v) => v.showId) || []),
+      ...(attendedShows?.map((a) => a.showId) || []),
     ];
 
     let favoriteArtists: string[] = [];
@@ -65,19 +65,19 @@ export const getUserPreferences = cache(
 
     if (showIds.length > 0) {
       const { data: shows } = await supabase
-        .from("shows")
+        api.shows
         .select(
           `
-        artist_id,
-        venue_id,
+        artistId,
+        venueId,
         artists!inner(id, name, genres)
       `,
         )
         .in("id", showIds);
 
       if (shows) {
-        favoriteArtists = [...new Set(shows.map((s) => s.artist_id))];
-        favoriteVenues = [...new Set(shows.map((s) => s.venue_id))];
+        favoriteArtists = [...new Set(shows.map((s) => s.artistId))];
+        favoriteVenues = [...new Set(shows.map((s) => s.venueId))];
 
         // Extract genres from artists
         const allGenres = shows.flatMap((s) => {
@@ -104,8 +104,8 @@ export const getUserPreferences = cache(
       favoriteGenres,
       favoriteArtists,
       favoriteVenues,
-      attendedShows: attendedShows?.map((a) => a.show_id) || [],
-      votedShows: votedShows?.map((v) => v.show_id) || [],
+      attendedShows: attendedShows?.map((a) => a.showId) || [],
+      votedShows: votedShows?.map((v) => v.showId) || [],
       // Following feature removed
     };
   },
@@ -126,13 +126,13 @@ export async function getRecommendedShows(
 
   // 1. Popular shows by trending artists (replaces followed artists)
   const { data: popularShows } = await supabase
-    .from("shows")
+    api.shows
     .select(
       `
       id,
       slug,
       show_date,
-      artists!inner(id, name, image_url, trending_score),
+      artists!inner(id, name, imageUrl, trendingScore),
       venues!inner(id, name, city)
     `,
     )
@@ -145,7 +145,7 @@ export async function getRecommendedShows(
       "show_date",
       config.includePast ? "2100-01-01" : new Date().toISOString(),
     )
-    .order("artists.trending_score", { ascending: false })
+    .order("artists.trendingScore", { ascending: false })
     .limit(10);
 
   if (popularShows) {
@@ -160,7 +160,7 @@ export async function getRecommendedShows(
         name: `${artist?.name} at ${venue?.name}`,
         reason: "Popular trending show",
         score: 0.9,
-        image_url: artist?.image_url,
+        imageUrl: artist?.imageUrl,
         slug: show.slug,
         metadata: {
           artist_name: artist?.name,
@@ -174,17 +174,17 @@ export async function getRecommendedShows(
   // 2. Shows at favorite venues
   if (preferences.favoriteVenues.length > 0) {
     const { data: venueShows } = await supabase
-      .from("shows")
+      api.shows
       .select(
         `
         id,
         slug,
         show_date,
-        artists!inner(id, name, image_url),
+        artists!inner(id, name, imageUrl),
         venues!inner(id, name, city)
       `,
       )
-      .in("venue_id", preferences.favoriteVenues)
+      .in("venueId", preferences.favoriteVenues)
       .not("id", "in", `(${Array.from(seenShowIds).join(",")})`)
       .gte(
         "show_date",
@@ -209,7 +209,7 @@ export async function getRecommendedShows(
           name: `${artist?.name} at ${venue?.name}`,
           reason: `At your favorite venue: ${venue?.name}`,
           score: 0.8,
-          image_url: artist?.image_url,
+          imageUrl: artist?.imageUrl,
           slug: show.slug,
           metadata: {
             artist_name: artist?.name,
@@ -224,25 +224,25 @@ export async function getRecommendedShows(
   // 3. Shows by similar artists (based on genres)
   if (preferences.favoriteGenres.length > 0) {
     const { data: genreArtists } = await supabase
-      .from("artists")
+      api.artists
       .select("id")
       .contains("genres", preferences.favoriteGenres)
       .not("id", "in", `(${preferences.favoriteArtists.join(",")})`);
 
     if (genreArtists && genreArtists.length > 0) {
       const { data: genreShows } = await supabase
-        .from("shows")
+        api.shows
         .select(
           `
           id,
           slug,
           show_date,
-          artists!inner(id, name, image_url, genres),
+          artists!inner(id, name, imageUrl, genres),
           venues!inner(id, name, city)
         `,
         )
         .in(
-          "artist_id",
+          "artistId",
           genreArtists.map((a) => a.id),
         )
         .not("id", "in", `(${Array.from(seenShowIds).join(",")})`)
@@ -276,7 +276,7 @@ export async function getRecommendedShows(
             name: `${artist?.name} at ${venue?.name}`,
             reason: `Similar to your taste: ${matchingGenres.join(", ")}`,
             score: 0.7,
-            image_url: artist?.image_url,
+            imageUrl: artist?.imageUrl,
             slug: show.slug,
             metadata: {
               artist_name: artist?.name,
@@ -316,20 +316,20 @@ export async function getRecommendedArtists(
   // 1. Popular artists by trending score (replaces followed artists similarity)
   if (preferences.favoriteGenres.length > 0) {
     const { data: similarArtists } = await supabase
-      .from("artists")
+      api.artists
       .select(
         `
         id,
         name,
         slug,
-        image_url,
+        imageUrl,
         genres,
-        trending_score
+        trendingScore
       `,
       )
       .contains("genres", preferences.favoriteGenres)
       .not("id", "in", `(${Array.from(seenArtistIds).join(",")})`)
-      .order("trending_score", { ascending: false })
+      .order("trendingScore", { ascending: false })
       .limit(15);
 
     if (similarArtists) {
@@ -344,12 +344,12 @@ export async function getRecommendedArtists(
           type: "artist",
           name: artist.name,
           reason: `Similar genres: ${matchingGenres.join(", ")}`,
-          score: 0.8 + (artist.trending_score || 0) / 100,
-          image_url: artist.image_url,
+          score: 0.8 + (artist.trendingScore || 0) / 100,
+          imageUrl: artist.imageUrl,
           slug: artist.slug,
           metadata: {
             genres: matchingGenres,
-            trending_score: artist.trending_score || 0,
+            trendingScore: artist.trendingScore || 0,
           },
         });
       });
@@ -359,14 +359,14 @@ export async function getRecommendedArtists(
   // 2. Artists who performed at favorite venues
   if (preferences.favoriteVenues.length > 0) {
     const { data: venueArtists } = await supabase
-      .from("shows")
+      api.shows
       .select(
         `
-        artists!inner(id, name, slug, image_url)
+        artists!inner(id, name, slug, imageUrl)
       `,
       )
-      .in("venue_id", preferences.favoriteVenues)
-      .not("artist_id", "in", `(${Array.from(seenArtistIds).join(",")})`)
+      .in("venueId", preferences.favoriteVenues)
+      .not("artistId", "in", `(${Array.from(seenArtistIds).join(",")})`)
       .gte(
         "show_date",
         new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
@@ -393,7 +393,7 @@ export async function getRecommendedArtists(
             name: artist.name,
             reason: "Performed at venues you like",
             score: 0.7,
-            image_url: artist.image_url,
+            imageUrl: artist.imageUrl,
             slug: artist.slug,
           });
         }
@@ -425,7 +425,7 @@ export async function getRecommendedVenues(
   let favoriteCities: string[] = [];
   if (preferences.favoriteVenues.length > 0) {
     const { data: venues } = await supabase
-      .from("venues")
+      api.venues
       .select("city")
       .in("id", preferences.favoriteVenues);
 
@@ -437,14 +437,14 @@ export async function getRecommendedVenues(
   // 1. Venues in favorite cities
   if (favoriteCities.length > 0) {
     const { data: cityVenues } = await supabase
-      .from("venues")
+      api.venues
       .select(
         `
         id,
         name,
         slug,
         city,
-        image_url,
+        imageUrl,
         capacity,
         shows(count)
       `,
@@ -462,7 +462,7 @@ export async function getRecommendedVenues(
           name: venue.name,
           reason: `In ${venue.city} where you attend shows`,
           score: 0.8 + (venue.shows?.[0]?.count || 0) / 1000,
-          image_url: venue.image_url,
+          imageUrl: venue.imageUrl,
           slug: venue.slug,
           metadata: {
             city: venue.city,
@@ -477,14 +477,14 @@ export async function getRecommendedVenues(
   // 2. Venues that host your favorite artists
   if (preferences.favoriteArtists.length > 0) {
     const { data: artistVenues } = await supabase
-      .from("shows")
+      api.shows
       .select(
         `
-        venues!inner(id, name, slug, city, image_url, capacity)
+        venues!inner(id, name, slug, city, imageUrl, capacity)
       `,
       )
-      .in("artist_id", preferences.favoriteArtists)
-      .not("venue_id", "in", `(${Array.from(seenVenueIds).join(",")})`)
+      .in("artistId", preferences.favoriteArtists)
+      .not("venueId", "in", `(${Array.from(seenVenueIds).join(",")})`)
       .gte(
         "show_date",
         new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
@@ -509,7 +509,7 @@ export async function getRecommendedVenues(
             name: venue.name,
             reason: "Hosts artists you follow",
             score: 0.7,
-            image_url: venue.image_url,
+            imageUrl: venue.imageUrl,
             slug: venue.slug,
             metadata: {
               city: venue.city,

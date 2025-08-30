@@ -8,7 +8,7 @@ export async function GET() {
     await db.execute(sql`
       CREATE TABLE IF NOT EXISTS import_logs (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        artist_id VARCHAR(255) NOT NULL,
+        artistId VARCHAR(255) NOT NULL,
         artist_name VARCHAR(255),
         tm_attraction_id VARCHAR(255),
         spotify_id VARCHAR(255),
@@ -30,21 +30,21 @@ export async function GET() {
         error_stack TEXT,
         
         -- Timestamps
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        _creationTime TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       )
     `);
 
     // Create indexes
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs_artist_id ON import_logs(artist_id)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs_artistId ON import_logs(artistId)`);
     await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs_job_id ON import_logs(job_id)`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs_created_at ON import_logs(created_at DESC)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs__creationTime ON import_logs(_creationTime DESC)`);
     await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs_level ON import_logs(level)`);
     await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs_artist_name ON import_logs(artist_name)`);
 
     // Update import_status table
     await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS job_id VARCHAR(255)`);
     await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS total_songs INTEGER DEFAULT 0`);
-    await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS total_shows INTEGER DEFAULT 0`);
+    await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS totalShows INTEGER DEFAULT 0`);
     await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS total_venues INTEGER DEFAULT 0`);
     await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS artist_name VARCHAR(255)`);
     await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS started_at TIMESTAMP WITH TIME ZONE`);

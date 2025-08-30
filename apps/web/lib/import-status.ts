@@ -14,7 +14,7 @@ interface ImportStatusUpdate {
   job_id?: string;
   artist_name?: string;
   total_songs?: number;
-  total_shows?: number;
+  totalShows?: number;
   total_venues?: number;
   completed_at?: Date;
   phase_timings?: Record<string, number>;
@@ -58,7 +58,7 @@ export class ImportStatusManager {
         jobId: update.job_id || null,
         artistName: update.artist_name || null,
         totalSongs: update.total_songs || 0,
-        totalShows: update.total_shows || 0,
+        totalShows: update.totalShows || 0,
         totalVenues: update.total_venues || 0,
         completedAt: update.completed_at || null,
         startedAt: update.started_at || (update.stage === 'initializing' ? now : undefined),
@@ -86,7 +86,7 @@ export class ImportStatusManager {
         ...(update.job_id ? { jobId: update.job_id } : {}),
         ...(update.artist_name ? { artistName: update.artist_name } : {}),
         ...(update.total_songs !== undefined ? { totalSongs: update.total_songs } : {}),
-        ...(update.total_shows !== undefined ? { totalShows: update.total_shows } : {}),
+        ...(update.totalShows !== undefined ? { totalShows: update.totalShows } : {}),
         ...(update.total_venues !== undefined ? { totalVenues: update.total_venues } : {}),
         ...(update.completed_at ? { completedAt: update.completed_at } : {}),
         ...(update.started_at ? { startedAt: update.started_at } : {}),
@@ -259,7 +259,7 @@ export class ImportStatusManager {
       message: 'Import completed successfully',
       ...(jobId ? { job_id: jobId } : {} as any),
       total_songs: totals.songs,
-      total_shows: totals.shows,
+      totalShows: totals.shows,
       total_venues: totals.venues,
       completed_at: new Date(),
     });

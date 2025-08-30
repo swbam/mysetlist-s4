@@ -5,8 +5,8 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Skeleton } from "@repo/design-system/skeleton";
+} from "@repo/design-system";
+import { Skeleton } from "@repo/design-system";
 import {
   BarChart3,
   Calendar,

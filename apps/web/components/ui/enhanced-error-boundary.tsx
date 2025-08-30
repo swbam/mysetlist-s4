@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import React from "react";
 

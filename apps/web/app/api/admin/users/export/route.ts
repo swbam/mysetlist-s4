@@ -30,13 +30,13 @@ export async function GET() {
         display_name,
         username,
         role,
-        created_at,
+        _creationTime,
         last_login_at,
         email_verified,
         is_banned,
         warning_count
       `)
-      .order("created_at", { ascending: false });
+      .order("_creationTime", { ascending: false });
 
     if (error) {
       throw error;
@@ -62,7 +62,7 @@ export async function GET() {
       user.display_name || "",
       user.username || "",
       user.role,
-      user.created_at,
+      user._creationTime,
       user.last_login_at || "",
       user.email_verified ? "Yes" : "No",
       user.is_banned ? "Yes" : "No",

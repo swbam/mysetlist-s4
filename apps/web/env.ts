@@ -7,13 +7,16 @@ import { z } from "zod";
 // import { keys as nextConfig } from "@repo/next-config/keys";
 
 export const env = createEnv({
-  // extends: [...(process.env['SKIP_ENV_VALIDATION'] ? [] : [auth(), nextConfig()])],
   server: {
-    // Authentication
-    NEXTAUTH_URL: z.string().url().optional(),
-    NEXTAUTH_SECRET: z.string().min(32),
+    // Convex
+    CONVEX_DEPLOY_KEY: z.string().min(1).optional(),
+
+    // Clerk Authentication
+    CLERK_SECRET_KEY: z.string().min(1),
 
     // External APIs
+    SPOTIFY_CLIENT_ID: z.string().min(1),
+    SPOTIFY_CLIENT_SECRET: z.string().min(1),
     TICKETMASTER_API_KEY: z.string().min(1),
     SETLISTFM_API_KEY: z.string().min(1).optional(),
 
@@ -21,7 +24,6 @@ export const env = createEnv({
     CRON_SECRET: z.string().min(1).optional(),
     CSRF_SECRET: z.string().min(1).optional(),
     ADMIN_API_KEY: z.string().min(1).optional(),
-    SUPABASE_JWT_SECRET: z.string().min(1).optional(),
 
     // Email
     RESEND_API_KEY: z.string().min(1).optional(),
@@ -63,7 +65,13 @@ export const env = createEnv({
   },
 
   client: {
-    // Public URLs (ensuring these are available on client)
+    // Convex
+    NEXT_PUBLIC_CONVEX_URL: z.string().url(),
+
+    // Clerk Authentication
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
+
+    // Public URLs
     NEXT_PUBLIC_DOCS_URL: z.string().url().optional(),
     NEXT_PUBLIC_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
@@ -127,14 +135,15 @@ export const env = createEnv({
 
   runtimeEnv: {
     // Server
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    CONVEX_DEPLOY_KEY: process.env.CONVEX_DEPLOY_KEY,
+    CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
+    SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
+    SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
     TICKETMASTER_API_KEY: process.env['TICKETMASTER_API_KEY'],
     SETLISTFM_API_KEY: process.env['SETLISTFM_API_KEY'],
     CRON_SECRET: process.env['CRON_SECRET'],
     CSRF_SECRET: process.env.CSRF_SECRET,
     ADMIN_API_KEY: process.env['ADMIN_API_KEY'],
-    SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EMAIL_SYSTEM_TOKEN: process.env.EMAIL_SYSTEM_TOKEN,
     ADMIN_USER_IDS: process.env.ADMIN_USER_IDS,
@@ -159,6 +168,8 @@ export const env = createEnv({
     RATE_LIMIT_MAX_REQUESTS: process.env.RATE_LIMIT_MAX_REQUESTS,
 
     // Client
+    NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     NEXT_PUBLIC_APP_URL: process.env['NEXT_PUBLIC_APP_URL'],

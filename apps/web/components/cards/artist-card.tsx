@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Card, CardContent } from "@repo/design-system/card";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import {
   Calendar,

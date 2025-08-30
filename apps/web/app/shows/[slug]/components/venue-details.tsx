@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { Globe, MapPin, Phone, Users } from "lucide-react";
 import Link from "next/link";
 
@@ -26,7 +26,7 @@ type VenueDetailsProps = {
     venue_type?: string;
     phone_number?: string;
     website?: string;
-    image_url?: string;
+    imageUrl?: string;
   };
 };
 

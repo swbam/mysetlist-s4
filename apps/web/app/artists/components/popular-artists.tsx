@@ -4,31 +4,14 @@ import {
   EmptyState,
   ResponsiveGrid,
 } from "~/components/layout/responsive-grid";
-import { createServiceClient } from "~/lib/supabase/server";
+import { createConvexClient } from "~/lib/database";
+import { api } from "~/lib/convex-api";
 
 async function getPopularArtists() {
-  const supabase = createServiceClient();
+  const convex = createConvexClient();
 
-  // Get artists ordered by their overall popularity
-  const { data: popularArtists, error } = await supabase
-    .from("artists")
-    .select(
-      `
-      id,
-      name,
-      slug,
-      image_url,
-      small_image_url,
-      genres,
-      verified,
-      follower_count,
-      trending_score,
-      popularity
-    `,
-    )
-    .eq("verified", true)
-    .order("follower_count", { ascending: false })
-    .limit(12);
+  // Get popular artists from Convex
+  const popularArtists = await convex.query(api.artists.getAll, { limit: 12 });
 
   if (error) {
     console.error("Error fetching popular artists:", error);
@@ -41,12 +24,12 @@ async function getPopularArtists() {
       id: artist.id,
       name: artist.name,
       slug: artist.slug,
-      imageUrl: artist.image_url,
-      smallImageUrl: artist.small_image_url,
+      imageUrl: artist.imageUrl,
+      smallImageUrl: artist.small_imageUrl,
       genres: artist.genres,
       verified: artist.verified,
-      followerCount: artist.follower_count || 0,
-      trendingScore: artist.trending_score,
+      followerCount: artist.followerCount || 0,
+      trendingScore: artist.trendingScore,
       popularity: artist.popularity,
       upcomingShows: 0, // TODO: Get from shows table
     })) || [];

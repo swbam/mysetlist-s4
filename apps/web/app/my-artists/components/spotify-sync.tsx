@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@repo/design-system/dialog";
+} from "@repo/design-system";
 import { AlertCircle, CheckCircle, Loader2, Music2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

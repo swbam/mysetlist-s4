@@ -56,18 +56,18 @@ export const optimizedQueries = {
           s.*,
           a.name as artist_name,
           a.slug as artist_slug,
-          a.image_url as artist_image,
+          a.imageUrl as artist_image,
           v.name as venue_name,
           v.city as venue_city,
           v.state as venue_state,
-          (s.vote_count * 2 + s.attendee_count * 1.5 + 
-           (1 - EXTRACT(EPOCH FROM (NOW() - s.created_at)) / (${hoursAgo} * 3600)) * 10) as calculated_score
+          (s.voteCount * 2 + s.attendeeCount * 1.5 + 
+           (1 - EXTRACT(EPOCH FROM (NOW() - s._creationTime)) / (${hoursAgo} * 3600)) * 10) as calculated_score
         FROM shows s
-        LEFT JOIN artists a ON s.headliner_artist_id = a.id
-        LEFT JOIN venues v ON s.venue_id = v.id
-        WHERE s.created_at >= ${cutoffDate}
+        LEFT JOIN artists a ON s.artistId = a.id
+        LEFT JOIN venues v ON s.venueId = v.id
+        WHERE s._creationTime >= ${cutoffDate}
           AND s.status IN ('upcoming', 'ongoing')
-          AND s.trending_score > 0
+          AND s.trendingScore > 0
       )
       SELECT * FROM trending_shows
       ORDER BY calculated_score DESC
@@ -83,7 +83,7 @@ export const optimizedQueries = {
     // Use PostgreSQL full-text search for better performance
     const query = sql`
       SELECT 
-        id, name, slug, image_url, genres, popularity, follower_count, trending_score
+        id, name, slug, imageUrl, genres, popularity, followerCount, trendingScore
       FROM artists
       WHERE 
         to_tsvector('english', name || ' ' || COALESCE(genres, '')) 
@@ -91,7 +91,7 @@ export const optimizedQueries = {
       ORDER BY 
         ts_rank(to_tsvector('english', name), plainto_tsquery('english', ${searchTerm})) DESC,
         popularity DESC,
-        follower_count DESC
+        followerCount DESC
       LIMIT ${limit}
     `;
 
@@ -188,17 +188,17 @@ export const optimizedQueries = {
     const query = sql`
       SELECT 
         a.*,
-        COUNT(DISTINCT s.id) as total_shows,
-        COUNT(DISTINCT s.id) FILTER (WHERE s.status = 'upcoming') as upcoming_shows,
+        COUNT(DISTINCT s.id) as totalShows,
+        COUNT(DISTINCT s.id) FILTER (WHERE s.status = 'upcoming') as upcomingShows,
         COUNT(DISTINCT s.id) FILTER (WHERE s.status = 'completed') as past_shows,
-        AVG(s.attendee_count) as avg_attendance,
-        SUM(s.vote_count) as total_votes,
+        AVG(s.attendeeCount) as avg_attendance,
+        SUM(s.voteCount) as total_votes,
         COUNT(DISTINCT sa.id) as total_songs
       FROM artists a
-      LEFT JOIN shows s ON (s.headliner_artist_id = a.id OR EXISTS (
-        SELECT 1 FROM show_artists sha WHERE sha.show_id = s.id AND sha.artist_id = a.id
+      LEFT JOIN shows s ON (s.artistId = a.id OR EXISTS (
+        SELECT 1 FROM show_artists sha WHERE sha.showId = s.id AND sha.artistId = a.id
       ))
-      LEFT JOIN songs sa ON sa.artist_id = a.id
+      LEFT JOIN songs sa ON sa.artistId = a.id
       WHERE a.id = ${artistId}
       GROUP BY a.id
     `;

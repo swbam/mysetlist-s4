@@ -7,7 +7,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@repo/design-system/carousel";
+} from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";

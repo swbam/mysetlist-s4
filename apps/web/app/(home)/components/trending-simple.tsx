@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Card } from "@repo/design-system/card";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Card } from "@repo/design-system";
 import { Music, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,8 +12,8 @@ interface Artist {
   id: string;
   name: string;
   slug: string;
-  image_url?: string;
-  follower_count?: number;
+  imageUrl?: string;
+  followerCount?: number;
 }
 
 interface Show {
@@ -23,7 +23,7 @@ interface Show {
   venue?: string;
   date?: string;
   artist_name?: string;
-  vote_count?: number;
+  voteCount?: number;
 }
 
 export default function TrendingSimple() {
@@ -115,9 +115,9 @@ export default function TrendingSimple() {
                 <Card key={artist.id} className="overflow-hidden">
                   <Link href={`/artists/${artist.slug}`}>
                     <div className="aspect-square relative bg-muted">
-                      {artist.image_url ? (
+                      {artist.imageUrl ? (
                         <Image
-                          src={artist.image_url}
+                          src={artist.imageUrl}
                           alt={artist.name}
                           fill
                           className="object-cover transition-transform hover:scale-105"
@@ -131,9 +131,9 @@ export default function TrendingSimple() {
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold truncate">{artist.name}</h3>
-                      {artist.follower_count && (
+                      {artist.followerCount && (
                         <p className="text-sm text-muted-foreground">
-                          {artist.follower_count.toLocaleString()} followers
+                          {artist.followerCount.toLocaleString()} followers
                         </p>
                       )}
                     </div>
@@ -178,9 +178,9 @@ export default function TrendingSimple() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Badge variant="outline">Show</Badge>
-                        {show.vote_count && (
+                        {show.voteCount && (
                           <span className="text-sm text-muted-foreground">
-                            {show.vote_count} votes
+                            {show.voteCount} votes
                           </span>
                         )}
                       </div>

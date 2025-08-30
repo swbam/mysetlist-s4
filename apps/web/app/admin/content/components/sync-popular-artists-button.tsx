@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { Loader2, TrendingUp } from "lucide-react";
 import { useState } from "react";
 

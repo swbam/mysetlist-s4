@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 const activityQuerySchema = z.object({
   limit: z.number().min(1).max(100).optional().default(20),
   offset: z.number().min(0).optional().default(0),
-  user_id: z.string().uuid().optional(),
+  userId: z.string().uuid().optional(),
   type: z
     .enum(["all", "votes", "follows", "reviews", "shows", "setlists"])
     .optional()
@@ -34,7 +34,7 @@ interface ActivityItem {
   action: string;
   target_type: string;
   target_id: string;
-  user_id?: string;
+  userId?: string;
   user?: {
     id: string;
     username?: string;
@@ -44,7 +44,7 @@ interface ActivityItem {
   target_details?: {
     name: string;
     slug?: string;
-    image_url?: string;
+    imageUrl?: string;
     artist_name?: string;
     venue_name?: string;
     date?: string;
@@ -64,7 +64,7 @@ interface RecentActivityResponse {
   timestamp: string;
   filters_applied: {
     type: string;
-    user_id?: string;
+    userId?: string;
     since?: string;
   };
 }
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     const validation = activityQuerySchema.safeParse({
       limit,
       offset,
-      user_id: searchParams.get("user_id"),
+      userId: searchParams.get("userId"),
       type,
       since: searchParams.get("since"),
       include_user_details: includeUserDetails,
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     const {
       limit: queryLimit,
       offset: queryOffset,
-      user_id,
+      userId,
       type: activityType,
       since,
     } = validation.data;
@@ -118,8 +118,8 @@ export async function GET(request: NextRequest) {
     // Build filter conditions
     const conditions: any[] = [];
 
-    if (user_id) {
-      conditions.push(eq(userActivityLog.userId, user_id));
+    if (userId) {
+      conditions.push(eq(userActivityLog.userId, userId));
     }
 
     if (since) {
@@ -216,7 +216,7 @@ export async function GET(request: NextRequest) {
         timestamp: new Date().toISOString(),
         filters_applied: { 
           type: activityType, 
-          ...(user_id && { user_id }),
+          ...(userId && { userId }),
           ...(since && { since }),
         },
       });
@@ -230,7 +230,7 @@ export async function GET(request: NextRequest) {
           action: activity.action,
           target_type: activity.targetType,
           target_id: activity.targetId,
-          user_id: activity.userId,
+          userId: activity.userId,
           timestamp: activity.createdAt,
           metadata: activity.details,
         };
@@ -262,7 +262,7 @@ export async function GET(request: NextRequest) {
                 baseActivity.target_details = {
                   name: artist.name,
                   ...(artist.slug && { slug: artist.slug }),
-                  ...(artist.imageUrl && { image_url: artist.imageUrl }),
+                  ...(artist.imageUrl && { imageUrl: artist.imageUrl }),
                 };
               }
               break;
@@ -344,7 +344,7 @@ export async function GET(request: NextRequest) {
                   ...(setlist.showDate && { date: setlist.showDate }),
                   ...(setlist.artistName && { artist_name: setlist.artistName }),
                   ...(setlist.venueName && { venue_name: setlist.venueName }),
-                  ...(setlist.artistImageUrl && { image_url: setlist.artistImageUrl }),
+                  ...(setlist.artistImageUrl && { imageUrl: setlist.artistImageUrl }),
                 };
               }
               break;
@@ -408,7 +408,7 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
       filters_applied: {
         type: activityType,
-        ...(user_id && { user_id }),
+        ...(userId && { userId }),
         ...(since && { since }),
       },
     };
@@ -451,7 +451,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { user_id, action, target_type, target_id, details } = body;
+    const { userId, action, target_type, target_id, details } = body;
 
     // Validate required fields
     if (!action || !target_type || !target_id) {
@@ -465,7 +465,7 @@ export async function POST(request: NextRequest) {
     const activity = await db
       .insert(userActivityLog)
       .values({
-        userId: user_id || null,
+        userId: userId || null,
         action,
         targetType: target_type,
         targetId: target_id,

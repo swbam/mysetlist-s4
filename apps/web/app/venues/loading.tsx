@@ -1,4 +1,4 @@
-import { Skeleton } from "@repo/design-system/skeleton";
+import { Skeleton } from "@repo/design-system";
 import { VenueGridSkeleton } from "~/components/loading-states";
 
 export default function VenuesLoading() {

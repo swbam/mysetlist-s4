@@ -255,7 +255,7 @@ class CronJobMonitor {
     // Log alert to database
     try {
       await db.execute(sql`
-        INSERT INTO cron_alerts (job_name, rule_id, message, severity, health_data, created_at)
+        INSERT INTO cron_alerts (job_name, rule_id, message, severity, health_data, _creationTime)
         VALUES (${health.jobName}, ${rule.id}, ${message}, 'high', ${JSON.stringify(health)}, NOW())
       `);
     } catch (error) {
@@ -300,7 +300,7 @@ class CronJobMonitor {
           details, 
           memory_usage_bytes,
           error_message,
-          created_at
+          _creationTime
         )
         VALUES (
           ${metric.jobName},
@@ -440,13 +440,13 @@ class CronJobMonitor {
       // Clean up old metrics from database
       await db.execute(sql`
         DELETE FROM cron_metrics 
-        WHERE created_at < NOW() - INTERVAL '${MONITORING_CONFIG.LOG_RETENTION_DAYS} days'
+        WHERE _creationTime < NOW() - INTERVAL '${MONITORING_CONFIG.LOG_RETENTION_DAYS} days'
       `);
 
       // Clean up old alerts
       await db.execute(sql`
         DELETE FROM cron_alerts 
-        WHERE created_at < NOW() - INTERVAL '${MONITORING_CONFIG.LOG_RETENTION_DAYS} days'
+        WHERE _creationTime < NOW() - INTERVAL '${MONITORING_CONFIG.LOG_RETENTION_DAYS} days'
       `);
 
       console.log("Cleaned up old monitoring data");
@@ -485,10 +485,10 @@ class CronJobMonitor {
   }> {
     // Get recent alerts from database
     const recentAlerts = await db.execute(sql`
-      SELECT job_name, rule_id, message, severity, created_at
+      SELECT job_name, rule_id, message, severity, _creationTime
       FROM cron_alerts
-      WHERE created_at >= NOW() - INTERVAL '24 hours'
-      ORDER BY created_at DESC
+      WHERE _creationTime >= NOW() - INTERVAL '24 hours'
+      ORDER BY _creationTime DESC
       LIMIT 50
     `);
 

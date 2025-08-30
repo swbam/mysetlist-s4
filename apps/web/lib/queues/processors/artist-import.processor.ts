@@ -102,7 +102,7 @@ export class ArtistImportProcessor {
         stage: "importing-shows",
         progress: 60,
         message: `Imported ${showsResult.totalShows} shows and ${showsResult.venuesCreated} venues`,
-        total_shows: showsResult.totalShows,
+        totalShows: showsResult.totalShows,
         total_venues: showsResult.venuesCreated,
       });
 

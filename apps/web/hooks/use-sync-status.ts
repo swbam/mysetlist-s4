@@ -57,7 +57,7 @@ export function useSyncStatus(jobId: string | null): SyncStatus {
           .from("sync_progress")
           .select("*")
           .eq("job_id", jobId)
-          .order("created_at", { ascending: false }),
+          .order("_creationTime", { ascending: false }),
       ]);
 
       if (jobResult.error) {

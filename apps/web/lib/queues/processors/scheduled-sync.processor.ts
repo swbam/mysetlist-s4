@@ -160,7 +160,7 @@ async function getActiveArtists(limit: number) {
       COUNT(s.id) as upcoming_show_count,
       MIN(s.date) as next_show_date
     FROM ${artists} a
-    JOIN ${shows} s ON s.headliner_artist_id = a.id
+    JOIN ${shows} s ON s.artistId = a.id
     WHERE s.date >= CURRENT_DATE
       AND s.date <= CURRENT_DATE + INTERVAL '90 days'
       AND (a.last_synced_at IS NULL OR a.last_synced_at < CURRENT_DATE - INTERVAL '6 hours')
@@ -240,16 +240,16 @@ async function getNewArtists(limit: number) {
       spotify_id,
       tm_attraction_id,
       name,
-      created_at
+      _creationTime
     FROM ${artists}
-    WHERE created_at >= CURRENT_DATE - INTERVAL '24 hours'
+    WHERE _creationTime >= CURRENT_DATE - INTERVAL '24 hours'
       AND (spotify_id IS NOT NULL OR tm_attraction_id IS NOT NULL)
       AND (
         song_catalog_synced_at IS NULL
         OR total_songs = 0
-        OR total_shows = 0
+        OR totalShows = 0
       )
-    ORDER BY created_at DESC
+    ORDER BY _creationTime DESC
     LIMIT ${limit}
   `);
   
@@ -266,14 +266,14 @@ async function getAllArtists(limit: number) {
           -- Highest priority: trending with upcoming shows
           WHEN a.is_trending = true AND EXISTS (
             SELECT 1 FROM ${shows} s 
-            WHERE s.headliner_artist_id = a.id 
+            WHERE s.artistId = a.id 
             AND s.date >= CURRENT_DATE
           ) THEN 1
           
           -- High priority: has upcoming shows
           WHEN EXISTS (
             SELECT 1 FROM ${shows} s 
-            WHERE s.headliner_artist_id = a.id 
+            WHERE s.artistId = a.id 
             AND s.date >= CURRENT_DATE
           ) THEN 2
           

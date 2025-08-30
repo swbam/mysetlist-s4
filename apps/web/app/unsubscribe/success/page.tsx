@@ -1,11 +1,11 @@
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { ArrowLeft, CheckCircle, Settings } from "lucide-react";
 import Link from "next/link";
 

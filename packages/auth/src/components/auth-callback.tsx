@@ -3,14 +3,14 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/components/ui/alert";
+} from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";

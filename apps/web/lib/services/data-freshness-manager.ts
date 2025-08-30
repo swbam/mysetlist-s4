@@ -5,7 +5,7 @@
 import { db, sql } from '@repo/database';
 import { Queue } from 'bullmq';
 import { cacheManager } from '../cache/cache-manager';
-import queueManagerInstance from '../queues/queue-manager';
+import { queueManager } from '../queues/queue-manager';
 
 export interface FreshnessRule {
   entityType: 'artist' | 'show' | 'venue' | 'setlist';
@@ -47,7 +47,7 @@ export class DataFreshnessManager {
     // Critical: Trending artists need fresh data
     {
       entityType: 'artist',
-      condition: (artist) => artist.trending_score > 50,
+      condition: (artist) => artist.trendingScore > 50,
       maxAge: 21600, // 6 hours
       priority: 9,
       syncType: 'spotify-sync',
@@ -57,7 +57,7 @@ export class DataFreshnessManager {
     // High: Artists with upcoming shows
     {
       entityType: 'artist',
-      condition: (artist) => artist.upcoming_shows_count > 0,
+      condition: (artist) => artist.upcomingShows_count > 0,
       maxAge: 43200, // 12 hours
       priority: 8,
       syncType: 'full-sync',
@@ -81,7 +81,7 @@ export class DataFreshnessManager {
     // Medium: Popular artists (high follower count)
     {
       entityType: 'artist',
-      condition: (artist) => artist.follower_count > 1000,
+      condition: (artist) => artist.followerCount > 1000,
       maxAge: 86400, // 24 hours
       priority: 6,
       syncType: 'spotify-sync',
@@ -131,7 +131,7 @@ export class DataFreshnessManager {
   }
 
   private initializeQueues(): void {
-    const qm: any = queueManagerInstance as any;
+    const qm: any = queueManager as any;
     if (typeof qm.getQueue !== 'function') return;
     this.queues.set('spotify-sync', qm.getQueue('spotify-sync'));
     this.queues.set('ticketmaster-sync', qm.getQueue('ticketmaster-sync'));
@@ -184,9 +184,9 @@ export class DataFreshnessManager {
       SELECT 
         a.*,
         sj.completed_at as last_sync_time,
-        EXTRACT(EPOCH FROM (NOW() - COALESCE(sj.completed_at, a.created_at))) as seconds_since_sync,
-        COUNT(DISTINCT s.id) as upcoming_shows_count,
-        COUNT(DISTINCT uf.user_id) as follower_count
+        EXTRACT(EPOCH FROM (NOW() - COALESCE(sj.completed_at, a._creationTime))) as seconds_since_sync,
+        COUNT(DISTINCT s.id) as upcomingShows_count,
+        COUNT(DISTINCT uf.userId) as followerCount
       FROM artists a
       LEFT JOIN LATERAL (
         SELECT completed_at 
@@ -197,8 +197,8 @@ export class DataFreshnessManager {
         ORDER BY completed_at DESC 
         LIMIT 1
       ) sj ON true
-      LEFT JOIN shows s ON s.headliner_artist_id = a.id AND s.date >= NOW()
-      LEFT JOIN user_follows_artists uf ON uf.artist_id = a.id
+      LEFT JOIN shows s ON s.artistId = a.id AND s.date >= NOW()
+      LEFT JOIN user_follows_artists uf ON uf.artistId = a.id
       GROUP BY a.id, sj.completed_at
     `);
 
@@ -248,7 +248,7 @@ export class DataFreshnessManager {
       SELECT 
         s.*,
         sj.completed_at as last_sync_time,
-        EXTRACT(EPOCH FROM (NOW() - COALESCE(sj.completed_at, s.created_at))) as seconds_since_sync
+        EXTRACT(EPOCH FROM (NOW() - COALESCE(sj.completed_at, s._creationTime))) as seconds_since_sync
       FROM shows s
       LEFT JOIN LATERAL (
         SELECT completed_at 
@@ -307,7 +307,7 @@ export class DataFreshnessManager {
       SELECT 
         v.*,
         sj.completed_at as last_sync_time,
-        EXTRACT(EPOCH FROM (NOW() - COALESCE(sj.completed_at, v.created_at))) as seconds_since_sync,
+        EXTRACT(EPOCH FROM (NOW() - COALESCE(sj.completed_at, v._creationTime))) as seconds_since_sync,
         COUNT(DISTINCT s.id) as show_count
       FROM venues v
       LEFT JOIN LATERAL (
@@ -319,7 +319,7 @@ export class DataFreshnessManager {
         ORDER BY completed_at DESC 
         LIMIT 1
       ) sj ON true
-      LEFT JOIN shows s ON s.venue_id = v.id
+      LEFT JOIN shows s ON s.venueId = v.id
       GROUP BY v.id, sj.completed_at
     `);
 

@@ -61,4 +61,7 @@ export async function testConnection() {
 
 export * from "./schema";
 export * from "./utils/growth-calculation";
+
+// Re-export commonly used query helpers for consumers that directly map to this file via TS path mapping
+export { sql, eq, and, or, desc, asc, ilike, isNull, isNotNull, inArray } from "drizzle-orm";
 export * from "./schema/admin";

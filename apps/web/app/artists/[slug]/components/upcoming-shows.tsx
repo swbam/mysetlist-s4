@@ -1,14 +1,14 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 // Skeleton import removed - not used
 import { format } from "date-fns";
 import { Calendar, MapPin, Ticket } from "lucide-react";

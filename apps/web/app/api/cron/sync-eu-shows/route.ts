@@ -33,7 +33,7 @@ interface EUShow {
   ticketmaster_id: string;
   date: string;
   last_sync_at: string | null;
-  venue_id: string;
+  venueId: string;
   country: EUCountryCode;
   timezone: string;
   artist_name: string;
@@ -71,15 +71,15 @@ async function getEUShowsToSync(): Promise<EUShow[]> {
       s.ticketmaster_id,
       s.date,
       s.last_sync_at,
-      s.venue_id,
+      s.venueId,
       v.country,
       v.timezone,
       a.name as artist_name,
       v.name as venue_name,
       v.city
     FROM shows s
-    JOIN venues v ON s.venue_id = v.id
-    JOIN artists a ON s.artist_id = a.id
+    JOIN venues v ON s.venueId = v.id
+    JOIN artists a ON s.artistId = a.id
     WHERE v.country IN ('GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'CH', 'IE', 'PT', 'SE', 'NO', 'DK', 'FI')
     AND s.date BETWEEN NOW() AND NOW() + INTERVAL '30 days'
     AND (s.last_sync_at IS NULL OR s.last_sync_at < NOW() - INTERVAL '12 hours')
@@ -153,7 +153,7 @@ async function syncShowWithTicketmaster(show: EUShow): Promise<SyncResult> {
         sync_type,
         status,
         details,
-        created_at
+        _creationTime
       ) VALUES (
         'show',
         ${show.id},
@@ -190,7 +190,7 @@ async function syncShowWithTicketmaster(show: EUShow): Promise<SyncResult> {
         sync_type,
         status,
         details,
-        created_at
+        _creationTime
       ) VALUES (
         'show',
         ${show.id},

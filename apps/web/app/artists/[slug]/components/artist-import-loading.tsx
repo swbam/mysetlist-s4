@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
-import { Progress } from "@repo/design-system/progress";
+import { Button } from "@repo/design-system";
+import { Progress } from "@repo/design-system";
 import { CheckCircle, Music, Users, MapPin, Clock, AlertCircle } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 

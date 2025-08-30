@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
           DELETE FROM songs s1
           USING songs s2
           WHERE s1.id < s2.id
-          AND s1.artist_id = s2.artist_id
+          AND s1.artistId = s2.artistId
           AND s1.title = s2.title
           AND s1.spotify_id = s2.spotify_id
         `);
@@ -185,12 +185,12 @@ export async function POST(request: NextRequest) {
         // Remove orphaned records
         await db.execute(sql`
           DELETE FROM songs
-          WHERE artist_id NOT IN (SELECT id FROM artists)
+          WHERE artistId NOT IN (SELECT id FROM artists)
         `);
 
         await db.execute(sql`
           DELETE FROM shows
-          WHERE artist_id NOT IN (SELECT id FROM artists)
+          WHERE artistId NOT IN (SELECT id FROM artists)
         `);
 
         // Update song counts
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
           SET song_count = (
             SELECT COUNT(*)
             FROM songs
-            WHERE songs.artist_id = artists.id
+            WHERE songs.artistId = artists.id
           )
         `);
 
@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
 
     // Update trending data after complete sync
     try {
-      await db.execute(sql`SELECT update_trending_scores()`);
+      await db.execute(sql`SELECT update_trendingScores()`);
       await db.execute(sql`SELECT refresh_trending_data()`);
     } catch (error) {
       console.warn("Failed to update trending scores:", error);

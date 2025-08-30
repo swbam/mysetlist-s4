@@ -1,6 +1,6 @@
 "use client";
 
-import { toast } from "@repo/design-system/use-toast";
+import { toast } from "@repo/design-system";
 import { format } from "date-fns";
 import {
   Calendar,
@@ -112,7 +112,7 @@ export default function ModerationItem({ type, item }: ModerationItemProps) {
         return (
           <div className="space-y-2">
             <img
-              src={item.image_url}
+              src={item.imageUrl}
               alt={item.caption || "Venue photo"}
               className="h-48 w-full rounded-md object-cover"
             />
@@ -261,7 +261,7 @@ export default function ModerationItem({ type, item }: ModerationItemProps) {
                   </span>
                   <span className="text-muted-foreground text-sm">•</span>
                   <span className="text-muted-foreground text-sm">
-                    {format(new Date(item.created_at), "MMM d, h:mm a")}
+                    {format(new Date(item._creationTime), "MMM d, h:mm a")}
                   </span>
                 </div>
               </div>

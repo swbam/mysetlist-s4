@@ -2,13 +2,13 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
+} from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { Music } from "lucide-react";
 import Link from "next/link";
 import { parseGenres } from "~/lib/utils";

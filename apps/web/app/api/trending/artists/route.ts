@@ -15,42 +15,42 @@ async function getTrendingArtistsFromDB(limit: number) {
 
     // Get artists with highest trending scores
     const { data: artists, error } = await supabase
-      .from("artists")
+      api.artists
       .select(
         `
         id,
         name,
         slug,
-        image_url,
+        imageUrl,
         popularity,
         followers,
-        follower_count,
-        trending_score,
+        followerCount,
+        trendingScore,
         genres,
-        total_shows,
-        upcoming_shows,
+        totalShows,
+        upcomingShows,
         previous_followers,
         previous_popularity,
-        created_at,
+        _creationTime,
         updated_at
       `,
       )
-      .gt("trending_score", 0)
-      .order("trending_score", { ascending: false })
+      .gt("trendingScore", 0)
+      .order("trendingScore", { ascending: false })
       .limit(limit);
 
     if (error || !artists || artists.length === 0) {
       // Attempt a best-effort recalculation to keep homepage fresh
       try {
-        await db.execute(sql`SELECT update_trending_scores()`);
+        await db.execute(sql`SELECT update_trendingScores()`);
       } catch {}
       const { data: artistsRetry } = await supabase
-        .from("artists")
+        api.artists
         .select(
-          `id,name,slug,image_url,popularity,followers,follower_count,trending_score,genres,total_shows,upcoming_shows,previous_followers,previous_popularity,created_at,updated_at`,
+          `id,name,slug,imageUrl,popularity,followers,followerCount,trendingScore,genres,totalShows,upcomingShows,previous_followers,previous_popularity,_creationTime,updated_at`,
         )
-        .gt("trending_score", 0)
-        .order("trending_score", { ascending: false })
+        .gt("trendingScore", 0)
+        .order("trendingScore", { ascending: false })
         .limit(limit);
       return (artistsRetry || []).map(transformArtist);
     }
@@ -67,7 +67,7 @@ async function getTrendingArtistsFromDB(limit: number) {
 // Transform function to match frontend interface
 function transformArtist(artist: any) {
   // Calculate weekly growth based on previous data
-  const currentFollowers = artist.followers || artist.follower_count || 0;
+  const currentFollowers = artist.followers || artist.followerCount || 0;
   const previousFollowers = artist.previous_followers || currentFollowers;
   const weeklyGrowth = previousFollowers > 0 
     ? ((currentFollowers - previousFollowers) / previousFollowers) * 100
@@ -87,12 +87,12 @@ function transformArtist(artist: any) {
     id: artist.id,
     name: artist.name,
     slug: artist.slug,
-    imageUrl: artist.image_url,
+    imageUrl: artist.imageUrl,
     followers: currentFollowers,
     popularity: artist.popularity || 0,
-    trendingScore: artist.trending_score || 0,
+    trendingScore: artist.trendingScore || 0,
     genres,
-    recentShows: artist.upcoming_shows || 0,
+    recentShows: artist.upcomingShows || 0,
     weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
   };
 }

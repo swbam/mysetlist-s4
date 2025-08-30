@@ -5,7 +5,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@repo/design-system/tooltip";
+} from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { AlertCircle, Wifi, WifiOff } from "lucide-react";
 import React, { useMemo } from "react";

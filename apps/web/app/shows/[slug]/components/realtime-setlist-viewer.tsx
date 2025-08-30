@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@repo/design-system/card";
+import { Card } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import { Music } from "lucide-react";

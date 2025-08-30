@@ -527,7 +527,7 @@ class CleanupProcessor implements JobProcessor {
         const { error: logsError } = await supabase
           .from("logs")
           .delete()
-          .lt("created_at", cutoffDate.toISOString());
+          .lt("_creationTime", cutoffDate.toISOString());
 
         if (logsError) throw logsError;
         deletedCount = 1; // Would be actual count in real implementation
@@ -538,7 +538,7 @@ class CleanupProcessor implements JobProcessor {
         const { error: sessionsError } = await supabase
           .from("user_sessions")
           .delete()
-          .lt("created_at", cutoffDate.toISOString());
+          .lt("_creationTime", cutoffDate.toISOString());
 
         if (sessionsError) throw sessionsError;
         deletedCount = 1;
@@ -563,7 +563,7 @@ class TrendingCalculationProcessor implements JobProcessor {
     const supabase = createServiceClient();
 
     // Update trending scores based on votes, views, and recency
-    const { error } = await supabase.rpc("calculate_trending_scores", {
+    const { error } = await supabase.rpc("calculate_trendingScores", {
       period_hours: period === "daily" ? 24 : period === "weekly" ? 168 : 720,
     });
 
@@ -586,8 +586,8 @@ class UserActivityAnalysisProcessor implements JobProcessor {
     const { data: activities, error } = await supabase
       .from("user_activities")
       .select("*")
-      .eq("user_id", userId)
-      .gte("created_at", new Date(Date.now() - timeRange).toISOString());
+      .eq("userId", userId)
+      .gte("_creationTime", new Date(Date.now() - timeRange).toISOString());
 
     if (error) throw error;
 
@@ -611,7 +611,7 @@ class UserActivityAnalysisProcessor implements JobProcessor {
     const hourCounts = {} as Record<number, number>;
 
     for (const activity of activities) {
-      const hour = new Date(activity.created_at).getHours();
+      const hour = new Date(activity._creationTime).getHours();
       hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     }
 

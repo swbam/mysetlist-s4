@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
-import { Card, CardContent } from "@repo/design-system/card";
-import { Separator } from "@repo/design-system/separator";
+import { Button } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
+import { Separator } from "@repo/design-system";
 import { useState } from "react";
 
 async function call(endpoint: string, body?: unknown) {

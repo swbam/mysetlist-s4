@@ -28,7 +28,7 @@ export async function POST(
 
     // Get venue details
     const { data: venue } = await supabase
-      .from("venues")
+      api.venues
       .select("name, address, city, state, country")
       .eq("id", venueId)
       .single();
@@ -91,7 +91,7 @@ export async function POST(
 
     // Update venue location
     const { error } = await supabase
-      .from("venues")
+      api.venues
       .update({
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,

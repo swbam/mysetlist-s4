@@ -9,8 +9,8 @@ interface Show {
   name: string;
   date: string;
   status: "upcoming" | "ongoing" | "completed";
-  artist_id: string;
-  venue_id: string;
+  artistId: string;
+  venueId: string;
 }
 
 interface UseRealtimeShowOptions {
@@ -32,7 +32,7 @@ export function useRealtimeShow({
   const fetchShowStatus = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from("shows")
+        api.shows
         .select("status")
         .eq("id", showId)
         .single();

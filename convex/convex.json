@@ -1,0 +1,7 @@
+{
+  "functions": ".",
+  "generateCommonJSApi": false,
+  "node": {
+    "externalPackages": ["@auth/core"]
+  }
+}

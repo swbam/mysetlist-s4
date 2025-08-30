@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@repo/design-system/skeleton";
+import { Skeleton } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import React from "react";
 

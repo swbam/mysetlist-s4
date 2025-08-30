@@ -28,7 +28,7 @@ export async function POST(
 
     // Get show details
     const { data: show } = await supabase
-      .from("shows")
+      api.shows
       .select("*")
       .eq("id", showId)
       .single();
@@ -40,7 +40,7 @@ export async function POST(
     // TODO: Implement actual Ticketmaster sync logic here
     // For now, just update the updated_at timestamp to simulate sync
     const { error } = await supabase
-      .from("shows")
+      api.shows
       .update({
         updated_at: new Date().toISOString(),
         // Add any synced fields here when implementing real sync

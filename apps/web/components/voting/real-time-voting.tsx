@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
-import { Card } from "@repo/design-system/card";
-import { Progress } from "@repo/design-system/progress";
+import { Button } from "@repo/design-system";
+import { Card } from "@repo/design-system";
+import { Progress } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Music, Sparkles, Users } from "lucide-react";
@@ -249,9 +249,9 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
 
         // Send to server
         const { error } = await supabase.rpc("cast_vote", {
-          p_user_id: user.id,
+          p_userId: user.id,
           p_song_id: songId,
-          p_show_id: showId,
+          p_showId: showId,
           p_setlist_id: setlistId,
           p_vote_type: voteType,
         });
@@ -287,7 +287,7 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
           event: "*",
           schema: "public",
           table: "user_votes",
-          filter: `show_id=eq.${showId}`,
+          filter: `showId=eq.${showId}`,
         },
         (payload) => {
           // Update active voters count

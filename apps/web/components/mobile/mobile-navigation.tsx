@@ -1,9 +1,9 @@
 "use client";
 
-import { ModeToggle } from "@repo/design-system/components/mode-toggle";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Separator } from "@repo/design-system/separator";
+import { ModeToggle } from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Separator } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import {

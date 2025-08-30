@@ -5,17 +5,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Input } from "@repo/design-system/input";
-import { Label } from "@repo/design-system/label";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
 import { ArrowLeft, CheckCircle, Loader2, Shield } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";

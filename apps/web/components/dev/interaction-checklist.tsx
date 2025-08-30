@@ -1,14 +1,14 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Progress } from "@repo/design-system/progress";
+} from "@repo/design-system";
+import { Progress } from "@repo/design-system";
 import { AlertCircle, Check, Loader2, RefreshCw, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

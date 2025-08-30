@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/design-system/dialog";
+} from "@repo/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,15 +16,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/dropdown-menu";
-import { Input } from "@repo/design-system/input";
-import { Label } from "@repo/design-system/label";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
 import {
   RadioGroup,
   RadioGroupItem,
-} from "@repo/design-system/radio-group";
-import { Textarea } from "@repo/design-system/textarea";
-import { toast } from "@repo/design-system/use-toast";
+} from "@repo/design-system";
+import { Textarea } from "@repo/design-system";
+import { toast } from "@repo/design-system";
 import { addDays } from "date-fns";
 import {
   AlertTriangle,
@@ -73,7 +73,7 @@ export default function UserActionsDialog({
 
       // Create ban record
       const { error: banError } = await supabase.from("user_bans").insert({
-        user_id: user.id,
+        userId: user.id,
         banned_by: (await supabase.auth.getUser()).data.user?.id,
         reason,
         ban_type: banType,
@@ -136,7 +136,7 @@ export default function UserActionsDialog({
       const { data: activeBan } = await supabase
         .from("user_bans")
         .select("id")
-        .eq("user_id", user.id)
+        .eq("userId", user.id)
         .is("lifted_at", null)
         .single();
 

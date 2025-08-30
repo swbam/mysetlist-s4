@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@repo/design-system/tooltip";
+} from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { ChevronUp, Loader2, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";

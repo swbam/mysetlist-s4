@@ -208,7 +208,7 @@ async function handleMaintenancePipeline() {
       const { error: cleanupError } = await supabase
         .from('import_status')
         .delete()
-        .lt('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+        .lt('_creationTime', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
 
       if (!cleanupError) results.cleanupOperations++;
     } catch (error) {
@@ -217,7 +217,7 @@ async function handleMaintenancePipeline() {
 
     // 2. Update trending scores
     try {
-      await supabase.rpc('update_trending_scores');
+      await supabase.rpc('update_trendingScores');
       await supabase.rpc('refresh_trending_data');
       results.optimizationQueries += 2;
     } catch (error) {

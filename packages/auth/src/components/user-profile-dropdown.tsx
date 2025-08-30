@@ -4,8 +4,8 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/components/ui/dropdown-menu";
+} from "@repo/design-system";
 import { LogOut, Music, Settings, Shield, User } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";

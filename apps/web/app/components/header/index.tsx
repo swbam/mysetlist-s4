@@ -1,7 +1,7 @@
 "use client";
 
-import { ModeToggle } from "@repo/design-system/components/mode-toggle";
-import { Button } from "@repo/design-system/button";
+import { ModeToggle } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -9,7 +9,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@repo/design-system/navigation-menu";
+} from "@repo/design-system";
 import { MoveRight } from "lucide-react";
 import React, { useMemo } from "react";
 import { useAuth } from "~/app/providers/auth-provider";

@@ -1,1 +1,1 @@
-export {};
+export { parseError } from "./error";

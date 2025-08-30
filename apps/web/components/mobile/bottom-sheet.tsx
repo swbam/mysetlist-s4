@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { AnimatePresence, type PanInfo, motion } from "framer-motion";
 import { X } from "lucide-react";

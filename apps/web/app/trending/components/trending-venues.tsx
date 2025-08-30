@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Skeleton } from "@repo/design-system/skeleton";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Skeleton } from "@repo/design-system";
 import {
   Building,
   Calendar,

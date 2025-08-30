@@ -4,20 +4,20 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import {

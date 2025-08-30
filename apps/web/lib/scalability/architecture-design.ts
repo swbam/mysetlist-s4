@@ -6,7 +6,7 @@ export interface ScalabilityConfig {
   database: {
     sharding: {
       enabled: boolean;
-      strategy: "user_id" | "geographic" | "feature_based";
+      strategy: "userId" | "geographic" | "feature_based";
       shardCount: number;
       replicationFactor: number;
     };

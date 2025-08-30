@@ -208,7 +208,7 @@ export class MonitoringService {
       value: 1,
       tags: {
         action,
-        user_id: userId || "anonymous",
+        userId: userId || "anonymous",
         ...metadata,
       },
     });
@@ -216,7 +216,7 @@ export class MonitoringService {
     // Track in PostHog
     if (typeof window !== "undefined" && window.posthog) {
       window.posthog.capture(action, {
-        user_id: userId,
+        userId: userId,
         ...metadata,
       });
     }

@@ -4,16 +4,16 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   Activity,
   Calendar,
@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "@repo/design-system";
 import { useAuth } from "../../app/providers/auth-provider";
 import { UserDisplay } from "./user-avatar";
 

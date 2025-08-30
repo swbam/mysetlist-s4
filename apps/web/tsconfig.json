@@ -24,14 +24,16 @@
       "~/types/*": ["./types/*"],
       "~/actions/*": ["./actions/*"],
       "~/middleware/*": ["./middleware/*"],
-      "~/*": ["./*"]
+      "~/*": ["./*"],
+      "convex/*": ["../../convex/*"]
     }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "../../convex/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }

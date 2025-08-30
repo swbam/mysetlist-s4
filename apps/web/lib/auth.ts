@@ -1,28 +1,24 @@
-"use server";
-
-import { createClient } from "~/lib/supabase/server";
+import { auth } from "@clerk/nextjs/server";
 
 export async function getCurrentUser() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
+  const { userId } = await auth();
+  
+  if (!userId) {
     return null;
   }
 
-  // Get the profile data
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
   return {
-    ...user,
-    profile,
+    id: userId,
+    userId,
   };
+}
+
+export async function requireAuth() {
+  const { userId } = await auth();
+  
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+  
+  return { userId };
 }

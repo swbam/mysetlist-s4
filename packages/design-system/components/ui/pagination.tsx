@@ -5,7 +5,7 @@ import {
   MoreHorizontalIcon,
 } from "lucide-react";
 
-import { cn } from "@repo/design-system/lib/utils";
+import { cn } from "@repo/design-system";
 import {
   Button,
   buttonVariants,

@@ -3,20 +3,20 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
+} from "@repo/design-system";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
-} from "@repo/design-system/card";
-import { Input } from "@repo/design-system/input";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import { Music, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

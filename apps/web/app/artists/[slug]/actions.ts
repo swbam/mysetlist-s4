@@ -272,11 +272,11 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
     const rawQuery = `
       SELECT 
         s.id, s.date, s.name,
-        v.id as venue_id, v.name as venue_name, 
+        v.id as venueId, v.name as venue_name, 
         v.city as venue_city, v.state as venue_state, v.country as venue_country
       FROM shows s
-      LEFT JOIN venues v ON s.venue_id = v.id  
-      WHERE s.headliner_artist_id = $1 
+      LEFT JOIN venues v ON s.venueId = v.id  
+      WHERE s.artistId = $1 
         AND s.date ${dateCondition} $2
       ORDER BY s.date ${type === "upcoming" ? "ASC" : "DESC"}
       LIMIT 25
@@ -309,8 +309,8 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
           name: row['name'],
           status: type === "upcoming" ? "confirmed" : "completed",
         },
-        venue: row['venue_id'] ? {
-          id: row['venue_id'],
+        venue: row['venueId'] ? {
+          id: row['venueId'],
           name: row['venue_name'],
           city: row['venue_city'],
           state: row['venue_state'],

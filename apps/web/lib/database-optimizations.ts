@@ -472,7 +472,7 @@ export class OptimizedQueryBuilder {
     const {
       page,
       limit,
-      sortBy = "created_at",
+      sortBy = "_creationTime",
       sortOrder = "DESC",
       useSeekPagination = false,
       seekValue,

@@ -242,7 +242,7 @@ export async function POST(request: NextRequest) {
         const songCount = await db.execute(sql`
           SELECT COUNT(DISTINCT song_id) as count
           FROM artist_songs
-          WHERE artist_id = ${artist.id}
+          WHERE artistId = ${artist.id}
         `);
         artistResult.songs = (songCount[0] as any).count || 0;
 
@@ -263,11 +263,11 @@ export async function POST(request: NextRequest) {
         (SELECT COUNT(*) FROM artists) as total_artists,
         (SELECT COUNT(*) FROM artists WHERE spotify_id IS NOT NULL) as has_spotify,
         (SELECT COUNT(*) FROM artists WHERE tm_attraction_id IS NOT NULL) as has_ticketmaster,
-        (SELECT COUNT(*) FROM shows) as total_shows,
-        (SELECT COUNT(*) FROM shows WHERE date >= CURRENT_DATE) as upcoming_shows,
+        (SELECT COUNT(*) FROM shows) as totalShows,
+        (SELECT COUNT(*) FROM shows WHERE date >= CURRENT_DATE) as upcomingShows,
         (SELECT COUNT(*) FROM setlists) as total_setlists,
         (SELECT COUNT(*) FROM songs) as total_songs,
-        (SELECT COUNT(DISTINCT artist_id) FROM artist_songs) as artists_with_songs
+        (SELECT COUNT(DISTINCT artistId) FROM artist_songs) as artists_with_songs
     `);
 
     return NextResponse.json({
@@ -297,14 +297,14 @@ export async function GET() {
         (SELECT COUNT(*) FROM artists) as total_artists,
         (SELECT COUNT(*) FROM artists WHERE spotify_id IS NOT NULL) as has_spotify,
         (SELECT COUNT(*) FROM artists WHERE tm_attraction_id IS NOT NULL) as has_ticketmaster,
-        (SELECT COUNT(*) FROM artists WHERE image_url IS NOT NULL) as has_image,
-        (SELECT COUNT(*) FROM shows) as total_shows,
-        (SELECT COUNT(*) FROM shows WHERE date >= CURRENT_DATE) as upcoming_shows,
+        (SELECT COUNT(*) FROM artists WHERE imageUrl IS NOT NULL) as has_image,
+        (SELECT COUNT(*) FROM shows) as totalShows,
+        (SELECT COUNT(*) FROM shows WHERE date >= CURRENT_DATE) as upcomingShows,
         (SELECT COUNT(*) FROM setlists) as total_setlists,
         (SELECT COUNT(*) FROM setlists WHERE type = 'predicted') as predicted_setlists,
         (SELECT COUNT(*) FROM setlists WHERE type = 'actual') as actual_setlists,
         (SELECT COUNT(*) FROM songs) as total_songs,
-        (SELECT COUNT(DISTINCT artist_id) FROM artist_songs) as artists_with_songs,
+        (SELECT COUNT(DISTINCT artistId) FROM artist_songs) as artists_with_songs,
         (SELECT COUNT(*) FROM venues) as total_venues
     `);
 
@@ -312,10 +312,10 @@ export async function GET() {
       SELECT 
         a.name as artist_name,
         a.updated_at,
-        (SELECT COUNT(*) FROM shows WHERE headliner_artist_id = a.id) as show_count,
+        (SELECT COUNT(*) FROM shows WHERE artistId = a.id) as show_count,
         (SELECT COUNT(DISTINCT sl.id) FROM setlists sl 
-         JOIN shows s ON sl.show_id = s.id 
-         WHERE s.headliner_artist_id = a.id) as setlist_count
+         JOIN shows s ON sl.showId = s.id 
+         WHERE s.artistId = a.id) as setlistCount
       FROM artists a
       WHERE a.updated_at > NOW() - INTERVAL '1 hour'
       ORDER BY a.updated_at DESC

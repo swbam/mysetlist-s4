@@ -84,16 +84,16 @@ export async function syncAnonymousActions(sessionData: {
         .from("votes")
         .select("id")
         .eq("setlist_song_id", vote.setlistSongId)
-        .eq("user_id", user.id)
+        .eq("userId", user.id)
         .single();
 
       if (!existingVote) {
         // Create new vote
         await supabase.from("votes").insert({
           setlist_song_id: vote.setlistSongId,
-          user_id: user.id,
+          userId: user.id,
           vote_type: vote.voteType,
-          created_at: new Date(vote.timestamp).toISOString(),
+          _creationTime: new Date(vote.timestamp).toISOString(),
         });
 
         results.votesSynced++;

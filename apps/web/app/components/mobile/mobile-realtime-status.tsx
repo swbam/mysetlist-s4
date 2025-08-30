@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -108,7 +108,7 @@ export function MobileRealtimeStatus() {
         const start = Date.now();
         try {
           // Simple ping by getting current time
-          await supabase.from("shows").select("count").limit(1).single();
+          await supabaseapi.shows.select("count").limit(1).single();
           const latency = Date.now() - start;
 
           setConnectionStatus((prev) => ({

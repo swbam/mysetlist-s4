@@ -3,18 +3,18 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@repo/design-system/dialog";
-import { Input } from "@repo/design-system/input";
-import { ScrollArea } from "@repo/design-system/scroll-area";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { ScrollArea } from "@repo/design-system";
 import { Loader2, Lock, Music, Plus, Search } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";

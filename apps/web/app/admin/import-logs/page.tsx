@@ -4,9 +4,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Badge } from "@repo/design-system/badge";
-import { ScrollArea } from "@repo/design-system/scroll-area";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { ScrollArea } from "@repo/design-system";
 import { format } from "date-fns";
 import { AlertCircle, CheckCircle, Clock, Activity, Music, MapPin, Calendar } from "lucide-react";
 import { AdminSearchBar } from "./components/admin-search-bar";
@@ -40,8 +40,8 @@ async function getImportSummaries(): Promise<ImportSummary[]> {
         lastStatus: sql<string>`(
           SELECT stage 
           FROM import_status s2 
-          WHERE s2.artist_id = ${importStatus.artistId} 
-          ORDER BY created_at DESC 
+          WHERE s2.artistId = ${importStatus.artistId} 
+          ORDER BY _creationTime DESC 
           LIMIT 1
         )`,
         totalSongs: sql<number>`COALESCE(MAX(${importStatus.totalSongs}), 0)`,

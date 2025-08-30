@@ -1,12 +1,12 @@
-import { Toaster } from "@repo/design-system/sonner";
+import { Toaster } from "@repo/design-system";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { Inter } from "next/font/google";
 import { ResponsiveHeader } from "../components/layout/responsive-header";
-import { ThemeProvider } from "../@repo/design-system/components/ui/theme-provider";
-import { AuthProvider } from "./providers/auth-provider";
+import { ThemeProvider } from "@repo/design-system/providers/theme";
+import { ConvexClientProvider } from "../providers/convex-auth-provider";
 // import { CacheManager } from "../components/cache-manager";
-import "@repo/design-system/styles/globals.css";
+import "@repo/design-system/styles/globals";
 
 // Import footer normally (can't use ssr: false in Server Components)
 import { Footer } from "./components/footer";
@@ -55,14 +55,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
+          <ConvexClientProvider>
             <div className="min-h-screen flex flex-col">
               <ResponsiveHeader />
               <main className="flex-1">{children}</main>
               <Footer />
             </div>
             <Toaster />
-          </AuthProvider>
+          </ConvexClientProvider>
         </ThemeProvider>
       </body>
     </html>

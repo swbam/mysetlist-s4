@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         try {
           // Check if we already have this show
           const { data: existingShow } = await supabase
-            .from("shows")
+            api.shows
             .select("id")
             .eq("name", setlist.artist.name)
             .eq("date", setlist.eventDate)
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
           // If show doesn't exist, create it
           if (!showId) {
             const { data: newShow, error: showError } = await supabase
-              .from("shows")
+              api.shows
               .insert({
                 name: `${setlist.artist.name} at ${setlist.venue.name}`,
                 date: setlist.eventDate,
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
                 venue_name: setlist.venue.name,
                 venue_city: setlist.venue.city.name,
                 setlistfm_id: setlist.id,
-                created_at: new Date().toISOString(),
+                _creationTime: new Date().toISOString(),
               })
               .select("id")
               .single();
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
           const { data: existingSetlist } = await supabase
             .from("setlists")
             .select("id")
-            .eq("show_id", showId)
+            .eq("showId", showId)
             .eq("setlistfm_id", setlist.id)
             .single();
 
@@ -110,11 +110,11 @@ export async function POST(request: NextRequest) {
           const { data: newSetlist, error: setlistError } = await supabase
             .from("setlists")
             .insert({
-              show_id: showId,
+              showId: showId,
               name: `${setlist.artist.name} - ${setlist.venue.name}`,
               type: "official",
               setlistfm_id: setlist.id,
-              created_at: new Date().toISOString(),
+              _creationTime: new Date().toISOString(),
             })
             .select("id")
             .single();
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
                     name: song.name,
                     artist: setlist.artist.name,
                     is_cover: !!song.cover,
-                    created_at: new Date().toISOString(),
+                    _creationTime: new Date().toISOString(),
                   })
                   .select("id")
                   .single();
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
                   song_id: songId,
                   position: position,
                   is_encore: ((set as any)['encore'] || 0) > 0,
-                  created_at: new Date().toISOString(),
+                  _creationTime: new Date().toISOString(),
                 });
 
               position++;

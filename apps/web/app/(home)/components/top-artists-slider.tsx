@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Card, CardContent } from "@repo/design-system/card";
+import { Badge } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
 import { motion } from "framer-motion";
 import { Music, Sparkles, TrendingUp, Users } from "lucide-react";
 import Image from "next/image";

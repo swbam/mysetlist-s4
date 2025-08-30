@@ -68,9 +68,9 @@ export async function POST(request: NextRequest) {
             const venue = event._embedded.venues[0];
             
             const { data: existingVenue } = await supabase
-              .from("venues")
+              api.venues
               .select("id")
-              .eq("tm_venue_id", venue.id)
+              .eq("tm_venueId", venue.id)
               .single();
 
             if (existingVenue) {
@@ -78,9 +78,9 @@ export async function POST(request: NextRequest) {
             } else {
               // Create new venue
               const { data: newVenue, error: venueError } = await supabase
-                .from("venues")
+                api.venues
                 .insert({
-                  tm_venue_id: venue.id,
+                  tm_venueId: venue.id,
                   name: venue.name,
                   city: venue.city?.name || "Unknown",
                   state: venue.state?.stateCode || null,
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
                   timezone: venue.timezone || "America/New_York",
                   latitude: venue.location?.latitude ? parseFloat(venue.location.latitude) : null,
                   longitude: venue.location?.longitude ? parseFloat(venue.location.longitude) : null,
-                  created_at: new Date().toISOString(),
+                  _creationTime: new Date().toISOString(),
                 })
                 .select("id")
                 .single();
@@ -107,15 +107,15 @@ export async function POST(request: NextRequest) {
           const localTime = event.dates?.start?.localTime;
           const showDate = localTime ? `${localDate}T${localTime}` : localDate;
           const { error: showError } = await supabase
-            .from("shows")
+            api.shows
             .insert({
               tm_event_id: event.id,
               name: event.name,
               date: showDate,
               status: "upcoming",
               ticket_url: event.url || null,
-              venue_id: venueId,
-              created_at: new Date().toISOString(),
+              venueId: venueId,
+              _creationTime: new Date().toISOString(),
             });
 
           if (!showError) {

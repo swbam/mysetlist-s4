@@ -4,10 +4,10 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Card, CardContent } from "@repo/design-system/card";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
 import {
   Dialog,
   DialogContent,
@@ -15,10 +15,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/design-system/dialog";
-import { Label } from "@repo/design-system/label";
-import { Textarea } from "@repo/design-system/textarea";
-import { toast } from "@repo/design-system/use-toast";
+} from "@repo/design-system";
+import { Label } from "@repo/design-system";
+import { Textarea } from "@repo/design-system";
+import { toast } from "@repo/design-system";
 import { format } from "date-fns";
 import {
   AlertTriangle,
@@ -134,10 +134,10 @@ export default function ReportItem({
         }
 
         case "warn":
-          if (report.reported_user_id) {
+          if (report.reported_userId) {
             // Update user warning count
             await supabase.rpc("increment_user_warnings", {
-              user_id: report.reported_user_id,
+              userId: report.reported_userId,
             });
 
             // Log moderation action
@@ -145,17 +145,17 @@ export default function ReportItem({
               moderator_id: (await supabase.auth.getUser()).data.user?.id,
               action: "warn_user",
               target_type: "user",
-              target_id: report.reported_user_id,
+              target_id: report.reported_userId,
               reason: `Warning issued for ${report.reason}: ${resolutionNotes}`,
             });
           }
           break;
 
         case "ban":
-          if (report.reported_user_id) {
+          if (report.reported_userId) {
             // Create ban record
             await supabase.from("user_bans").insert({
-              user_id: report.reported_user_id,
+              userId: report.reported_userId,
               banned_by: (await supabase.auth.getUser()).data.user?.id,
               reason: `Banned due to report: ${report.reason} - ${resolutionNotes}`,
               ban_type: "temporary",
@@ -171,14 +171,14 @@ export default function ReportItem({
                 is_banned: true,
                 ban_reason: `Banned due to report: ${report.reason}`,
               })
-              .eq("id", report.reported_user_id);
+              .eq("id", report.reported_userId);
 
             // Log moderation action
             await supabase.from("moderation_logs").insert({
               moderator_id: (await supabase.auth.getUser()).data.user?.id,
               action: "ban_user",
               target_type: "user",
-              target_id: report.reported_user_id,
+              target_id: report.reported_userId,
               reason: `Banned due to report: ${report.reason}`,
             });
           }
@@ -242,7 +242,7 @@ export default function ReportItem({
                     )}
                   </div>
                   <p className="mt-1 text-muted-foreground text-sm">
-                    {format(new Date(report.created_at), "MMM d, yyyy h:mm a")}
+                    {format(new Date(report._creationTime), "MMM d, yyyy h:mm a")}
                   </p>
                 </div>
               </div>
@@ -285,7 +285,7 @@ export default function ReportItem({
                   {report.content_type} Content
                 </p>
                 <div className="mt-1 flex items-center gap-2">
-                  {report.reported_user_id && (
+                  {report.reported_userId && (
                     <>
                       <Avatar className="h-5 w-5">
                         <AvatarImage src={report.reported_user?.avatar_url} />

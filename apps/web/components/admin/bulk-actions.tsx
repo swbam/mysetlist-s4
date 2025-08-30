@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/design-system/dialog";
+} from "@repo/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +16,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/dropdown-menu";
-import { Input } from "@repo/design-system/input";
-import { Label } from "@repo/design-system/label";
-import { Textarea } from "@repo/design-system/textarea";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
+import { Textarea } from "@repo/design-system";
 import {
   AlertTriangle,
   Ban,

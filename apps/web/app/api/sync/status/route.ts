@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
     const { data: importStatus, error } = await supabase
       .from("import_status")
       .select("*")
-      .eq("artist_id", artistId)
-      .order("created_at", { ascending: false })
+      .eq("artistId", artistId)
+      .order("_creationTime", { ascending: false })
       .limit(1)
       .single();
 
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       error: importStatus.error || null,
       isImporting:
         importStatus.stage !== "completed" && importStatus.stage !== "failed",
-      startedAt: importStatus.created_at,
+      startedAt: importStatus._creationTime,
       updatedAt: importStatus.updated_at,
       completedAt: importStatus.completed_at || null,
     };

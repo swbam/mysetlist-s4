@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/card";
-import { Button } from "@repo/design-system/button";
-import { Badge } from "@repo/design-system/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Badge } from "@repo/design-system";
 import { RefreshCw, Pause, Play, Trash2, AlertCircle } from "lucide-react";
 
 interface QueueStats {

@@ -4,9 +4,9 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
-import { Card, CardContent } from "@repo/design-system/card";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { Loader2, Music, Search } from "lucide-react";
 import { useRouter } from "next/navigation";

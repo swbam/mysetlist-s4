@@ -4,17 +4,17 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Skeleton } from "@repo/design-system/skeleton";
+} from "@repo/design-system";
+import { Skeleton } from "@repo/design-system";
 import { Calendar, Clock, Music, Users, Vote } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";

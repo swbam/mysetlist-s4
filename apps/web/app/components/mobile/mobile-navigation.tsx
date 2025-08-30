@@ -1,11 +1,11 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
-} from "@repo/design-system/sheet";
+} from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import {
   Calendar,

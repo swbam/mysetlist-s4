@@ -1,9 +1,8 @@
 "use server";
 
-import { db } from "@repo/database";
-import { artists, shows, venues } from "@repo/database/src/schema";
-import { and, desc, eq, gte, lte, ne, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
+import { createConvexClient } from "~/lib/database";
+import { api } from "../../../../convex/_generated/api";
 
 export const getVenueBySlug = unstable_cache(
   async (slug: string) => {

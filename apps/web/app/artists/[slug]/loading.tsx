@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system";
-import { Skeleton } from "@repo/design-system/skeleton";
+import { Skeleton } from "@repo/design-system";
 
 export default function ArtistPageLoading() {
   return (

@@ -1,17 +1,17 @@
-import { Badge } from "@repo/design-system/badge";
+import { Badge } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import { AlertTriangle, CheckCircle, Clock, Flag } from "lucide-react";
 import { createClient } from "~/lib/supabase/server";
 import ReportItem from "./components/report-item";
@@ -29,11 +29,11 @@ export default async function ReportsPage() {
       `
       *,
       reporter:users!reports_reporter_id_fkey(display_name, email, avatar_url),
-      reported_user:users!reports_reported_user_id_fkey(display_name, email, avatar_url),
+      reported_user:users!reports_reported_userId_fkey(display_name, email, avatar_url),
       resolved_by_user:users!reports_resolved_by_fkey(display_name, email)
     `,
     )
-    .order("created_at", { ascending: false });
+    .order("_creationTime", { ascending: false });
 
   const pendingReports = reports?.filter((r) => r.status === "pending") ?? [];
   const resolvedReports = reports?.filter((r) => r.status !== "pending") ?? [];

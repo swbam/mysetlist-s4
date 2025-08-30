@@ -1,20 +1,20 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import { format } from "date-fns";
 import {
   AlertTriangle,
@@ -64,7 +64,7 @@ interface SecurityEvent {
     | "permission_change";
   severity: "low" | "medium" | "high" | "critical";
   description: string;
-  user_id?: string;
+  userId?: string;
   ip_address: string;
   timestamp: string;
   resolved: boolean;
@@ -463,7 +463,7 @@ export default function MonitoringDashboard() {
                             "MMM d, yyyy HH:mm:ss",
                           )}
                         </div>
-                        {event.user_id && <div>User: {event.user_id}</div>}
+                        {event.userId && <div>User: {event.userId}</div>}
                       </div>
                     </div>
                     {!event.resolved && (

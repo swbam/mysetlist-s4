@@ -202,8 +202,8 @@ async function syncVenues(artistId: string, job: Job) {
     SELECT DISTINCT 
       raw_data::jsonb -> '_embedded' -> 'venues' -> 0 as venue_data
     FROM ${shows}
-    WHERE headliner_artist_id = ${artistId}
-      AND venue_id IS NULL
+    WHERE artistId = ${artistId}
+      AND venueId IS NULL
       AND raw_data::jsonb -> '_embedded' -> 'venues' -> 0 IS NOT NULL
   `);
   
@@ -262,9 +262,9 @@ async function syncVenues(artistId: string, job: Job) {
           // Link venue to shows
           await db.execute(sql`
             UPDATE ${shows}
-            SET venue_id = ${newVenue.id}
+            SET venueId = ${newVenue.id}
             WHERE raw_data::jsonb -> '_embedded' -> 'venues' -> 0 ->> 'id' = ${venueData.id}
-              AND venue_id IS NULL
+              AND venueId IS NULL
           `);
         } else {
           throw new Error(`Failed to create venue: ${venueData.name}`);

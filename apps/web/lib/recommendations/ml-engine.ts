@@ -52,7 +52,7 @@ export interface MLRecommendation {
   type: "show" | "artist" | "venue";
   name: string;
   score: number;
-  image_url?: string;
+  imageUrl?: string;
   slug?: string;
   metadata: Record<string, any>;
   explanation: RecommendationExplanation;
@@ -86,12 +86,12 @@ class MLRecommendationEngine {
       .select(
         `
         vote_value,
-        created_at,
+        _creationTime,
         setlist_songs(
-          songs(artist_id, genre),
+          songs(artistId, genre),
           setlists(
             shows(
-              venue_id,
+              venueId,
               date,
               artists(id, name, genres)
             )
@@ -99,8 +99,8 @@ class MLRecommendationEngine {
         )
       `,
       )
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
+      .eq("userId", userId)
+      .order("_creationTime", { ascending: false })
       .limit(1000);
 
     // Get user's show attendance
@@ -108,18 +108,18 @@ class MLRecommendationEngine {
       .from("show_attendance")
       .select(
         `
-        created_at,
+        _creationTime,
         shows(
           id,
           date,
-          venue_id,
+          venueId,
           artists(id, name, genres),
           venues(id, name, city)
         )
       `,
       )
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
+      .eq("userId", userId)
+      .order("_creationTime", { ascending: false })
       .limit(500);
 
     // Get user's followed artists
@@ -127,11 +127,11 @@ class MLRecommendationEngine {
       .from("user_follows_artists")
       .select(
         `
-        created_at,
+        _creationTime,
         artists(id, name, genres)
       `,
       )
-      .eq("user_id", userId);
+      .eq("userId", userId);
 
     // Process voting behavior
     const votingBehavior = this.computeVotingBehavior(votes || []);
@@ -214,16 +214,16 @@ class MLRecommendationEngine {
           `
           vote_value,
           setlist_songs(
-            songs(id, title, artist_id),
+            songs(id, title, artistId),
             setlists(
-              shows(id, name, slug, date, artists(id, name, image_url))
+              shows(id, name, slug, date, artists(id, name, imageUrl))
             )
           )
         `,
         )
-        .eq("user_id", similarUser.userB)
+        .eq("userId", similarUser.userB)
         .gte("vote_value", 3) // Only positive votes
-        .order("created_at", { ascending: false })
+        .order("_creationTime", { ascending: false })
         .limit(100);
 
       if (similarUserItems) {
@@ -256,7 +256,7 @@ class MLRecommendationEngine {
               type: "show",
               name: show.name,
               score,
-              image_url: artist?.image_url,
+              imageUrl: artist?.imageUrl,
               slug: show.slug,
               metadata: {
                 artist_name: artist?.name,
@@ -308,14 +308,14 @@ class MLRecommendationEngine {
     if (topGenres.length > 0) {
       const supabase = await this.supabase;
       const { data: genreShows } = await supabase
-        .from("shows")
+        api.shows
         .select(
           `
           id,
           name,
           slug,
           date,
-          artists(id, name, image_url, genres),
+          artists(id, name, imageUrl, genres),
           venues(id, name, city)
         `,
         )
@@ -339,7 +339,7 @@ class MLRecommendationEngine {
             type: "show",
             name: show.name,
             score,
-            image_url: artist?.image_url,
+            imageUrl: artist?.imageUrl,
             slug: show.slug,
             metadata: {
               artist_name: artist?.name,
@@ -458,14 +458,14 @@ class MLRecommendationEngine {
     // Get shows that match discovered latent factors
     const supabase = await this.supabase;
     const { data: shows } = await supabase
-      .from("shows")
+      api.shows
       .select(
         `
         id,
         name,
         slug,
         date,
-        artists(id, name, image_url, genres),
+        artists(id, name, imageUrl, genres),
         venues(id, name, city)
       `,
       )
@@ -490,7 +490,7 @@ class MLRecommendationEngine {
             type: "show",
             name: show.name,
             score,
-            image_url: artist?.image_url,
+            imageUrl: artist?.imageUrl,
             slug: show.slug,
             metadata: {
               artist_name: artist?.name,
@@ -647,7 +647,7 @@ class MLRecommendationEngine {
 
     // Process votes
     votes.forEach((vote) => {
-      const venueId = vote.setlist_songs?.setlists?.shows?.venue_id;
+      const venueId = vote.setlist_songs?.setlists?.shows?.venueId;
       if (venueId) {
         venueCounts[venueId] = (venueCounts[venueId] || 0) + vote.vote_value;
       }
@@ -655,7 +655,7 @@ class MLRecommendationEngine {
 
     // Process attendance
     attendance.forEach((att) => {
-      const venueId = att.shows?.venue_id;
+      const venueId = att.shows?.venueId;
       if (venueId) {
         venueCounts[venueId] = (venueCounts[venueId] || 0) + 5;
       }
@@ -681,7 +681,7 @@ class MLRecommendationEngine {
     const timeCounts: Record<string, number> = {};
 
     [...votes, ...attendance].forEach((item) => {
-      const date = new Date(item.created_at);
+      const date = new Date(item._creationTime);
       const hour = date.getHours();
       const timeSlot = Math.floor(hour / 4); // 6 time slots per day
       timeCounts[timeSlot] = (timeCounts[timeSlot] || 0) + 1;
@@ -732,7 +732,7 @@ class MLRecommendationEngine {
     const seasonCounts: Record<string, number> = {};
 
     [...votes, ...attendance].forEach((item) => {
-      const date = new Date(item.created_at);
+      const date = new Date(item._creationTime);
       const month = date.getMonth();
       const season = Math.floor(month / 3); // 4 seasons
       seasonCounts[season] = (seasonCounts[season] || 0) + 1;
@@ -810,7 +810,7 @@ class MLRecommendationEngine {
     score += artistScore * 0.3;
 
     // Venue preference
-    const venueScore = userVector.features.venues[show.venue_id] || 0;
+    const venueScore = userVector.features.venues[show.venueId] || 0;
     score += venueScore * 0.2;
 
     return Math.min(score, 1.0);
@@ -896,8 +896,8 @@ class MLRecommendationEngine {
       if (diversifiedRecommendations.length >= config.limit) break;
 
       // Apply diversity constraints
-      const artistId = rec.metadata.artist_id;
-      const venueId = rec.metadata.venue_id;
+      const artistId = rec.metadata.artistId;
+      const venueId = rec.metadata.venueId;
 
       const artistCount = seenArtists.has(artistId) ? 1 : 0;
       const venueCount = seenVenues.has(venueId) ? 1 : 0;
@@ -970,10 +970,10 @@ export async function trackRecommendationPerformance(
   const supabase = await createClient();
 
   await supabase.from("recommendation_analytics").insert({
-    user_id: userId,
+    userId: userId,
     recommendation_id: recommendationId,
     action,
     metadata,
-    created_at: new Date().toISOString(),
+    _creationTime: new Date().toISOString(),
   });
 }

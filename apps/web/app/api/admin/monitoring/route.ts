@@ -21,9 +21,9 @@ export async function GET() {
     ] = await Promise.all([
       // Total counts
       supabase.from("users").select("*", { count: "exact", head: true }),
-      supabase.from("shows").select("*", { count: "exact", head: true }),
-      supabase.from("artists").select("*", { count: "exact", head: true }),
-      supabase.from("venues").select("*", { count: "exact", head: true }),
+      supabaseapi.shows.select("*", { count: "exact", head: true }),
+      supabaseapi.artists.select("*", { count: "exact", head: true }),
+      supabaseapi.venues.select("*", { count: "exact", head: true }),
       supabase.from("setlists").select("*", { count: "exact", head: true }),
       
       // Active users (users who logged in today)
@@ -36,14 +36,14 @@ export async function GET() {
       supabase
         .from("users")
         .select("*", { count: "exact", head: true })
-        .gte("created_at", new Date().toISOString().split("T")[0]),
+        .gte("_creationTime", new Date().toISOString().split("T")[0]),
         
       // Recent errors from moderation logs (using as proxy for system issues)
       supabase
         .from("moderation_logs")
         .select("*")
         .eq("action", "system_error")
-        .order("created_at", { ascending: false })
+        .order("_creationTime", { ascending: false })
         .limit(10),
     ]);
 
@@ -84,11 +84,11 @@ export async function GET() {
         action,
         target_type,
         reason,
-        created_at,
+        _creationTime,
         moderator:users!moderation_logs_moderator_id_fkey(display_name)
       `)
       .in("action", ["ban_user", "warn_user", "suspicious_activity"])
-      .order("created_at", { ascending: false })
+      .order("_creationTime", { ascending: false })
       .limit(5);
 
     // Performance data over time (realistic 24 hour trend based on usage patterns)
@@ -181,9 +181,9 @@ export async function GET() {
       severity: event.action === "ban_user" ? "high" : 
                 event.action === "warn_user" ? "medium" : "low",
       description: `${event.action.replace("_", " ")} action on ${event.target_type}: ${event.reason || "No reason provided"}`,
-      user_id: Array.isArray(event.moderator) && event.moderator[0]?.display_name || "System",
+      userId: Array.isArray(event.moderator) && event.moderator[0]?.display_name || "System",
       ip_address: "N/A", // Would come from actual security logs
-      timestamp: event.created_at,
+      timestamp: event._creationTime,
       resolved: true, // Assume moderation actions are already resolved
     }));
 

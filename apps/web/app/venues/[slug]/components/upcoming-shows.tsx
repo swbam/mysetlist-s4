@@ -1,16 +1,16 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Card } from "@repo/design-system/card";
-import { Input } from "@repo/design-system/input";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Card } from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/select";
+} from "@repo/design-system";
 import {
   eachDayOfInterval,
   endOfMonth,

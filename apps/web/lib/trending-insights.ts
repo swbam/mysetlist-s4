@@ -109,23 +109,23 @@ export async function getTrendingArtistsInsights(
 
     // Fallback to direct query if the function doesn't exist
     const { data: artists, error } = await supabase
-      .from("artists")
+      api.artists
       .select(`
         id,
         name,
         slug,
-        image_url,
+        imageUrl,
         popularity,
-        follower_count,
-        previous_follower_count,
+        followerCount,
+        previous_followerCount,
         previous_popularity,
-        trending_score,
+        trendingScore,
         genres,
-        upcoming_shows,
-        total_shows
+        upcomingShows,
+        totalShows
       `)
-      .gt("trending_score", 0)
-      .order("trending_score", { ascending: false })
+      .gt("trendingScore", 0)
+      .order("trendingScore", { ascending: false })
       .limit(limit);
 
     if (error || !artists) {
@@ -134,8 +134,8 @@ export async function getTrendingArtistsInsights(
     }
 
     return artists.map((artist, index) => {
-      const currentFollowers = artist.follower_count || 0;
-      const previousFollowers = artist.previous_follower_count || 0;
+      const currentFollowers = artist.followerCount || 0;
+      const previousFollowers = artist.previous_followerCount || 0;
       const currentPopularity = artist.popularity || 0;
       const previousPopularity = artist.previous_popularity || 0;
 
@@ -168,10 +168,10 @@ export async function getTrendingArtistsInsights(
         id: artist.id,
         name: artist.name,
         slug: artist.slug,
-        imageUrl: artist.image_url,
-        trendingScore: artist.trending_score || 0,
+        imageUrl: artist.imageUrl,
+        trendingScore: artist.trendingScore || 0,
         voteCount: artist.popularity || 0, // Use popularity as proxy for votes
-        recentShowsCount: artist.upcoming_shows || 0,
+        recentShowsCount: artist.upcomingShows || 0,
         followerCount: currentFollowers,
         popularity: currentPopularity,
         genres,
@@ -204,9 +204,9 @@ export async function getMostVotedSongs(
         title,
         artists!inner(name, slug),
         album_art_url,
-        created_at
+        _creationTime
       `)
-      .order("created_at", { ascending: false })
+      .order("_creationTime", { ascending: false })
       .limit(limit);
 
     const { data: songs, error } = await query;
@@ -227,7 +227,7 @@ export async function getMostVotedSongs(
         artistSlug: artist?.slug || "",
         totalVotes: index + 1, // Mock vote count based on position
         showCount: 1,
-        lastVotedAt: song.created_at || new Date().toISOString(),
+        lastVotedAt: song._creationTime || new Date().toISOString(),
         albumArtUrl: song.album_art_url,
       };
     });
@@ -245,7 +245,7 @@ export async function getHotVenues(limit = 15): Promise<HotVenue[]> {
     const supabase = await createServiceClient();
 
     const { data: venues, error } = await supabase
-      .from("venues")
+      api.venues
       .select(`
         id,
         name,
@@ -253,15 +253,15 @@ export async function getHotVenues(limit = 15): Promise<HotVenue[]> {
         city,
         state,
         country,
-        image_url,
-        total_shows,
-        upcoming_shows,
+        imageUrl,
+        totalShows,
+        upcomingShows,
         total_attendance,
         average_rating
       `)
-      .gt("total_shows", 0)
-      .order("upcoming_shows", { ascending: false })
-      .order("total_shows", { ascending: false })
+      .gt("totalShows", 0)
+      .order("upcomingShows", { ascending: false })
+      .order("totalShows", { ascending: false })
       .limit(limit);
 
     if (error || !venues) {
@@ -272,15 +272,15 @@ export async function getHotVenues(limit = 15): Promise<HotVenue[]> {
     // Get vote counts for venues through their shows
     const venueIds = venues.map((v) => v.id);
     const { data: venuVotes } = await supabase
-      .from("shows")
-      .select("venue_id, vote_count")
-      .in("venue_id", venueIds);
+      api.shows
+      .select("venueId, voteCount")
+      .in("venueId", venueIds);
 
     const venueVoteMap = new Map<string, number>();
     venuVotes?.forEach((show) => {
-      if (show.venue_id) {
-        const existing = venueVoteMap.get(show.venue_id) || 0;
-        venueVoteMap.set(show.venue_id, existing + (show.vote_count || 0));
+      if (show.venueId) {
+        const existing = venueVoteMap.get(show.venueId) || 0;
+        venueVoteMap.set(show.venueId, existing + (show.voteCount || 0));
       }
     });
 
@@ -291,13 +291,13 @@ export async function getHotVenues(limit = 15): Promise<HotVenue[]> {
       city: venue.city,
       state: venue.state,
       country: venue.country,
-      imageUrl: venue.image_url,
-      totalShows: venue.total_shows || 0,
-      upcomingShows: venue.upcoming_shows || 0,
+      imageUrl: venue.imageUrl,
+      totalShows: venue.totalShows || 0,
+      upcomingShows: venue.upcomingShows || 0,
       totalVotes: venueVoteMap.get(venue.id) || 0,
       averageRating: venue.average_rating,
       recentActivity:
-        (venue.upcoming_shows || 0) + (venueVoteMap.get(venue.id) || 0),
+        (venue.upcomingShows || 0) + (venueVoteMap.get(venue.id) || 0),
     }));
   } catch (error) {
     console.error("Error in getHotVenues:", error);
@@ -316,17 +316,17 @@ export async function getRecentSetlistActivity(
 
     // Fallback direct query for recent shows
     const { data: shows, error } = await supabase
-      .from("shows")
+      api.shows
       .select(`
         id,
         name,
         slug,
         date,
-        created_at,
-        artists!headliner_artist_id(name, slug),
+        _creationTime,
+        artists!artistId(name, slug),
         venues(name, city)
       `)
-      .order("created_at", { ascending: false })
+      .order("_creationTime", { ascending: false })
       .limit(limit);
 
     if (error || !shows) {
@@ -350,7 +350,7 @@ export async function getRecentSetlistActivity(
         venueName: venue?.name || "Venue TBA",
         venueCity: venue?.city || "City TBA",
         date: show.date || new Date().toISOString(),
-        createdAt: show.created_at || new Date().toISOString(),
+        createdAt: show._creationTime || new Date().toISOString(),
         metadata: {},
       };
     });
@@ -371,16 +371,16 @@ export async function getTrendingLocations(
 
     // Fallback direct query for venues grouped by location
     const { data: venues, error } = await supabase
-      .from("venues")
+      api.venues
       .select(`
         city,
         state,
         country,
-        total_shows,
-        upcoming_shows
+        totalShows,
+        upcomingShows
       `)
-      .gt("total_shows", 0)
-      .order("upcoming_shows", { ascending: false })
+      .gt("totalShows", 0)
+      .order("upcomingShows", { ascending: false })
       .limit(limit * 2); // Get more to group
 
     if (error || !venues) {
@@ -406,16 +406,16 @@ export async function getTrendingLocations(
       const existing = cityMap.get(key);
 
       if (existing) {
-        existing.showCount += venue.total_shows || 0;
-        existing.upcomingShows += venue.upcoming_shows || 0;
+        existing.showCount += venue.totalShows || 0;
+        existing.upcomingShows += venue.upcomingShows || 0;
         existing.totalVenues += 1;
       } else {
         cityMap.set(key, {
           city: venue.city,
           state: venue.state,
           country: venue.country,
-          showCount: venue.total_shows || 0,
-          upcomingShows: venue.upcoming_shows || 0,
+          showCount: venue.totalShows || 0,
+          upcomingShows: venue.upcomingShows || 0,
           totalVenues: 1,
         });
       }
@@ -464,7 +464,7 @@ export async function getTrendingStatistics(): Promise<TrendingStats> {
       const [votesResult, showsResult, setlistsResult, usersResult] =
         await Promise.allSettled([
           supabase.from("votes").select("*", { count: "exact", head: true }),
-          supabase.from("shows").select("*", { count: "exact", head: true }),
+          supabaseapi.shows.select("*", { count: "exact", head: true }),
           supabase.from("setlists").select("*", { count: "exact", head: true }),
           supabase.from("users").select("*", { count: "exact", head: true }),
         ]);
@@ -491,10 +491,10 @@ export async function getTrendingStatistics(): Promise<TrendingStats> {
 
       // Try to get most active city
       const { data: cityData } = await supabase
-        .from("venues")
-        .select("city, upcoming_shows")
-        .gt("upcoming_shows", 0)
-        .order("upcoming_shows", { ascending: false })
+        api.venues
+        .select("city, upcomingShows")
+        .gt("upcomingShows", 0)
+        .order("upcomingShows", { ascending: false })
         .limit(1);
 
       if (cityData?.[0]) {
@@ -552,23 +552,23 @@ export async function getRisingArtists(limit = 15): Promise<RisingArtist[]> {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     const { data: artists, error } = await supabase
-      .from("artists")
+      api.artists
       .select(`
         id,
         name,
         slug,
-        image_url,
+        imageUrl,
         popularity,
-        follower_count,
-        previous_follower_count,
+        followerCount,
+        previous_followerCount,
         previous_popularity,
-        total_shows,
-        upcoming_shows,
-        created_at
+        totalShows,
+        upcomingShows,
+        _creationTime
       `)
-      .gte("created_at", thirtyDaysAgo.toISOString())
-      .gt("follower_count", 0)
-      .order("follower_count", { ascending: false })
+      .gte("_creationTime", thirtyDaysAgo.toISOString())
+      .gt("followerCount", 0)
+      .order("followerCount", { ascending: false })
       .limit(limit * 2); // Get more to filter
 
     if (error || !artists) {
@@ -578,8 +578,8 @@ export async function getRisingArtists(limit = 15): Promise<RisingArtist[]> {
 
     return artists
       .map((artist) => {
-        const currentFollowers = artist.follower_count || 0;
-        const previousFollowers = artist.previous_follower_count || 0;
+        const currentFollowers = artist.followerCount || 0;
+        const previousFollowers = artist.previous_followerCount || 0;
         const currentPopularity = artist.popularity || 0;
         const previousPopularity = artist.previous_popularity || 0;
 
@@ -594,7 +594,7 @@ export async function getRisingArtists(limit = 15): Promise<RisingArtist[]> {
             : 0;
 
         const daysActive = Math.floor(
-          (new Date().getTime() - new Date(artist.created_at).getTime()) /
+          (new Date().getTime() - new Date(artist._creationTime).getTime()) /
             (1000 * 60 * 60 * 24),
         );
 
@@ -602,10 +602,10 @@ export async function getRisingArtists(limit = 15): Promise<RisingArtist[]> {
           id: artist.id,
           name: artist.name,
           slug: artist.slug,
-          imageUrl: artist.image_url,
+          imageUrl: artist.imageUrl,
           followerGrowth,
           voteGrowth,
-          showsAdded: artist.upcoming_shows || 0,
+          showsAdded: artist.upcomingShows || 0,
           daysActive,
           popularity: currentPopularity,
           rank: 0,

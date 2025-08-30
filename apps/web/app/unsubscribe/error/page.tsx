@@ -1,15 +1,15 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { AlertCircle, ArrowLeft, Mail, Settings } from "lucide-react";
 import Link from "next/link";
 

@@ -4,14 +4,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { LoadingSpinner } from "@repo/design-system/loading-spinner";
+} from "@repo/design-system";
+import { LoadingSpinner } from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import React, { Suspense, lazy } from "react";
 
 // Lazy load heavy analytics components for better bundle splitting

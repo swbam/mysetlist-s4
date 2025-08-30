@@ -4,23 +4,23 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Input } from "@repo/design-system/input";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/select";
+} from "@repo/design-system";
 import {
   Activity,
   ArrowLeft,

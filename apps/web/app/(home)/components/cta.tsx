@@ -1,4 +1,4 @@
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { ArrowRight, Music } from "lucide-react";
 
 export default function CTA() {

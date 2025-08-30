@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
         // Create ban record
         const { error: banError } = await supabase.from("user_bans").insert({
-          user_id: userId,
+          userId: userId,
           banned_by: user.id,
           reason,
           ban_type: banType,
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         const { data: activeBan } = await supabase
           .from("user_bans")
           .select("id")
-          .eq("user_id", userId)
+          .eq("userId", userId)
           .is("lifted_at", null)
           .single();
 

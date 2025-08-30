@@ -23,7 +23,7 @@ export async function GET() {
 
     // Fetch all shows for export
     const { data: shows, error } = await supabase
-      .from("shows")
+      api.shows
       .select(`
         id,
         title,
@@ -31,7 +31,7 @@ export async function GET() {
         time,
         status,
         ticket_url,
-        created_at,
+        _creationTime,
         updated_at,
         venue:venues(name, city, state),
         artist:artists(name)
@@ -68,7 +68,7 @@ export async function GET() {
       show.time || "",
       show.status,
       show.ticket_url || "",
-      show.created_at
+      show._creationTime
     ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")) || [];
 
     const csvContent = [csvHeaders, ...csvRows].join("\n");

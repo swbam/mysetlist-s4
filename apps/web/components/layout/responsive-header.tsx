@@ -31,7 +31,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "~/app/providers/auth-provider";
-import { ThemeToggle } from "~/@repo/design-system/components/ui/theme-provider";
+import { ModeToggle as ThemeToggle } from "@repo/design-system/components/mode-toggle";
 
 interface ResponsiveHeaderProps {
   className?: string;

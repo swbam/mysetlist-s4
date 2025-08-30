@@ -457,9 +457,9 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
                       <TableRow key={artist.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            {artist.image_url ? (
+                            {artist.imageUrl ? (
                               <img
-                                src={artist.image_url}
+                                src={artist.imageUrl}
                                 alt={artist.name}
                                 className="h-10 w-10 rounded-full object-cover"
                               />
@@ -482,7 +482,7 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
                               {artist.followers?.toLocaleString() ?? 0} followers
                             </p>
                             <p className="text-muted-foreground">
-                              {artist.artist_stats?.[0]?.total_shows ?? 0} shows
+                              {artist.artist_stats?.[0]?.totalShows ?? 0} shows
                             </p>
                           </div>
                         </TableCell>
@@ -577,9 +577,9 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
                       <TableRow key={venue.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            {venue.image_url ? (
+                            {venue.imageUrl ? (
                               <img
-                                src={venue.image_url}
+                                src={venue.imageUrl}
                                 alt={venue.name}
                                 className="h-10 w-10 rounded object-cover"
                               />
@@ -615,7 +615,7 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
                           </div>
                         </TableCell>
                         <TableCell>
-                          {format(new Date(venue.created_at), "MMM d, yyyy")}
+                          {format(new Date(venue._creationTime), "MMM d, yyyy")}
                         </TableCell>
                         <TableCell className="text-right">
                           <ContentActions
@@ -698,7 +698,7 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            <p>{show.attendee_count} attendees</p>
+                            <p>{show.attendeeCount} attendees</p>
                             <p className="text-muted-foreground">
                               {show._setlists?.[0]?.count ?? 0} setlists
                             </p>

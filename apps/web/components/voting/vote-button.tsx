@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { memo, useCallback, useState, useTransition } from "react";

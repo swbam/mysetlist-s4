@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { cn } from "@repo/design-system/lib/utils";
+import { cn } from "@repo/design-system";
 
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (

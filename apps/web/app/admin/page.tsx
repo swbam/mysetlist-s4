@@ -4,7 +4,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { endOfDay, format, startOfDay, subDays } from "date-fns";
 import {
   AlertCircle,
@@ -113,9 +113,9 @@ export default async function AdminDashboard({
       .from("users")
       .select("*", { count: "exact", head: true })
       .eq("deleted_at", null),
-    supabase.from("shows").select("*", { count: "exact", head: true }),
-    supabase.from("artists").select("*", { count: "exact", head: true }),
-    supabase.from("venues").select("*", { count: "exact", head: true }),
+    supabaseapi.shows.select("*", { count: "exact", head: true }),
+    supabaseapi.artists.select("*", { count: "exact", head: true }),
+    supabaseapi.venues.select("*", { count: "exact", head: true }),
     supabase
       .from("reports")
       .select("*", { count: "exact", head: true })
@@ -129,7 +129,7 @@ export default async function AdminDashboard({
       .select(
         "*, moderator:users!moderation_logs_moderator_id_fkey(display_name, email)",
       )
-      .order("created_at", { ascending: false })
+      .order("_creationTime", { ascending: false })
       .limit(5),
     supabase
       .from("platform_stats")
@@ -165,14 +165,14 @@ export default async function AdminDashboard({
   const { count: newUsersToday } = await supabase
     .from("users")
     .select("*", { count: "exact", head: true })
-    .gte("created_at", startOfDay(today).toISOString())
-    .lte("created_at", endOfDay(today).toISOString());
+    .gte("_creationTime", startOfDay(today).toISOString())
+    .lte("_creationTime", endOfDay(today).toISOString());
 
   const { count: newShowsToday } = await supabase
-    .from("shows")
+    api.shows
     .select("*", { count: "exact", head: true })
-    .gte("created_at", startOfDay(today).toISOString())
-    .lte("created_at", endOfDay(today).toISOString());
+    .gte("_creationTime", startOfDay(today).toISOString())
+    .lte("_creationTime", endOfDay(today).toISOString());
 
   return (
     <div className="space-y-8">
@@ -284,7 +284,7 @@ export default async function AdminDashboard({
                         </p>
                       )}
                       <p className="text-muted-foreground text-xs">
-                        {format(new Date(activity.created_at), "MMM d, h:mm a")}
+                        {format(new Date(activity._creationTime), "MMM d, h:mm a")}
                       </p>
                     </div>
                   </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@repo/design-system/skeleton";
+import { Skeleton } from "@repo/design-system";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 

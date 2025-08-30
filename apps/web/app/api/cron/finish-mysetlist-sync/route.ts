@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Get shows that need setlist initialization
     const { data: showsWithoutSetlists, error: showsError } = await supabase
-      .from("shows")
+      api.shows
       .select(`
         id,
         name,
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
           const { data: existingSetlist } = await supabase
             .from("setlists")
             .select("id")
-            .eq("show_id", show.id)
+            .eq("showId", show.id)
             .single();
 
           if (existingSetlist) {
@@ -97,14 +97,14 @@ export async function POST(request: NextRequest) {
           const { data: newSetlist, error: setlistError } = await supabase
             .from("setlists")
             .insert({
-              show_id: show.id,
+              showId: show.id,
               artist_name: show.artist_name,
               venue_name: show.venue_name,
               date: show.date,
               songs: [],
               total_votes: 0,
               is_finalized: false,
-              created_at: new Date().toISOString(),
+              _creationTime: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             })
             .select()
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
 
           // Update show with setlist_id
           const { error: updateError } = await supabase
-            .from("shows")
+            api.shows
             .update({
               setlist_id: newSetlist.id,
               updated_at: new Date().toISOString(),
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
       status: errors === 0 ? "completed" : "completed_with_errors",
       message: `${orchestrate ? "Orchestrated sync + " : ""}Processed ${processed} shows, created ${created} setlists, ${errors} errors`,
       details: result,
-      created_at: new Date().toISOString(),
+      _creationTime: new Date().toISOString(),
     });
 
     return createSuccessResponse({
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
         details: {
           error: error instanceof Error ? error.message : String(error),
         },
-        created_at: new Date().toISOString(),
+        _creationTime: new Date().toISOString(),
       });
     } catch (logError) {
       console.error("Failed to log error:", logError);

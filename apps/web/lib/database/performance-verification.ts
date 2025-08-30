@@ -147,12 +147,12 @@ export class DatabasePerformanceTester {
             showCount: sql<number>`(
               SELECT COUNT(*)
               FROM shows s
-              WHERE s.headliner_artist_id = ${artists.id}
+              WHERE s.artistId = ${artists.id}
             )`,
             followerCount: sql<number>`(
               SELECT COUNT(*)
               FROM user_follows_artists ufa
-              WHERE ufa.artist_id = ${artists.id}
+              WHERE ufa.artistId = ${artists.id}
             )`,
           })
           .from(artists)
@@ -175,7 +175,7 @@ export class DatabasePerformanceTester {
           })
           .from(userFollowsArtists)
           .groupBy(userFollowsArtists.artistId)
-          .as("follower_counts");
+          .as("followerCounts");
 
         const results = await db
           .select({
@@ -213,7 +213,7 @@ export class DatabasePerformanceTester {
 
     // Test 2: Upcoming shows with venue info
     await this.testQuery(
-      "upcoming_shows_with_venues",
+      "upcomingShows_with_venues",
       async () => {
         const results = await db
           .select({
@@ -279,7 +279,7 @@ export class DatabasePerformanceTester {
           })
           .from(setlistSongs)
           .groupBy(setlistSongs.songId)
-          .as("vote_counts");
+          .as("voteCounts");
 
         const results = await db
           .select({
@@ -663,23 +663,23 @@ export class DatabaseOptimizer {
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_tm_attraction_id ON artists(tm_attraction_id)",
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_spotify_id ON artists(spotify_id)",
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_popularity ON artists(popularity DESC)",
-        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_trending_score ON artists(trending_score DESC)",
+        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_trendingScore ON artists(trendingScore DESC)",
 
         // Show lookups
-        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_shows_headliner_artist_id ON shows(headliner_artist_id)",
-        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_shows_venue_id ON shows(venue_id)",
+        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_shows_artistId ON shows(artistId)",
+        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_shows_venueId ON shows(venueId)",
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_shows_date ON shows(date)",
-        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_shows_date_artist ON shows(date, headliner_artist_id)",
+        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_shows_date_artist ON shows(date, artistId)",
 
         // Song and setlist lookups
-        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artist_songs_artist_id ON artist_songs(artist_id)",
+        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artist_songs_artistId ON artist_songs(artistId)",
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artist_songs_song_id ON artist_songs(song_id)",
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_setlist_songs_setlist_id ON setlist_songs(setlist_id)",
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_setlist_songs_song_id ON setlist_songs(song_id)",
 
         // User relationships
-        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_follows_artists_user_id ON user_follows_artists(user_id)",
-        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_follows_artists_artist_id ON user_follows_artists(artist_id)",
+        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_follows_artists_userId ON user_follows_artists(userId)",
+        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_follows_artists_artistId ON user_follows_artists(artistId)",
 
         // Full-text search
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_name_fulltext ON artists USING GIN (to_tsvector('english', name))`,
@@ -689,7 +689,7 @@ export class DatabaseOptimizer {
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_genres ON artists USING GIN (genres)",
 
         // Composite indexes for common query patterns
-        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_shows_artist_date ON shows(headliner_artist_id, date DESC)",
+        "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_shows_artist_date ON shows(artistId, date DESC)",
         "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_songs_popularity ON songs(popularity DESC NULLS LAST)",
       ];
 

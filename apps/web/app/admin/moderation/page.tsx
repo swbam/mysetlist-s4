@@ -4,13 +4,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import { CheckCircle, Clock, FileText, Image } from "lucide-react";
 import { createClient } from "~/lib/supabase/server";
 import ModerationItem from "./components/moderation-item";
@@ -37,7 +37,7 @@ export default async function ModerationPage() {
       `,
       )
       .eq("moderation_status", "pending")
-      .order("created_at", { ascending: false })
+      .order("_creationTime", { ascending: false })
       .limit(20),
     supabase
       .from("venue_photos")
@@ -49,7 +49,7 @@ export default async function ModerationPage() {
       `,
       )
       .eq("moderation_status", "pending")
-      .order("created_at", { ascending: false })
+      .order("_creationTime", { ascending: false })
       .limit(20),
   ]);
 

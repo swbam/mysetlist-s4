@@ -562,7 +562,7 @@ export class ArtistImportOrchestrator {
 
       // Step 3: Recalculate trending scores and revalidate trending cache
       try {
-        await db.execute(sql`SELECT update_trending_scores()`);
+        await db.execute(sql`SELECT update_trendingScores()`);
       } catch {}
       try {
         revalidateTag(CACHE_TAGS.trending);

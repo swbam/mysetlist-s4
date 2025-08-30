@@ -3,7 +3,7 @@
 // File: apps/web/scripts/start-queue-workers.ts
 // Starts all queue workers with proper configuration
 
-import queueManager from '../lib/queues/queue-manager';
+import { queueManager } from '../lib/queues/queue-manager';
 
 async function startWorkers() {
   console.log('🚀 Starting MySetlist-S4 Queue Workers\n');

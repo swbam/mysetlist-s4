@@ -1,19 +1,19 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
+import { Badge } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/select";
+} from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { motion } from "framer-motion";
 import {

@@ -4,21 +4,21 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@repo/design-system/alert";
-import { Badge } from "@repo/design-system/badge";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Progress } from "@repo/design-system/progress";
+} from "@repo/design-system";
+import { Progress } from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import { format } from "date-fns";
 import {
   Activity,
@@ -127,7 +127,7 @@ export function MonitoringDashboard({
               {
                 errorLogs.filter(
                   (e) =>
-                    new Date(e.created_at) > new Date(Date.now() - 3600000),
+                    new Date(e._creationTime) > new Date(Date.now() - 3600000),
                 ).length
               }{" "}
               errors in last hour
@@ -292,7 +292,7 @@ export function MonitoringDashboard({
                         {error.level || "ERROR"}
                       </Badge>
                       <span className="text-muted-foreground text-xs">
-                        {format(new Date(error.created_at), "MMM d, HH:mm:ss")}
+                        {format(new Date(error._creationTime), "MMM d, HH:mm:ss")}
                       </span>
                     </div>
                     <p className="font-medium text-sm break-words">{error.message}</p>
@@ -301,9 +301,9 @@ export function MonitoringDashboard({
                         Endpoint: {error.endpoint}
                       </p>
                     )}
-                    {error.user_id && (
+                    {error.userId && (
                       <p className="text-muted-foreground text-xs break-words">
-                        User: {error.user_id}
+                        User: {error.userId}
                       </p>
                     )}
                   </div>
@@ -390,7 +390,7 @@ function calculateHealthScore(
 
   // Deduct points for recent errors
   const recentErrors = errorLogs.filter(
-    (e) => new Date(e.created_at) > new Date(Date.now() - 3600000),
+    (e) => new Date(e._creationTime) > new Date(Date.now() - 3600000),
   ).length;
   if (recentErrors > 10) {
     score -= 10;

@@ -33,10 +33,10 @@ export async function GET(
       votesResult,
       photosResult
     ] = await Promise.all([
-      supabase.from("setlists").select("id", { count: "exact" }).eq("user_id", userId),
-      supabase.from("venue_reviews").select("id", { count: "exact" }).eq("user_id", userId),
-      supabase.from("votes").select("id", { count: "exact" }).eq("user_id", userId),
-      supabase.from("venue_photos").select("id", { count: "exact" }).eq("user_id", userId)
+      supabase.from("setlists").select("id", { count: "exact" }).eq("userId", userId),
+      supabase.from("venue_reviews").select("id", { count: "exact" }).eq("userId", userId),
+      supabase.from("votes").select("id", { count: "exact" }).eq("userId", userId),
+      supabase.from("venue_photos").select("id", { count: "exact" }).eq("userId", userId)
     ]);
 
     const stats = {

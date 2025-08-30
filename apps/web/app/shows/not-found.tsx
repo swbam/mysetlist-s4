@@ -1,4 +1,4 @@
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
 

@@ -6,7 +6,7 @@ import {
   type DropResult,
   Droppable,
 } from "@hello-pangea/dnd";
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { GripVertical, Save, X } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";

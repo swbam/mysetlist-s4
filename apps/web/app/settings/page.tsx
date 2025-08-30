@@ -3,30 +3,30 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Input } from "@repo/design-system/input";
-import { Label } from "@repo/design-system/label";
-import { Switch } from "@repo/design-system/switch";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
+import { Switch } from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import { Shield, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ProtectedRoute } from "../components/protected-route";
 import { useAuth } from "../providers/auth-provider";
 import { DeleteAccountDialog } from "./components/delete-account-dialog";
-import { EmailNotificationSettings } from "./components/email-notification-settings";
+// Email notifications removed - user doesn't need them
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -93,7 +93,7 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-4">
-            <EmailNotificationSettings />
+            {/* Email notifications removed - user doesn't need them */}
           </TabsContent>
 
           <TabsContent value="privacy" className="space-y-4">

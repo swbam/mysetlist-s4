@@ -152,29 +152,29 @@ export class TrafficAwareScheduler {
       const metricsData = await db.execute(sql`
         WITH hourly_metrics AS (
           SELECT 
-            EXTRACT(HOUR FROM created_at) as hour,
-            EXTRACT(DOW FROM created_at) as day_of_week,
+            EXTRACT(HOUR FROM _creationTime) as hour,
+            EXTRACT(DOW FROM _creationTime) as day_of_week,
             COUNT(*) as job_count,
             AVG(execution_time_ms) as avg_execution_time,
             SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END)::FLOAT / COUNT(*) as error_rate
           FROM cron_logs
-          WHERE created_at >= NOW() - INTERVAL '${days} days'
+          WHERE _creationTime >= NOW() - INTERVAL '${days} days'
           GROUP BY 
-            EXTRACT(HOUR FROM created_at),
-            EXTRACT(DOW FROM created_at)
+            EXTRACT(HOUR FROM _creationTime),
+            EXTRACT(DOW FROM _creationTime)
         ),
         system_metrics AS (
           SELECT 
-            EXTRACT(HOUR FROM created_at) as hour,
-            EXTRACT(DOW FROM created_at) as day_of_week,
+            EXTRACT(HOUR FROM _creationTime) as hour,
+            EXTRACT(DOW FROM _creationTime) as day_of_week,
             AVG(execution_time_ms) as avg_time,
             AVG(memory_usage_mb) as avg_memory,
             AVG(cpu_percentage) as avg_cpu
           FROM cron_metrics
-          WHERE created_at >= NOW() - INTERVAL '${days} days'
+          WHERE _creationTime >= NOW() - INTERVAL '${days} days'
           GROUP BY 
-            EXTRACT(HOUR FROM created_at),
-            EXTRACT(DOW FROM created_at)
+            EXTRACT(HOUR FROM _creationTime),
+            EXTRACT(DOW FROM _creationTime)
         )
         SELECT 
           hm.*,
@@ -291,14 +291,14 @@ export class TrafficAwareScheduler {
     const metrics = await db.execute(sql`
       WITH job_metrics AS (
         SELECT 
-          EXTRACT(HOUR FROM created_at) as hour,
+          EXTRACT(HOUR FROM _creationTime) as hour,
           AVG(execution_time_ms) as avg_time,
           SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END)::FLOAT / COUNT(*) as error_rate,
           COUNT(*) as run_count
         FROM cron_logs
         WHERE job_name = ${jobName}
-        AND created_at >= NOW() - INTERVAL '30 days'
-        GROUP BY EXTRACT(HOUR FROM created_at)
+        AND _creationTime >= NOW() - INTERVAL '30 days'
+        GROUP BY EXTRACT(HOUR FROM _creationTime)
       )
       SELECT 
         AVG(avg_time) as overall_avg_time,
@@ -575,7 +575,7 @@ export class TrafficAwareScheduler {
           AVG(cpu_percentage) as avg_cpu,
           COUNT(*) as job_count
         FROM cron_metrics
-        WHERE created_at >= NOW() - INTERVAL '5 minutes'
+        WHERE _creationTime >= NOW() - INTERVAL '5 minutes'
       `);
 
       const metrics = (recentMetrics as any).rows?.[0] || {};

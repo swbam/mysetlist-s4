@@ -1,15 +1,15 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
-import { Card, CardContent } from "@repo/design-system/card";
+import { Button } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@repo/design-system/dialog";
-import { Switch } from "@repo/design-system/switch";
+} from "@repo/design-system";
+import { Switch } from "@repo/design-system";
 import { BarChart3, Cookie, MapPin, Settings, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { format } from "date-fns";
 import Link from "next/link";
 import { useRealtimeShow } from "~/hooks/use-realtime-show";
@@ -18,7 +18,7 @@ type ShowHeaderProps = {
       id: string;
       name: string;
       slug: string;
-      image_url?: string;
+      imageUrl?: string;
       verified?: boolean;
     };
     venue?: {
@@ -44,7 +44,7 @@ export function ShowHeader({ show }: ShowHeaderProps) {
     initialStatus: show.status as "upcoming" | "ongoing" | "completed",
   });
 
-  const bg = show.headliner_artist.image_url ?? undefined;
+  const bg = show.headliner_artist.imageUrl ?? undefined;
 
   return (
     <section className="relative h-72 w-full overflow-hidden rounded-xl md:h-96">

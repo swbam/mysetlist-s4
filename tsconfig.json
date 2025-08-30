@@ -37,7 +37,8 @@
     "alwaysStrict": true,
     "baseUrl": ".",
     "paths": {
-      "@repo/*": ["packages/*/src"]
+      "@repo/*": ["packages/*/src"],
+       "~/*": ["packages/*/src"]
     }
   },
   "exclude": [
@@ -45,6 +46,7 @@
 
     "components",
     "lib",
+    "NEWDOCS",
     "node_modules",
     "supabase/functions",
     "scripts/**/*.ts",

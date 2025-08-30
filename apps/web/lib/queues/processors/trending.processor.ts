@@ -30,7 +30,7 @@ export async function processTrendingCalc(job: Job<TrendingCalcJobData>) {
           a.id,
           a.name,
           a.slug,
-          a.image_url,
+          a.imageUrl,
           a.popularity as spotify_popularity,
           a.followers,
           
@@ -40,28 +40,28 @@ export async function processTrendingCalc(job: Job<TrendingCalcJobData>) {
             FROM ${votes} v
             JOIN setlist_songs ss ON v.setlist_song_id = ss.id
             JOIN setlists s ON ss.setlist_id = s.id
-            WHERE s.artist_id = a.id
-              AND v.created_at >= ${timeRange}
+            WHERE s.artistId = a.id
+              AND v._creationTime >= ${timeRange}
           ), 0) as recent_votes,
           
           -- Upcoming shows
           COALESCE((
             SELECT COUNT(*)
             FROM ${shows} sh
-            WHERE sh.headliner_artist_id = a.id
+            WHERE sh.artistId = a.id
               AND sh.date >= CURRENT_DATE
               AND sh.date <= CURRENT_DATE + INTERVAL '90 days'
-          ), 0) as upcoming_shows,
+          ), 0) as upcomingShows,
           
           -- Total shows
           COALESCE((
             SELECT COUNT(*)
             FROM ${shows} sh
-            WHERE sh.headliner_artist_id = a.id
-          ), 0) as total_shows,
+            WHERE sh.artistId = a.id
+          ), 0) as totalShows,
           
           -- Page views (would need analytics integration)
-          COALESCE(a.view_count, 0) as view_count,
+          COALESCE(a.viewCount, 0) as viewCount,
           
           -- Last activity
           GREATEST(
@@ -72,40 +72,40 @@ export async function processTrendingCalc(job: Job<TrendingCalcJobData>) {
         FROM ${artists} a
         WHERE a.spotify_id IS NOT NULL
       ),
-      trending_scores AS (
+      trendingScores AS (
         SELECT 
           *,
           -- Calculate trending score
           (
             (recent_votes * 10) +                    -- Weight recent engagement heavily
-            (upcoming_shows * 5) +                    -- Upcoming shows are important
+            (upcomingShows * 5) +                    -- Upcoming shows are important
             (spotify_popularity * 2) +               -- Spotify popularity as baseline
             (LEAST(followers / 10000, 100)) +        -- Follower count (capped)
-            (view_count * 3) +                        -- Page views
+            (viewCount * 3) +                        -- Page views
             (CASE 
               WHEN last_activity >= CURRENT_DATE - INTERVAL '7 days' THEN 20
               WHEN last_activity >= CURRENT_DATE - INTERVAL '30 days' THEN 10
               ELSE 0
             END)                                      -- Recent activity bonus
-          ) as trending_score
+          ) as trendingScore
         FROM artist_metrics
       )
       SELECT 
         id,
         name,
         slug,
-        image_url,
+        imageUrl,
         spotify_popularity,
         followers,
         recent_votes,
-        upcoming_shows,
-        total_shows,
-        view_count,
-        trending_score,
+        upcomingShows,
+        totalShows,
+        viewCount,
+        trendingScore,
         last_activity
-      FROM trending_scores
-      WHERE trending_score > 0
-      ORDER BY trending_score DESC
+      FROM trendingScores
+      WHERE trendingScore > 0
+      ORDER BY trendingScore DESC
       LIMIT ${limit}
     `);
     
@@ -121,11 +121,11 @@ export async function processTrendingCalc(job: Job<TrendingCalcJobData>) {
     for (const artist of trendingArtists) {
       const artistCacheKey = `trending:artist:${artist.id}:${timeframe}`;
       await getCache().set(artistCacheKey, {
-        score: artist.trending_score,
+        score: artist.trendingScore,
         rank: trendingArtists.indexOf(artist) + 1,
         metrics: {
           recentVotes: artist.recent_votes,
-          upcomingShows: artist.upcoming_shows,
+          upcomingShows: artist.upcomingShows,
           spotifyPopularity: artist.spotify_popularity,
           followers: artist.followers,
         },
@@ -143,12 +143,12 @@ export async function processTrendingCalc(job: Job<TrendingCalcJobData>) {
         UPDATE ${artists}
         SET 
           is_trending = true,
-          trending_score = subquery.trending_score,
+          trendingScore = subquery.trendingScore,
           trending_updated_at = CURRENT_TIMESTAMP
         FROM (
           SELECT 
             unnest(${trendingIds}::uuid[]) as id,
-            unnest(${trendingArtists.map((a: any) => a.trending_score)}::int[]) as trending_score
+            unnest(${trendingArtists.map((a: any) => a.trendingScore)}::int[]) as trendingScore
         ) as subquery
         WHERE ${artists}.id = subquery.id
       `);
@@ -172,7 +172,7 @@ export async function processTrendingCalc(job: Job<TrendingCalcJobData>) {
       topArtists: trendingArtists.slice(0, 10).map((a: any) => ({
         id: a.id,
         name: a.name,
-        score: a.trending_score,
+        score: a.trendingScore,
       })),
     };
     

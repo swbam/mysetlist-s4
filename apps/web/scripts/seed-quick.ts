@@ -33,7 +33,7 @@ async function clearDatabase() {
 async function seedWithSQL() {
   // Create users
   await db.execute(sql`
-    INSERT INTO users (email, role, email_verified, created_at)
+    INSERT INTO users (email, role, email_verified, _creationTime)
     VALUES 
       ('admin@mysetlist.com', 'admin', NOW(), NOW()),
       ('moderator@mysetlist.com', 'moderator', NOW(), NOW()),
@@ -44,7 +44,7 @@ async function seedWithSQL() {
 
   // Create popular artists with high trending scores
   await db.execute(sql`
-    INSERT INTO artists (name, slug, genres, popularity, followers, follower_count, monthly_listeners, verified, trending_score, created_at, spotify_id, tm_attraction_id)
+    INSERT INTO artists (name, slug, genres, popularity, followers, followerCount, monthly_listeners, verified, trendingScore, _creationTime, spotify_id, tm_attraction_id)
     VALUES 
       ('Taylor Swift', 'taylor-swift', '["pop", "country"]', 98, 84000000, 8400, 84000000, true, 95, NOW(), '06HL4z0CvFAxyc27GXpf02', 'K8vZ917Gku7'),
       ('Bad Bunny', 'bad-bunny', '["reggaeton", "latin"]', 96, 65000000, 6500, 65000000, true, 92, NOW(), '4q3ewBCX7sLwd24euuV69X', 'K8vZ917oNX7'),
@@ -61,7 +61,7 @@ async function seedWithSQL() {
 
   // Create artist stats
   await db.execute(sql`
-    INSERT INTO artist_stats (artist_id, total_shows, total_setlists, avg_setlist_length)
+    INSERT INTO artist_stats (artistId, totalShows, total_setlists, avg_setlist_length)
     SELECT 
       id,
       FLOOR(RANDOM() * 50 + 10),
@@ -72,7 +72,7 @@ async function seedWithSQL() {
 
   // Create venues
   await db.execute(sql`
-    INSERT INTO venues (name, slug, city, state, country, capacity, venue_type, timezone, created_at)
+    INSERT INTO venues (name, slug, city, state, country, capacity, venue_type, timezone, _creationTime)
     VALUES 
       ('Madison Square Garden', 'madison-square-garden', 'New York', 'NY', 'USA', 20789, 'arena', 'America/New_York', NOW()),
       ('The Forum', 'the-forum', 'Inglewood', 'CA', 'USA', 17505, 'arena', 'America/Los_Angeles', NOW()),
@@ -90,8 +90,8 @@ async function seedWithSQL() {
   await db.execute(sql`
     WITH artist_venue_pairs AS (
       SELECT 
-        a.id as artist_id,
-        v.id as venue_id,
+        a.id as artistId,
+        v.id as venueId,
         a.name as artist_name,
         v.name as venue_name,
         v.city as venue_city,
@@ -101,13 +101,13 @@ async function seedWithSQL() {
       CROSS JOIN venues v
     )
     INSERT INTO shows (
-      headliner_artist_id, venue_id, name, slug, date, start_time, doors_time,
-      status, view_count, vote_count, trending_score, is_featured, is_verified,
-      min_price, max_price, created_at
+      artistId, venueId, name, slug, date, start_time, doors_time,
+      status, viewCount, voteCount, trendingScore, is_featured, is_verified,
+      min_price, max_price, _creationTime
     )
     SELECT 
-      artist_id,
-      venue_id,
+      artistId,
+      venueId,
       artist_name || ' at ' || venue_name,
       LOWER(REPLACE(artist_name || '-' || venue_city || '-' || TO_CHAR(CURRENT_DATE + INTERVAL '1 day' * (rn * 7), 'YYYY-MM-DD'), ' ', '-')),
       CURRENT_DATE + INTERVAL '1 day' * (rn * 7 - 30 + FLOOR(RANDOM() * 60))::INTEGER,
@@ -135,10 +135,10 @@ async function seedWithSQL() {
 
   // Create show_artists relationships
   await db.execute(sql`
-    INSERT INTO show_artists (show_id, artist_id, order_index, set_length, is_headliner)
+    INSERT INTO show_artists (showId, artistId, order_index, set_length, is_headliner)
     SELECT 
       id,
-      headliner_artist_id,
+      artistId,
       0,
       90 + FLOOR(RANDOM() * 30),
       true
@@ -156,7 +156,7 @@ async function seedWithSQL() {
         'Fading Echoes', 'Broken Glass', 'Silver Lining', 'Lost in Static'
       ]) AS title
     )
-    INSERT INTO songs (title, artist, album, duration_ms, popularity, is_playable, created_at)
+    INSERT INTO songs (title, artist, album, duration_ms, popularity, is_playable, _creationTime)
     SELECT 
       st.title || CASE WHEN ROW_NUMBER() OVER (PARTITION BY a.id) > 10 THEN ' (Remix)' ELSE '' END,
       a.name,
@@ -172,10 +172,10 @@ async function seedWithSQL() {
 
   // Create setlists for shows
   await db.execute(sql`
-    INSERT INTO setlists (show_id, artist_id, type, name, order_index, total_votes, created_at)
+    INSERT INTO setlists (showId, artistId, type, name, order_index, total_votes, _creationTime)
     SELECT 
       s.id,
-      s.headliner_artist_id,
+      s.artistId,
       CASE WHEN s.status = 'upcoming' THEN 'predicted'::setlist_type ELSE 'actual'::setlist_type END,
       'Main Set',
       0,
@@ -193,10 +193,10 @@ async function seedWithSQL() {
         ROW_NUMBER() OVER (PARTITION BY sl.id ORDER BY RANDOM()) as position
       FROM setlists sl
       JOIN songs s ON s.artist = (
-        SELECT name FROM artists WHERE id = sl.artist_id
+        SELECT name FROM artists WHERE id = sl.artistId
       )
     )
-    INSERT INTO setlist_songs (setlist_id, song_id, position, upvotes, downvotes, net_votes, created_at)
+    INSERT INTO setlist_songs (setlist_id, song_id, position, upvotes, downvotes, net_votes, _creationTime)
     SELECT 
       setlist_id,
       song_id,
@@ -211,7 +211,7 @@ async function seedWithSQL() {
 
   // Create user follows
   await db.execute(sql`
-    INSERT INTO user_follows_artists (user_id, artist_id, created_at)
+    INSERT INTO user_follows_artists (userId, artistId, _creationTime)
     SELECT DISTINCT
       u.id,
       a.id,
@@ -225,16 +225,16 @@ async function seedWithSQL() {
   // Update follower counts
   await db.execute(sql`
     UPDATE artists a
-    SET follower_count = (
+    SET followerCount = (
       SELECT COUNT(*) 
       FROM user_follows_artists ufa 
-      WHERE ufa.artist_id = a.id
+      WHERE ufa.artistId = a.id
     );
   `);
 
   // Create some votes
   await db.execute(sql`
-    INSERT INTO votes (user_id, setlist_song_id, vote_type, created_at)
+    INSERT INTO votes (userId, setlist_song_id, vote_type, _creationTime)
     SELECT DISTINCT
       u.id,
       ss.id,
@@ -244,33 +244,33 @@ async function seedWithSQL() {
     CROSS JOIN setlist_songs ss
     WHERE u.role = 'user'
     AND RANDOM() < 0.3
-    ON CONFLICT (user_id, setlist_song_id) DO NOTHING;
+    ON CONFLICT (userId, setlist_song_id) DO NOTHING;
   `);
 
   // Update aggregate counts
   await db.execute(sql`
     -- Update show vote counts
     UPDATE shows s
-    SET vote_count = (
+    SET voteCount = (
       SELECT COUNT(*)
       FROM votes v
       JOIN setlist_songs ss ON v.setlist_song_id = ss.id
       JOIN setlists sl ON ss.setlist_id = sl.id
-      WHERE sl.show_id = s.id
+      WHERE sl.showId = s.id
     );
     
     -- Update trending scores for recent shows
     UPDATE shows
-    SET trending_score = (view_count * 0.1 + vote_count * 0.5) * 
-      POWER(0.5, EXTRACT(EPOCH FROM (NOW() - created_at)) / 3600.0 / 48.0)
+    SET trendingScore = (viewCount * 0.1 + voteCount * 0.5) * 
+      POWER(0.5, EXTRACT(EPOCH FROM (NOW() - _creationTime)) / 3600.0 / 48.0)
     WHERE status IN ('upcoming', 'ongoing');
     
     -- Update artist trending scores
     UPDATE artists a
-    SET trending_score = (
-      SELECT COALESCE(AVG(s.trending_score), 0)
+    SET trendingScore = (
+      SELECT COALESCE(AVG(s.trendingScore), 0)
       FROM shows s
-      WHERE s.headliner_artist_id = a.id
+      WHERE s.artistId = a.id
       AND s.date >= CURRENT_DATE - INTERVAL '30 days'
     );
   `);

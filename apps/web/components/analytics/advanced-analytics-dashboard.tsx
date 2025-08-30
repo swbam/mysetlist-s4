@@ -3,25 +3,25 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Input } from "@repo/design-system/input";
-import { Label } from "@repo/design-system/label";
-import { Progress } from "@repo/design-system/progress";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
+import { Progress } from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import {
   AlertTriangle,
   BarChart3,

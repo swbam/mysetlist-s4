@@ -6,7 +6,7 @@ export interface DatabaseUser {
   email: string;
   name?: string | null;
   role?: "admin" | "moderator" | "user" | null;
-  created_at?: string;
+  _creationTime?: string;
   updated_at?: string;
 }
 
@@ -16,14 +16,14 @@ export interface DatabaseArtist {
   slug: string;
   spotify_id?: string | null;
   setlistfm_mbid?: string | null;
-  image_url?: string | null;
-  small_image_url?: string | null;
+  imageUrl?: string | null;
+  small_imageUrl?: string | null;
   genres?: string | null;
   popularity?: number | null;
   followers?: number | null;
   external_urls?: string | null;
   verified?: boolean;
-  created_at?: string;
+  _creationTime?: string;
   updated_at?: string;
 }
 
@@ -41,8 +41,8 @@ export interface DatabaseVenue {
   timezone?: string | null;
   capacity?: number | null;
   website?: string | null;
-  tm_venue_id?: string | null;
-  created_at?: string;
+  tm_venueId?: string | null;
+  _creationTime?: string;
   updated_at?: string;
 }
 
@@ -52,13 +52,13 @@ export interface DatabaseShow {
   date: string;
   time?: string | null;
   status: "upcoming" | "in_progress" | "completed" | "cancelled";
-  artist_id?: string | null;
-  venue_id?: string | null;
+  artistId?: string | null;
+  venueId?: string | null;
   tm_event_id?: string | null;
   ticket_url?: string | null;
   price_range_min?: number | null;
   price_range_max?: number | null;
-  created_at?: string;
+  _creationTime?: string;
   updated_at?: string;
 }
 
@@ -96,11 +96,11 @@ export interface AdminStats {
 export interface ActivityItem {
   id: string;
   type: string;
-  user_id: string;
+  userId: string;
   target_type?: string | null;
   target_id?: string | null;
   metadata?: Record<string, unknown> | null;
-  created_at: string;
+  _creationTime: string;
   user?: DatabaseUser;
   target?: {
     id: string;
@@ -123,7 +123,7 @@ export interface ModerationItem {
     | "show"
     | "artist";
   status: "pending" | "approved" | "rejected";
-  created_at: string;
+  _creationTime: string;
   updated_at?: string;
   user?: DatabaseUser;
   content?: unknown;
@@ -137,7 +137,7 @@ export interface Report {
   target_id: string;
   reason: string;
   status: "pending" | "resolved" | "dismissed";
-  created_at: string;
+  _creationTime: string;
   updated_at?: string;
   reporter?: DatabaseUser;
   target?: {

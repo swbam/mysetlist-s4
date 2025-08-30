@@ -1,12 +1,12 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
+import { Badge } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { BarChart3, Eye, Heart, Music, Users, Vote } from "lucide-react";
 
 type ShowStatsProps = {

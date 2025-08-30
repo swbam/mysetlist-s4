@@ -57,16 +57,16 @@ export async function POST(request: NextRequest) {
           (
             SELECT COUNT(*) * 10
             FROM shows s
-            WHERE s.artist_id = ${artists.id}
+            WHERE s.artistId = ${artists.id}
             AND s.date >= NOW() - INTERVAL '30 days'
           ) +
           (
             SELECT COUNT(*) * 5
             FROM votes v
             JOIN setlists sl ON v.setlist_id = sl.id
-            JOIN shows s ON sl.show_id = s.id
-            WHERE s.artist_id = ${artists.id}
-            AND v.created_at >= NOW() - INTERVAL '7 days'
+            JOIN shows s ON sl.showId = s.id
+            WHERE s.artistId = ${artists.id}
+            AND v._creationTime >= NOW() - INTERVAL '7 days'
           )
         ) DESC`,
       )
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
 
     // Update trending scores after sync
     try {
-      await db.execute(sql`SELECT update_trending_scores()`);
+      await db.execute(sql`SELECT update_trendingScores()`);
       await db.execute(sql`SELECT refresh_trending_data()`);
     } catch (error) {
       console.warn("Failed to update trending scores:", error);

@@ -4,11 +4,11 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Card, CardContent } from "@repo/design-system/card";
-import { Input } from "@repo/design-system/input";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { Loader2, Music, Search, X } from "lucide-react";
 import type * as React from "react";

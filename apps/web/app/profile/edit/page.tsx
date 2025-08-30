@@ -4,23 +4,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
+} from "@repo/design-system";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Input } from "@repo/design-system/input";
-import { Label } from "@repo/design-system/label";
-import { Textarea } from "@repo/design-system/textarea";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
+import { Textarea } from "@repo/design-system";
 import {
   ArrowLeft,
   CheckCircle,

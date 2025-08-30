@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Card, CardContent } from "@repo/design-system/card";
+import { Badge } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { Calendar, MapPin, TrendingUp, Users } from "lucide-react";

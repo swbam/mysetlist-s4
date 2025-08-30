@@ -48,7 +48,7 @@ async function syncAllVenues(job: Job) {
       raw_data::jsonb -> '_embedded' -> 'venues' -> 0 as venue_data,
       COUNT(*) as show_count
     FROM ${shows}
-    WHERE venue_id IS NULL
+    WHERE venueId IS NULL
       AND raw_data::jsonb -> '_embedded' -> 'venues' -> 0 IS NOT NULL
     GROUP BY raw_data::jsonb -> '_embedded' -> 'venues' -> 0
     ORDER BY show_count DESC
@@ -126,9 +126,9 @@ async function syncAllVenues(job: Job) {
     // Link venue to shows
     const result = await db.execute(sql`
       UPDATE ${shows}
-      SET venue_id = ${venueId}
+      SET venueId = ${venueId}
       WHERE raw_data::jsonb -> '_embedded' -> 'venues' -> 0 ->> 'id' = ${venueData.id}
-        AND venue_id IS NULL
+        AND venueId IS NULL
     `);
     
     linked += show_count;
@@ -253,14 +253,14 @@ async function syncArtistVenues(artistId: string, job: Job) {
   const artistVenues = await db.execute(sql`
     SELECT DISTINCT
       v.id,
-      v.tm_venue_id,
+      v.tm_venueId,
       v.name,
       COUNT(s.id) as show_count
     FROM ${shows} s
-    LEFT JOIN ${venues} v ON s.venue_id = v.id
-    WHERE s.headliner_artist_id = ${artistId}
+    LEFT JOIN ${venues} v ON s.venueId = v.id
+    WHERE s.artistId = ${artistId}
       AND v.id IS NOT NULL
-    GROUP BY v.id, v.tm_venue_id, v.name
+    GROUP BY v.id, v.tm_venueId, v.name
     ORDER BY show_count DESC
   `);
   

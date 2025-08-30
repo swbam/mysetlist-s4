@@ -1,13 +1,13 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,15 +15,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/dropdown-menu";
-import { Input } from "@repo/design-system/input";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/select";
+} from "@repo/design-system";
 import {
   Table,
   TableBody,
@@ -31,7 +31,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/design-system/table";
+} from "@repo/design-system";
 import { format } from "date-fns";
 import {
   AlertTriangle,
@@ -70,7 +70,7 @@ interface Venue {
   phone?: string;
   email?: string;
   website?: string;
-  created_at: string;
+  _creationTime: string;
   updated_at: string;
   shows_count: number;
 }
@@ -449,7 +449,7 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
                       </div>
                     </TableCell>
                     <TableCell>
-                      {format(new Date(venue.created_at), "MMM d, yyyy")}
+                      {format(new Date(venue._creationTime), "MMM d, yyyy")}
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

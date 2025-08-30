@@ -1,10 +1,10 @@
-import { Skeleton } from "@repo/design-system/skeleton";
+import { Skeleton } from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import { List } from "lucide-react";
 import { ShowListSkeleton } from "~/components/loading-states";
 

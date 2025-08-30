@@ -3,7 +3,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { Clock, Eye, TrendingUp, Users } from "lucide-react";
 import { createServiceClient } from "~/lib/supabase/server";
 
@@ -15,7 +15,7 @@ async function fetchStats() {
     // Fallback shape if view/function not present
     return {
       trending_artists: data?.total_users ?? 0,
-      hot_shows: data?.total_shows ?? 0,
+      hot_shows: data?.totalShows ?? 0,
       search_volume: data?.total_searches ?? 0,
       active_users: data?.active_users ?? 0,
     } as any;

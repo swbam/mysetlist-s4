@@ -1,4 +1,4 @@
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { ChevronRight, Music, TrendingUp } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";

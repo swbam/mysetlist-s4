@@ -1,9 +1,9 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Card } from "@repo/design-system/card";
-import { Input } from "@repo/design-system/input";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Card } from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { Loader2, Music, Search, X } from "lucide-react";
 import Image from "next/image";

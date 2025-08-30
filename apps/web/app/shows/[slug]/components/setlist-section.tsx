@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import { Music, Plus, Vote } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";

@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     // Simulate trending calculation logic
     // In a real implementation, this would:
     // 1. Calculate trending scores based on recent votes, shows, and activity
-    // 2. Update artist trending_score column
+    // 2. Update artist trendingScore column
     // 3. Refresh materialized views
     // 4. Update cache
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
+import { Badge } from "@repo/design-system";
 import {
   Carousel,
   type CarouselApi,
@@ -8,7 +8,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@repo/design-system/carousel";
+} from "@repo/design-system";
 import { Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,7 +18,7 @@ interface Artist {
   id: string;
   name: string;
   slug?: string;
-  image_url?: string | null;
+  imageUrl?: string | null;
   followers?: number;
   trendingScore?: number;
 }
@@ -99,9 +99,9 @@ export default function TopArtistsCarousel({
                     className="group block overflow-hidden rounded-lg border border-border bg-background transition-shadow hover:shadow-lg"
                   >
                     <div className="relative aspect-square overflow-hidden">
-                      {artist.image_url ? (
+                      {artist.imageUrl ? (
                         <Image
-                          src={artist.image_url}
+                          src={artist.imageUrl}
                           alt={artist.name}
                           fill
                           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 200px"

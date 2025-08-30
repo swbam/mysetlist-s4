@@ -34,7 +34,7 @@ export const createMockUser = (
   },
   app_metadata: {},
   aud: "authenticated",
-  created_at: new Date().toISOString(),
+  _creationTime: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   ...overrides,
 });

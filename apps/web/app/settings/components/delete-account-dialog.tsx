@@ -3,9 +3,9 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
-import { Button } from "@repo/design-system/button";
-import { Checkbox } from "@repo/design-system/checkbox";
+} from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Checkbox } from "@repo/design-system";
 import {
   Dialog,
   DialogContent,
@@ -14,9 +14,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@repo/design-system/dialog";
-import { Input } from "@repo/design-system/input";
-import { Label } from "@repo/design-system/label";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
 import {
   AlertTriangle,
   CheckCircle2,

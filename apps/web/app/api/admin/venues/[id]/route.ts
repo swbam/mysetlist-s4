@@ -28,7 +28,7 @@ export async function DELETE(
 
     // Get venue details for logging
     const { data: venue } = await supabase
-      .from("venues")
+      api.venues
       .select("name, city, state")
       .eq("id", venueId)
       .single();
@@ -38,22 +38,22 @@ export async function DELETE(
     }
 
     // Delete related records first
-    await supabase.from("setlist_songs").delete().in("show_id", 
-      (await supabase.from("shows").select("id").eq("venue_id", venueId)).data?.map(s => s.id) || []
+    await supabase.from("setlist_songs").delete().in("showId", 
+      (await supabaseapi.shows.select("id").eq("venueId", venueId)).data?.map(s => s.id) || []
     );
-    await supabase.from("setlists").delete().in("show_id", 
-      (await supabase.from("shows").select("id").eq("venue_id", venueId)).data?.map(s => s.id) || []
+    await supabase.from("setlists").delete().in("showId", 
+      (await supabaseapi.shows.select("id").eq("venueId", venueId)).data?.map(s => s.id) || []
     );
-    await supabase.from("votes").delete().in("show_id", 
-      (await supabase.from("shows").select("id").eq("venue_id", venueId)).data?.map(s => s.id) || []
+    await supabase.from("votes").delete().in("showId", 
+      (await supabaseapi.shows.select("id").eq("venueId", venueId)).data?.map(s => s.id) || []
     );
-    await supabase.from("shows").delete().eq("venue_id", venueId);
-    await supabase.from("venue_reviews").delete().eq("venue_id", venueId);
-    await supabase.from("venue_photos").delete().eq("venue_id", venueId);
+    await supabaseapi.shows.delete().eq("venueId", venueId);
+    await supabase.from("venue_reviews").delete().eq("venueId", venueId);
+    await supabase.from("venue_photos").delete().eq("venueId", venueId);
 
     // Delete the venue
     const { error } = await supabase
-      .from("venues")
+      api.venues
       .delete()
       .eq("id", venueId);
 

@@ -22,7 +22,7 @@ export function useRealtimeUpdates(showId: string, isLive: boolean) {
           event: "*",
           schema: "public",
           table: "setlist_songs",
-          filter: `setlist_id=in.(select id from setlists where show_id=eq.${showId})`,
+          filter: `setlist_id=in.(select id from setlists where showId=eq.${showId})`,
         },
         (_payload) => {
           router.refresh();

@@ -30,9 +30,9 @@ export async function POST(_request: NextRequest) {
 
     // Check for artists missing images
     const { count: artistsWithoutImages } = await supabase
-      .from("artists")
+      api.artists
       .select("*", { count: "exact", head: true })
-      .is("image_url", null);
+      .is("imageUrl", null);
 
     if (artistsWithoutImages && artistsWithoutImages > 0) {
       totalIssues += artistsWithoutImages;
@@ -45,10 +45,10 @@ export async function POST(_request: NextRequest) {
 
     // Check for shows without setlists
     const { count: showsWithoutSetlists } = await supabase
-      .from("shows")
+      api.shows
       .select("*", { count: "exact", head: true })
       .not("id", "in", 
-        `(${(await supabase.from("setlists").select("show_id")).data?.map(s => s.show_id).join(",") || "null"})`
+        `(${(await supabase.from("setlists").select("showId")).data?.map(s => s.showId).join(",") || "null"})`
       );
 
     if (showsWithoutSetlists && showsWithoutSetlists > 0) {
@@ -62,7 +62,7 @@ export async function POST(_request: NextRequest) {
 
     // Check for venues missing location data
     const { count: venuesWithoutLocation } = await supabase
-      .from("venues")
+      api.venues
       .select("*", { count: "exact", head: true })
       .or("latitude.is.null,longitude.is.null");
 
@@ -77,7 +77,7 @@ export async function POST(_request: NextRequest) {
 
     // Check for venues missing capacity
     const { count: venuesWithoutCapacity } = await supabase
-      .from("venues")
+      api.venues
       .select("*", { count: "exact", head: true })
       .is("capacity", null);
 

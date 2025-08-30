@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "./button";
 import { ChevronUp } from "lucide-react";
-import { cn } from "@repo/design-system/lib/utils";
+import { cn } from "@repo/design-system";
 
 interface VoteButtonProps {
   songId: string;

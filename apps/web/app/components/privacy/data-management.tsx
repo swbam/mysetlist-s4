@@ -3,15 +3,15 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   AlertTriangle,
   CheckCircle,

@@ -218,8 +218,8 @@ export class UnifiedAuthProvider {
 
       // Fetch user's music data from Spotify
       const [topArtists, topTracks] = await Promise.all([
-        this.spotifyService.getUserTopArtists(token, "medium_term", 50),
-        this.spotifyService.getUserTopTracks(token, "medium_term", 50),
+        this.spotifyService.getUserTopArtists(token!, "medium_term", 50),
+        this.spotifyService.getUserTopTracks(token!, "medium_term", 50),
       ]);
 
       // Extract genres from top artists

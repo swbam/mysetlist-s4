@@ -8,8 +8,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@repo/ui/components/card";
-import { Progress } from "@repo/ui/components/progress";
+} from "@repo/design-system";
+import { Progress } from "@repo/design-system";
 
 export function ImportProgress({
   artistId,

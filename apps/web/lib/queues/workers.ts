@@ -1,4 +1,4 @@
-import { queueManager, QueueName, queueConfigs } from "./queue-manager";
+import { queueManager, QueueName } from "./queue-manager";
 
 // Worker health check using queue manager's internal state
 export async function checkWorkerHealth(): Promise<{

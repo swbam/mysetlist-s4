@@ -31,7 +31,7 @@ export async function GET() {
           is_public
         )
       `)
-      .order("created_at", { ascending: false });
+      .order("_creationTime", { ascending: false });
 
     if (error) {
       throw error;

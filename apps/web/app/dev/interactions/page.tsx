@@ -5,13 +5,13 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import React from "react";
 import { FollowButton } from "~/components/auth/follow-button";
 import { InteractionChecklist } from "~/components/dev/interaction-checklist";

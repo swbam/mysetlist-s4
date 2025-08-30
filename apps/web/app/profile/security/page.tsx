@@ -3,18 +3,18 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Input } from "@repo/design-system/input";
-import { Label } from "@repo/design-system/label";
-import { Switch } from "@repo/design-system/switch";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
+import { Switch } from "@repo/design-system";
 import { Loader2, Lock, Shield, Smartphone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "~/app/providers/auth-provider";
@@ -42,7 +42,7 @@ export default function SecurityPage() {
       const { data, error: _error } = await supabase
         .from("user_security_settings")
         .select("two_factor_enabled")
-        .eq("user_id", user?.id)
+        .eq("userId", user?.id)
         .single();
 
       if (data) {

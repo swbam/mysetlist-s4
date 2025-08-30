@@ -1,7 +1,7 @@
 import { artistStats, artists, db, shows, venues } from "@repo/database";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Card, CardContent } from "@repo/design-system/card";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
 import { format } from "date-fns";
 import { desc, eq, gte } from "drizzle-orm";
 import { Calendar, MapPin, Music, Sparkles, TrendingUp } from "lucide-react";

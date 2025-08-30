@@ -392,7 +392,7 @@ class IntegrationTester {
       const logs = await db.execute(sql`
         SELECT * FROM cron_logs 
         WHERE job_name = 'test-cron' 
-        ORDER BY created_at DESC 
+        ORDER BY _creationTime DESC 
         LIMIT 1
       `);
 

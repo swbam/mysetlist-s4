@@ -48,17 +48,22 @@ export * from "../components/ui/switch";
 export * from "../components/ui/table";
 export * from "../components/ui/tabs";
 export * from "../components/ui/textarea";
-export * from "../components/ui/toaster";
+// Commenting out toaster to avoid conflict with sonner
+// export * from "../components/ui/toaster";
 export * from "../components/ui/toggle-group";
 export * from "../components/ui/toggle";
 export * from "../components/ui/tooltip";
-export * from "../components/ui/use-toast";
+// Use only the hooks version of useToast
+// export * from "../components/ui/use-toast";
 export * from "../components/ui/venue-card";
 export * from "../components/ui/vote-button";
 
 // Hooks
 export * from "../hooks/use-mobile";
 export * from "../hooks/use-toast";
+
+// Re-export toast function from sonner
+export { toast } from "sonner";
 
 // Lib utilities
 export * from "../lib/utils";

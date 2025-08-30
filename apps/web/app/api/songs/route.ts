@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         spotify_id,
         popularity,
         release_date,
-        created_at
+        _creationTime
       `);
 
     // Apply filters using Supabase query methods

@@ -9,7 +9,7 @@ export default async function VenuesManagementPage() {
 
   // Fetch venues with related data
   const { data: venues } = await supabase
-    .from("venues")
+    api.venues
     .select(
       `
       id,
@@ -26,12 +26,12 @@ export default async function VenuesManagementPage() {
       phone,
       email,
       website,
-      created_at,
+      _creationTime,
       updated_at,
       shows (count)
     `,
     )
-    .order("created_at", { ascending: false })
+    .order("_creationTime", { ascending: false })
     .limit(100);
 
   // Calculate venue stats
@@ -45,21 +45,21 @@ export default async function VenuesManagementPage() {
 
   // Get quick stats
   const { count: totalVenues } = await supabase
-    .from("venues")
+    api.venues
     .select("*", { count: "exact", head: true });
 
   const { count: verifiedVenues } = await supabase
-    .from("venues")
+    api.venues
     .select("*", { count: "exact", head: true })
     .eq("verified", true);
 
   const { count: venuesWithShows } = await supabase
-    .from("venues")
+    api.venues
     .select("id")
     .not("shows", "is", null);
 
   const { count: venuesNeedingInfo } = await supabase
-    .from("venues")
+    api.venues
     .select("*", { count: "exact", head: true })
     .or("capacity.is.null,latitude.is.null,longitude.is.null");
 

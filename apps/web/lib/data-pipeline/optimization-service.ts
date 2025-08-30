@@ -238,8 +238,8 @@ class DataOptimizationService {
         async () => {
           const { data } = await supabase
             .from("user_follows_artists")
-            .select("artists(id, name, image_url)")
-            .eq("user_id", userId)
+            .select("artists(id, name, imageUrl)")
+            .eq("userId", userId)
             .limit(50);
           return data;
         },
@@ -262,17 +262,17 @@ class DataOptimizationService {
               `
               id,
               vote_value,
-              created_at,
+              _creationTime,
               setlist_songs(
-                songs(title, artist_id),
+                songs(title, artistId),
                 setlists(
                   shows(name, date, artists(name))
                 )
               )
             `,
             )
-            .eq("user_id", userId)
-            .order("created_at", { ascending: false })
+            .eq("userId", userId)
+            .order("_creationTime", { ascending: false })
             .limit(100);
           return data;
         },
@@ -290,18 +290,18 @@ class DataOptimizationService {
         "trending_shows",
         async () => {
           const { data } = await supabase
-            .from("shows")
+            api.shows
             .select(
               `
               id,
               name,
               date,
-              trending_score,
-              artists(name, image_url),
+              trendingScore,
+              artists(name, imageUrl),
               venues(name, city)
             `,
             )
-            .order("trending_score", { ascending: false })
+            .order("trendingScore", { ascending: false })
             .limit(20);
           return data;
         },

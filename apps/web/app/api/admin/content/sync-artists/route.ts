@@ -25,7 +25,7 @@ export async function POST(_request: NextRequest) {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     
     const { data: artists, error } = await supabase
-      .from("artists")
+      api.artists
       .select("id, name, spotify_id")
       .or(`last_synced_at.is.null,last_synced_at.lt.${oneDayAgo}`)
       .limit(50);
@@ -40,7 +40,7 @@ export async function POST(_request: NextRequest) {
     // For now, just update the last_synced_at timestamp
     for (const artist of artists || []) {
       const { error: updateError } = await supabase
-        .from("artists")
+        api.artists
         .update({
           last_synced_at: new Date().toISOString(),
           // Add any synced fields here when implementing real sync

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { Music } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ArtistCard } from "~/components/cards/artist-card";
@@ -48,12 +48,12 @@ export const ArtistGrid = () => {
         name: artist.name,
         slug: artist.slug,
         genres: artist.genres,
-        imageUrl: artist.imageUrl || artist.image_url,
-        smallImageUrl: artist.smallImageUrl || artist.small_image_url,
+        imageUrl: artist.imageUrl || artist.imageUrl,
+        smallImageUrl: artist.smallImageUrl || artist.small_imageUrl,
         followers: artist.followers,
-        followerCount: artist.followerCount || artist.follower_count,
-        upcomingShows: artist.upcomingShows || artist.upcoming_shows || 0,
-        trendingScore: artist.trendingScore || artist.trending_score || 0,
+        followerCount: artist.followerCount || artist.followerCount,
+        upcomingShows: artist.upcomingShows || artist.upcomingShows || 0,
+        trendingScore: artist.trendingScore || artist.trendingScore || 0,
         verified: artist.verified || false,
         popularity: artist.popularity,
       }));

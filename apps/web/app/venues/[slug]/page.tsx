@@ -2,16 +2,16 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Separator } from "@repo/design-system/separator";
+} from "@repo/design-system";
+import { Separator } from "@repo/design-system";
 import { format } from "date-fns";
 import {
   Calendar,

@@ -211,7 +211,7 @@ export function useRealtimeSetlist({
             event: "*",
             schema: "public",
             table: "setlists",
-            filter: `show_id=eq.${showId}`,
+            filter: `showId=eq.${showId}`,
           },
           () => {
             // Refetch when setlist structure changes

@@ -2,8 +2,8 @@ import {
   Card,
   CardContent,
   CardHeader,
-} from "@repo/design-system/card";
-import { Skeleton } from "@repo/design-system/skeleton";
+} from "@repo/design-system";
+import { Skeleton } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { Activity } from "lucide-react";
 

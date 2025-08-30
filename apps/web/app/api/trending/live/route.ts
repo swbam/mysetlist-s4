@@ -316,7 +316,7 @@ export async function POST(request: NextRequest) {
 
     // Log the activity that triggered the update
     await db.insert(userActivityLog).values({
-      userId: metadata?.user_id || null,
+      userId: metadata?.userId || null,
       action: action,
       targetType: type,
       targetId: entity_id,

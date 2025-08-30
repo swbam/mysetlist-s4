@@ -1,18 +1,16 @@
-import type { NextRequest } from "next/server";
-// NextResponse removed - unused import
-import { updateSession } from "./middleware/auth";
-import { securityMiddleware } from "./middleware/security";
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-export async function middleware(request: NextRequest) {
-  // Apply security first (headers, basic rate limit, CSRF)
-  const securityResult = await securityMiddleware(request);
-  if (securityResult instanceof NextResponse) {
-    return securityResult;
+const isProtectedRoute = createRouteMatcher([
+  '/dashboard(.*)',
+  '/profile(.*)',
+  '/admin(.*)',
+]);
+
+export default clerkMiddleware(async (auth, req) => {
+  if (isProtectedRoute(req)) {
+    await auth.protect();
   }
-
-  // Ensure Supabase session cookies are refreshed for SSR
-  return updateSession(request);
-}
+});
 
 // Skip static assets and Next internals
 export const config = {

@@ -4,10 +4,10 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Skeleton } from "@repo/design-system/skeleton";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Skeleton } from "@repo/design-system";
 import {
   Calendar,
   ExternalLink,

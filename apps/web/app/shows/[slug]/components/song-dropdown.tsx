@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,14 +9,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/dropdown-menu";
-import { Input } from "@repo/design-system/input";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import {
   ChevronDown,
   Loader2,
@@ -204,7 +204,7 @@ export function SongDropdown({
                 ...item,
                 upvotes: item.votes?.length || 0,
                 userVote: item.votes?.find(
-                  (v: any) => v.user_id === session?.user?.id,
+                  (v: any) => v.userId === session?.user?.id,
                 )
                   ? "up"
                   : null,
@@ -247,7 +247,7 @@ export function SongDropdown({
                 upvotes: item.votes?.length || 0, // Simplified: presence = upvote
                 downvotes: 0, // No downvotes in simplified system
                 userVote:
-                  item.votes?.find((v: any) => v.user_id === session?.user?.id)
+                  item.votes?.find((v: any) => v.userId === session?.user?.id)
                     ? "up" : null,
               })),
             };

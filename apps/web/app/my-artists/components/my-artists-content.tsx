@@ -3,15 +3,15 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/alert";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { AlertCircle, Loader2, Music, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";

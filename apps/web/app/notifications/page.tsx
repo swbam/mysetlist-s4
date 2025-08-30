@@ -1,11 +1,11 @@
 import { getUser } from "@repo/auth/server";
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { Bell, BellOff, Settings } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";

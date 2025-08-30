@@ -1,14 +1,14 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Skeleton } from "@repo/design-system/skeleton";
+} from "@repo/design-system";
+import { Skeleton } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import {
   Calendar,
@@ -103,7 +103,7 @@ export function PersonalizedRecommendations({
                 type: "show" as const,
                 title: show.title || show.name,
                 subtitle: show.artist || show.venue_name || "Show",
-                imageUrl: show.image_url || show.imageUrl,
+                imageUrl: show.imageUrl || show.imageUrl,
                 slug: show.id,
                 reason:
                   "Recommended based on your music preferences and location",
@@ -124,13 +124,13 @@ export function PersonalizedRecommendations({
                 type: "artist" as const,
                 title: artist.name,
                 subtitle: artist.genre || "Artist",
-                imageUrl: artist.image_url || artist.imageUrl,
+                imageUrl: artist.imageUrl || artist.imageUrl,
                 slug: artist.id,
                 reason: "Similar to artists you follow and like",
                 confidence: Math.round(artist.score || 75),
                 metadata: {
                   genres: artist.genres ? [artist.genre] : [],
-                  followerCount: artist.follower_count,
+                  followerCount: artist.followerCount,
                   popularity: artist.popularity,
                 },
               })),
@@ -144,7 +144,7 @@ export function PersonalizedRecommendations({
                 type: "venue" as const,
                 title: venue.name,
                 subtitle: `${venue.city}, ${venue.state}`,
-                imageUrl: venue.image_url || venue.imageUrl,
+                imageUrl: venue.imageUrl || venue.imageUrl,
                 slug: venue.id,
                 reason: "Near your location or similar to venues you visit",
                 confidence: Math.round(venue.score || 75),
@@ -184,7 +184,7 @@ export function PersonalizedRecommendations({
           type: item.type as Recommendation["type"],
           title: item.name,
           subtitle: `Trending ${item.type}`,
-          imageUrl: item.image_url || item.imageUrl,
+          imageUrl: item.imageUrl || item.imageUrl,
           slug: item.id,
           reason: `Popular in the last 24 hours with ${item.score} trend points`,
           confidence: Math.min(Math.round(item.score / 10), 100),

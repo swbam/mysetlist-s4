@@ -1,9 +1,8 @@
 "use server";
 
-import { db } from "@repo/database";
-import { shows, venues } from "@repo/database/src/schema";
-import { and, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
+import { createConvexClient } from "~/lib/database";
+import { api } from "../../../convex/_generated/api";
 
 interface GetVenuesParams {
   search?: string;

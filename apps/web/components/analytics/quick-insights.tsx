@@ -1,13 +1,13 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { formatDistanceToNow } from "date-fns";
 import {
   Activity,
@@ -62,19 +62,19 @@ export function QuickInsights({
         { count: totalArtists },
       ] = await Promise.all([
         supabase
-          .from("shows")
+          api.shows
           .select("*", { count: "exact", head: true })
-          .gte("created_at", oneHourAgo.toISOString()),
+          .gte("_creationTime", oneHourAgo.toISOString()),
         supabase
           .from("votes")
           .select("*", { count: "exact", head: true })
-          .gte("created_at", oneHourAgo.toISOString()),
+          .gte("_creationTime", oneHourAgo.toISOString()),
         supabase
           .from("attendance")
           .select("*", { count: "exact", head: true })
-          .gte("created_at", oneHourAgo.toISOString()),
+          .gte("_creationTime", oneHourAgo.toISOString()),
         supabase.from("profiles").select("*", { count: "exact", head: true }),
-        supabase.from("artists").select("*", { count: "exact", head: true }),
+        supabaseapi.artists.select("*", { count: "exact", head: true }),
       ]);
 
       const insights: QuickInsight[] = [];
@@ -148,20 +148,20 @@ export function QuickInsights({
 
       // Trending insights based on recent data
       const { data: trendingArtists } = await supabase
-        .from("artists")
-        .select("name, trending_score")
-        .order("trending_score", { ascending: false })
+        api.artists
+        .select("name, trendingScore")
+        .order("trendingScore", { ascending: false })
         .limit(1);
 
       if (trendingArtists && trendingArtists.length > 0) {
         const topArtist = trendingArtists[0];
-        if (topArtist?.trending_score && topArtist.trending_score > 80) {
+        if (topArtist?.trendingScore && topArtist.trendingScore > 80) {
           insights.push({
             id: "trending-artist",
             type: "trending_up",
             title: "Hot Artist Alert",
-            description: `${topArtist.name ?? "Artist"} is trending with score ${topArtist.trending_score ?? 0}`,
-            value: topArtist.trending_score ?? 0,
+            description: `${topArtist.name ?? "Artist"} is trending with score ${topArtist.trendingScore ?? 0}`,
+            value: topArtist.trendingScore ?? 0,
             timestamp: now,
             icon: TrendingUp,
             color: "text-red-600",

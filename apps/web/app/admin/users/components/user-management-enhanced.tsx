@@ -1,14 +1,14 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/design-system/dialog";
+} from "@repo/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,15 +24,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/dropdown-menu";
-import { Input } from "@repo/design-system/input";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/select";
+} from "@repo/design-system";
 import {
   Table,
   TableBody,
@@ -40,14 +40,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/design-system/table";
+} from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
-import { Textarea } from "@repo/design-system/textarea";
+} from "@repo/design-system";
+import { Textarea } from "@repo/design-system";
 import { format } from "date-fns";
 import {
   Activity,
@@ -74,7 +74,7 @@ interface User {
   display_name?: string;
   username?: string;
   role: "user" | "moderator" | "admin";
-  created_at: string;
+  _creationTime: string;
   last_login_at?: string;
   email_confirmed_at?: string;
   avatar_url?: string;
@@ -461,7 +461,7 @@ export default function UserManagementEnhanced() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {format(new Date(user.created_at), "MMM d, yyyy")}
+                    {format(new Date(user._creationTime), "MMM d, yyyy")}
                   </TableCell>
                   <TableCell>
                     {user.last_login_at
@@ -607,7 +607,7 @@ export default function UserManagementEnhanced() {
                     <div className="grid gap-2 text-sm">
                       <div>
                         <strong>Joined:</strong>{" "}
-                        {format(new Date(selectedUser.created_at), "PPP")}
+                        {format(new Date(selectedUser._creationTime), "PPP")}
                       </div>
                       <div>
                         <strong>Last Login:</strong>{" "}

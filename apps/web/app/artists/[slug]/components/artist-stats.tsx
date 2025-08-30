@@ -8,22 +8,22 @@ interface ArtistStatsProps {
 export async function ArtistStats({ artistId }: ArtistStatsProps) {
   // Fetch artist stats (total shows, avg setlist length) via raw SQL
   const statsRes = (await db.execute(
-    sql`SELECT total_shows, avg_setlist_length
+    sql`SELECT totalShows, avg_setlist_length
      FROM artist_stats
-     WHERE artist_id = ${artistId}
+     WHERE artistId = ${artistId}
      LIMIT 1`,
   )) as unknown as {
-    rows?: { total_shows: number | null; avg_setlist_length: number | null }[];
+    rows?: { totalShows: number | null; avg_setlist_length: number | null }[];
   };
 
   const artistStatsData = statsRes.rows?.[0] ?? {
-    total_shows: 0,
+    totalShows: 0,
     avg_setlist_length: null,
   };
 
   // Fetch follower count
   const followersRes = (await db.execute(
-    sql`SELECT COUNT(*)::int AS cnt FROM user_follows_artists WHERE artist_id = ${artistId}`,
+    sql`SELECT COUNT(*)::int AS cnt FROM user_follows_artists WHERE artistId = ${artistId}`,
   )) as unknown as { rows?: { cnt: number }[] };
 
   const followerCount = followersRes.rows?.[0]?.cnt ?? 0;
@@ -33,7 +33,7 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
     sql`SELECT COUNT(DISTINCT ss.song_id)::int AS cnt
        FROM setlist_songs ss
        JOIN setlists s ON ss.setlist_id = s.id
-       WHERE s.artist_id = ${artistId}`,
+       WHERE s.artistId = ${artistId}`,
   )) as unknown as { rows?: { cnt: number }[] };
 
   const totalSongs = songCountRes.rows?.[0]?.cnt ?? 0;
@@ -53,7 +53,7 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
           <Calendar className="h-4 w-4" />
           <span className="text-sm">Total Shows</span>
         </div>
-        <p className="font-bold text-2xl">{artistStatsData.total_shows ?? 0}</p>
+        <p className="font-bold text-2xl">{artistStatsData.totalShows ?? 0}</p>
       </div>
 
       <div className="rounded-lg border bg-card p-4">

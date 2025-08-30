@@ -1,14 +1,14 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
-import { Calendar } from "@repo/design-system/calendar";
-import { Input } from "@repo/design-system/input";
-import { Label } from "@repo/design-system/label";
+import { Button } from "@repo/design-system";
+import { Calendar } from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@repo/design-system/popover";
+} from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import type { Dictionary } from "@repo/internationalization";
 import { format } from "date-fns";

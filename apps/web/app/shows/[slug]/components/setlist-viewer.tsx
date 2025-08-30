@@ -4,22 +4,22 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/dropdown-menu";
+} from "@repo/design-system";
 import { formatDistanceToNow } from "date-fns";
 import {
   ArrowUpDown,
@@ -147,7 +147,7 @@ export function SetlistViewer({
                 upvotes: item.votes?.length || 0, // Simplified: presence = upvote
                 downvotes: 0, // No downvotes in simplified system
                 userVote:
-                  item.votes?.find((v: any) => v.user_id === currentUser?.id)
+                  item.votes?.find((v: any) => v.userId === currentUser?.id)
                     ? "up" : null,
               })),
             };
@@ -276,7 +276,7 @@ export function SetlistViewer({
                 </div>
                 <span>•</span>
                 <span>
-                  {formatDistanceToNow(new Date(setlistData.created_at))} ago
+                  {formatDistanceToNow(new Date(setlistData._creationTime))} ago
                 </span>
               </div>
             </div>

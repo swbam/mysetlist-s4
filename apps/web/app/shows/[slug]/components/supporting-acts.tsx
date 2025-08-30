@@ -1,12 +1,12 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
+import { Badge } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { CheckCircle2, Clock, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,7 +21,7 @@ type SupportingActsProps = {
       id: string;
       name: string;
       slug: string;
-      image_url?: string;
+      imageUrl?: string;
       verified?: boolean;
     };
   }>;
@@ -55,9 +55,9 @@ export function SupportingActs({ artists }: SupportingActsProps) {
             >
               {/* Artist Image */}
               <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted">
-                {act.artist.image_url ? (
+                {act.artist.imageUrl ? (
                   <Image
-                    src={act.artist.image_url}
+                    src={act.artist.imageUrl}
                     alt={act.artist.name}
                     fill
                     className="object-cover rounded-full"

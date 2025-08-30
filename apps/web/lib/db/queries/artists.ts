@@ -86,47 +86,47 @@ export class ArtistQueries {
           totalShows: sql<number>`(
             SELECT COUNT(DISTINCT s.id)
             FROM shows s
-            LEFT JOIN show_artists sa ON sa.show_id = s.id
-            WHERE s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id}
+            LEFT JOIN show_artists sa ON sa.showId = s.id
+            WHERE s.artistId = ${artists.id} OR sa.artistId = ${artists.id}
           )`,
           upcomingShows: sql<number>`(
             SELECT COUNT(DISTINCT s.id)
             FROM shows s
-            LEFT JOIN show_artists sa ON sa.show_id = s.id
-            WHERE (s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id})
+            LEFT JOIN show_artists sa ON sa.showId = s.id
+            WHERE (s.artistId = ${artists.id} OR sa.artistId = ${artists.id})
             AND s.date >= CURRENT_DATE
             AND s.status IN ('upcoming', 'announced')
           )`,
           pastShows: sql<number>`(
             SELECT COUNT(DISTINCT s.id)
             FROM shows s
-            LEFT JOIN show_artists sa ON sa.show_id = s.id
-            WHERE (s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id})
+            LEFT JOIN show_artists sa ON sa.showId = s.id
+            WHERE (s.artistId = ${artists.id} OR sa.artistId = ${artists.id})
             AND s.date < CURRENT_DATE
             AND s.status = 'completed'
           )`,
           followerCount: sql<number>`(
             SELECT COUNT(*)
             FROM user_follows_artists ufa
-            WHERE ufa.artist_id = ${artists.id}
+            WHERE ufa.artistId = ${artists.id}
           )`,
           totalSongs: sql<number>`(
             SELECT COUNT(DISTINCT s.id)
             FROM songs s
-            WHERE s.artist_id = ${artists.id}
+            WHERE s.artistId = ${artists.id}
           )`,
           avgAttendance: sql<number>`(
-            SELECT COALESCE(AVG(s.attendee_count), 0)
+            SELECT COALESCE(AVG(s.attendeeCount), 0)
             FROM shows s
-            LEFT JOIN show_artists sa ON sa.show_id = s.id
-            WHERE (s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id})
-            AND s.attendee_count > 0
+            LEFT JOIN show_artists sa ON sa.showId = s.id
+            WHERE (s.artistId = ${artists.id} OR sa.artistId = ${artists.id})
+            AND s.attendeeCount > 0
           )`,
           totalVotes: sql<number>`(
-            SELECT COALESCE(SUM(s.vote_count), 0)
+            SELECT COALESCE(SUM(s.voteCount), 0)
             FROM shows s
-            LEFT JOIN show_artists sa ON sa.show_id = s.id
-            WHERE s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id}
+            LEFT JOIN show_artists sa ON sa.showId = s.id
+            WHERE s.artistId = ${artists.id} OR sa.artistId = ${artists.id}
           )`,
           lastSyncAt: sql<string>`(
             SELECT MAX(sj.completed_at)
@@ -155,27 +155,27 @@ export class ArtistQueries {
           totalShows: sql<number>`(
             SELECT COUNT(DISTINCT s.id)
             FROM shows s
-            LEFT JOIN show_artists sa ON sa.show_id = s.id
-            WHERE s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id}
+            LEFT JOIN show_artists sa ON sa.showId = s.id
+            WHERE s.artistId = ${artists.id} OR sa.artistId = ${artists.id}
           )`,
           upcomingShows: sql<number>`(
             SELECT COUNT(DISTINCT s.id)
             FROM shows s
-            LEFT JOIN show_artists sa ON sa.show_id = s.id
-            WHERE (s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id})
+            LEFT JOIN show_artists sa ON sa.showId = s.id
+            WHERE (s.artistId = ${artists.id} OR sa.artistId = ${artists.id})
             AND s.date >= CURRENT_DATE
             AND s.status IN ('upcoming', 'announced')
           )`,
           followerCount: sql<number>`(
             SELECT COUNT(*)
             FROM user_follows_artists ufa
-            WHERE ufa.artist_id = ${artists.id}
+            WHERE ufa.artistId = ${artists.id}
           )`,
           recentActivity: sql<string>`(
             SELECT MAX(s.updated_at)
             FROM shows s
-            LEFT JOIN show_artists sa ON sa.show_id = s.id
-            WHERE s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id}
+            LEFT JOIN show_artists sa ON sa.showId = s.id
+            WHERE s.artistId = ${artists.id} OR sa.artistId = ${artists.id}
           )`
         })
         .from(artists)
@@ -234,19 +234,19 @@ export class ArtistQueries {
             followerCount: sql<number>`(
               SELECT COUNT(*)
               FROM user_follows_artists ufa
-              WHERE ufa.artist_id = ${artists.id}
+              WHERE ufa.artistId = ${artists.id}
             )`,
             showCount: sql<number>`(
               SELECT COUNT(DISTINCT s.id)
               FROM shows s
-              LEFT JOIN show_artists sa ON sa.show_id = s.id
-              WHERE s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id}
+              LEFT JOIN show_artists sa ON sa.showId = s.id
+              WHERE s.artistId = ${artists.id} OR sa.artistId = ${artists.id}
             )`,
             upcomingShows: sql<number>`(
               SELECT COUNT(DISTINCT s.id)
               FROM shows s
-              LEFT JOIN show_artists sa ON sa.show_id = s.id
-              WHERE (s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id})
+              LEFT JOIN show_artists sa ON sa.showId = s.id
+              WHERE (s.artistId = ${artists.id} OR sa.artistId = ${artists.id})
               AND s.date >= CURRENT_DATE
               AND s.status IN ('upcoming', 'announced')
             )`
@@ -302,36 +302,36 @@ export class ArtistQueries {
         WITH trending_metrics AS (
           SELECT 
             a.*,
-            COUNT(DISTINCT ufa.user_id) as current_followers,
-            COUNT(DISTINCT s.id) FILTER (WHERE s.created_at >= ${cutoffDate}) as recent_shows,
-            COUNT(DISTINCT sj.id) FILTER (WHERE sj.created_at >= ${cutoffDate} AND sj.status = 'completed') as recent_syncs,
-            AVG(s.vote_count) FILTER (WHERE s.created_at >= ${cutoffDate}) as avg_recent_votes,
-            SUM(s.attendee_count) FILTER (WHERE s.created_at >= ${cutoffDate}) as recent_attendance,
+            COUNT(DISTINCT ufa.userId) as current_followers,
+            COUNT(DISTINCT s.id) FILTER (WHERE s._creationTime >= ${cutoffDate}) as recent_shows,
+            COUNT(DISTINCT sj.id) FILTER (WHERE sj._creationTime >= ${cutoffDate} AND sj.status = 'completed') as recent_syncs,
+            AVG(s.voteCount) FILTER (WHERE s._creationTime >= ${cutoffDate}) as avg_recent_votes,
+            SUM(s.attendeeCount) FILTER (WHERE s._creationTime >= ${cutoffDate}) as recent_attendance,
             (
-              (COUNT(DISTINCT ufa.user_id) * 0.3) +
-              (COUNT(DISTINCT s.id) FILTER (WHERE s.created_at >= ${cutoffDate}) * 10) +
-              (COALESCE(AVG(s.vote_count) FILTER (WHERE s.created_at >= ${cutoffDate}), 0) * 0.5) +
-              (COALESCE(SUM(s.attendee_count) FILTER (WHERE s.created_at >= ${cutoffDate}), 0) * 0.001) +
+              (COUNT(DISTINCT ufa.userId) * 0.3) +
+              (COUNT(DISTINCT s.id) FILTER (WHERE s._creationTime >= ${cutoffDate}) * 10) +
+              (COALESCE(AVG(s.voteCount) FILTER (WHERE s._creationTime >= ${cutoffDate}), 0) * 0.5) +
+              (COALESCE(SUM(s.attendeeCount) FILTER (WHERE s._creationTime >= ${cutoffDate}), 0) * 0.001) +
               (a.popularity * 0.1)
-            ) as trending_score
+            ) as trendingScore
           FROM artists a
-          LEFT JOIN user_follows_artists ufa ON ufa.artist_id = a.id
-          LEFT JOIN shows s ON (s.headliner_artist_id = a.id OR EXISTS (
-            SELECT 1 FROM show_artists sa WHERE sa.show_id = s.id AND sa.artist_id = a.id
+          LEFT JOIN user_follows_artists ufa ON ufa.artistId = a.id
+          LEFT JOIN shows s ON (s.artistId = a.id OR EXISTS (
+            SELECT 1 FROM show_artists sa WHERE sa.showId = s.id AND sa.artistId = a.id
           ))
           LEFT JOIN sync_jobs sj ON (sj.entity_type = 'artist' AND sj.entity_id = a.id)
-          WHERE a.trending_score > 0
+          WHERE a.trendingScore > 0
           GROUP BY a.id
-          HAVING COUNT(DISTINCT ufa.user_id) >= ${minFollowers}
+          HAVING COUNT(DISTINCT ufa.userId) >= ${minFollowers}
         )
         SELECT 
           *,
           ${includeStats ? sql`
-            (SELECT COUNT(*) FROM songs WHERE artist_id = trending_metrics.id) as total_songs,
+            (SELECT COUNT(*) FROM songs WHERE artistId = trending_metrics.id) as total_songs,
             (SELECT MAX(completed_at) FROM sync_jobs WHERE entity_type = 'artist' AND entity_id = trending_metrics.id AND status = 'completed') as last_sync_at
           ` : sql`NULL as total_songs, NULL as last_sync_at`}
         FROM trending_metrics
-        ORDER BY trending_score DESC
+        ORDER BY trendingScore DESC
         LIMIT ${limit}
       `;
 
@@ -398,23 +398,23 @@ export class ArtistQueries {
               (
                 SELECT COALESCE(
                   COUNT(DISTINCT v.id) * 1.0 / NULLIF(
-                    (SELECT COUNT(DISTINCT venue_id) FROM shows WHERE headliner_artist_id = ${artistId}),
+                    (SELECT COUNT(DISTINCT venueId) FROM shows WHERE artistId = ${artistId}),
                     0
                   ),
                   0
                 )
                 FROM shows s1
-                JOIN shows s2 ON s1.venue_id = s2.venue_id
-                JOIN venues v ON s1.venue_id = v.id
-                WHERE s1.headliner_artist_id = a.id 
-                AND s2.headliner_artist_id = ${artistId}
+                JOIN shows s2 ON s1.venueId = s2.venueId
+                JOIN venues v ON s1.venueId = v.id
+                WHERE s1.artistId = a.id 
+                AND s2.artistId = ${artistId}
               ) * 0.2
             ) as similarity_score,
             
             ${includeStats ? sql`
-              (SELECT COUNT(*) FROM user_follows_artists WHERE artist_id = a.id) as follower_count,
-              (SELECT COUNT(*) FROM shows WHERE headliner_artist_id = a.id) as show_count
-            ` : sql`0 as follower_count, 0 as show_count`}
+              (SELECT COUNT(*) FROM user_follows_artists WHERE artistId = a.id) as followerCount,
+              (SELECT COUNT(*) FROM shows WHERE artistId = a.id) as show_count
+            ` : sql`0 as followerCount, 0 as show_count`}
             
           FROM artists a
           WHERE a.id != ${artistId}
@@ -478,7 +478,7 @@ export class ArtistQueries {
             setlistCount: sql<number>`(
               SELECT COUNT(*)
               FROM setlists sl
-              WHERE sl.show_id = ${shows.id}
+              WHERE sl.showId = ${shows.id}
             )`
           } : {})
         })
@@ -529,7 +529,7 @@ export class ArtistQueries {
             userArtistCount: sql<number>`(
               SELECT COUNT(*)
               FROM user_follows_artists ufa2
-              WHERE ufa2.user_id = ${userFollowsArtists.userId}
+              WHERE ufa2.userId = ${userFollowsArtists.userId}
             )`
           } : {})
         })
@@ -601,21 +601,21 @@ export class ArtistQueries {
           followerCount: sql<number>`(
             SELECT COUNT(*)
             FROM user_follows_artists ufa
-            WHERE ufa.artist_id = ${artists.id}
+            WHERE ufa.artistId = ${artists.id}
           )`,
           upcomingShowCount: sql<number>`(
             SELECT COUNT(DISTINCT s.id)
             FROM shows s
-            LEFT JOIN show_artists sa ON sa.show_id = s.id
-            WHERE (s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id})
+            LEFT JOIN show_artists sa ON sa.showId = s.id
+            WHERE (s.artistId = ${artists.id} OR sa.artistId = ${artists.id})
             AND s.date >= CURRENT_DATE
             AND s.status IN ('upcoming', 'announced')
           )`,
           recentActivityCount: sql<number>`(
             SELECT COUNT(DISTINCT s.id)
             FROM shows s
-            LEFT JOIN show_artists sa ON sa.show_id = s.id
-            WHERE (s.headliner_artist_id = ${artists.id} OR sa.artist_id = ${artists.id})
+            LEFT JOIN show_artists sa ON sa.showId = s.id
+            WHERE (s.artistId = ${artists.id} OR sa.artistId = ${artists.id})
             AND s.updated_at >= ${thirtyDaysAgo}
           )`
         })
@@ -644,7 +644,7 @@ export class ArtistQueries {
         )
         SELECT *
         FROM filtered_artists
-        WHERE follower_count >= ${minFollowers}
+        WHERE followerCount >= ${minFollowers}
         ${hasUpcomingShows ? sql`AND upcoming_show_count > 0` : sql``}
         ${hasRecentActivity ? sql`AND recent_activity_count > 0` : sql``}
         ORDER BY ${orderByClause.getSQL()}

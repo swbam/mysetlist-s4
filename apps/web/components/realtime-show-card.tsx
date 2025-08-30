@@ -1,11 +1,11 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
+import { Badge } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";

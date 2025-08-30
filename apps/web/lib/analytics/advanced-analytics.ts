@@ -113,18 +113,18 @@ class AdvancedAnalyticsService {
         // Get user registration cohorts
         const { data: users, error } = await supabase
           .from("users")
-          .select("id, created_at")
-          .gte("created_at", startDate)
-          .lte("created_at", endDate);
+          .select("id, _creationTime")
+          .gte("_creationTime", startDate)
+          .lte("_creationTime", endDate);
 
         if (error) throw error;
 
         // Get user activity data
         const { data: activities, error: activityError } = await supabase
           .from("user_sessions")
-          .select("user_id, created_at")
-          .gte("created_at", startDate)
-          .lte("created_at", endDate);
+          .select("userId, _creationTime")
+          .gte("_creationTime", startDate)
+          .lte("_creationTime", endDate);
 
         if (activityError) throw activityError;
 
@@ -166,7 +166,7 @@ class AdvancedAnalyticsService {
 
     // Group users by cohort period
     users.forEach((user) => {
-      const cohortKey = this.getCohortKey(user.created_at, cohortType);
+      const cohortKey = this.getCohortKey(user._creationTime, cohortType);
 
       if (!cohorts[cohortKey]) {
         cohorts[cohortKey] = {
@@ -235,9 +235,9 @@ class AdvancedAnalyticsService {
       }
 
       const activeUsers = activities.filter((activity) => {
-        const activityDate = new Date(activity.created_at);
+        const activityDate = new Date(activity._creationTime);
         return (
-          userIds.includes(activity.user_id) &&
+          userIds.includes(activity.userId) &&
           activityDate >= periodStart &&
           activityDate < periodEnd
         );
@@ -338,17 +338,17 @@ class AdvancedAnalyticsService {
         // Get user registration and activity data
         const { data: users, error } = await supabase
           .from("users")
-          .select("id, created_at")
-          .gte("created_at", startDate)
-          .lte("created_at", endDate);
+          .select("id, _creationTime")
+          .gte("_creationTime", startDate)
+          .lte("_creationTime", endDate);
 
         if (error) throw error;
 
         const { data: sessions, error: sessionError } = await supabase
           .from("user_sessions")
-          .select("user_id, created_at")
-          .gte("created_at", startDate)
-          .lte("created_at", endDate);
+          .select("userId, _creationTime")
+          .gte("_creationTime", startDate)
+          .lte("_creationTime", endDate);
 
         if (sessionError) throw sessionError;
 
@@ -408,15 +408,15 @@ class AdvancedAnalyticsService {
     let retainedUsers = 0;
 
     users.forEach((user) => {
-      const signupDate = new Date(user.created_at);
+      const signupDate = new Date(user._creationTime);
       const dayNDate = new Date(signupDate);
       dayNDate.setDate(dayNDate.getDate() + dayN);
 
       // Check if user was active on day N
       const wasActive = sessions.some((session) => {
-        const sessionDate = new Date(session.created_at);
+        const sessionDate = new Date(session._creationTime);
         return (
-          session.user_id === user.id &&
+          session.userId === user.id &&
           sessionDate >= dayNDate &&
           sessionDate < new Date(dayNDate.getTime() + 24 * 60 * 60 * 1000)
         );
@@ -448,13 +448,13 @@ class AdvancedAnalyticsService {
   ): Promise<Record<string, number>> {
     const segments = {
       "New Users": users.filter((u) => {
-        const signupDate = new Date(u.created_at);
+        const signupDate = new Date(u._creationTime);
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         return signupDate >= thirtyDaysAgo;
       }),
       "Returning Users": users.filter((u) => {
-        const signupDate = new Date(u.created_at);
+        const signupDate = new Date(u._creationTime);
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         return signupDate < thirtyDaysAgo;
@@ -481,8 +481,8 @@ class AdvancedAnalyticsService {
 
     const activeUsers = new Set(
       sessions
-        .filter((session) => new Date(session.created_at) >= thirtyDaysAgo)
-        .map((session) => session.user_id),
+        .filter((session) => new Date(session._creationTime) >= thirtyDaysAgo)
+        .map((session) => session.userId),
     );
 
     const totalUsers = users.length;
@@ -496,19 +496,19 @@ class AdvancedAnalyticsService {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const recentSessions = sessions.filter(
-      (session) => new Date(session.created_at) >= thirtyDaysAgo,
+      (session) => new Date(session._creationTime) >= thirtyDaysAgo,
     );
 
     // Calculate daily active users
     const dailyActiveUsers = new Map<string, Set<string>>();
 
     recentSessions.forEach((session) => {
-      const day = new Date(session.created_at).toISOString().split("T")[0];
+      const day = new Date(session._creationTime).toISOString().split("T")[0];
       if (day && !dailyActiveUsers.has(day)) {
         dailyActiveUsers.set(day, new Set());
       }
       if (day) {
-        dailyActiveUsers.get(day)?.add(session.user_id);
+        dailyActiveUsers.get(day)?.add(session.userId);
       }
     });
 
@@ -520,7 +520,7 @@ class AdvancedAnalyticsService {
       ) / dailyActiveUsers.size;
 
     // Calculate MAU
-    const mau = new Set(recentSessions.map((s) => s.user_id)).size;
+    const mau = new Set(recentSessions.map((s) => s.userId)).size;
 
     return mau > 0 ? (dau / mau) * 100 : 0;
   }
@@ -540,17 +540,17 @@ class AdvancedAnalyticsService {
         // Get historical data
         const { data: users, error } = await supabase
           .from("users")
-          .select("id, created_at")
-          .gte("created_at", startDate)
-          .lte("created_at", endDate);
+          .select("id, _creationTime")
+          .gte("_creationTime", startDate)
+          .lte("_creationTime", endDate);
 
         if (error) throw error;
 
         const { data: sessions, error: sessionError } = await supabase
           .from("user_sessions")
-          .select("user_id, created_at")
-          .gte("created_at", startDate)
-          .lte("created_at", endDate);
+          .select("userId, _creationTime")
+          .gte("_creationTime", startDate)
+          .lte("_creationTime", endDate);
 
         if (sessionError) throw sessionError;
 
@@ -643,7 +643,7 @@ class AdvancedAnalyticsService {
     }> = [];
 
     users.forEach((user) => {
-      const userSessions = sessions.filter((s) => s.user_id === user.id);
+      const userSessions = sessions.filter((s) => s.userId === user.id);
       const riskFactors: string[] = [];
       let churnProbability = 0;
 
@@ -651,7 +651,7 @@ class AdvancedAnalyticsService {
       if (userSessions.length > 0) {
         const lastActivity = new Date(
           Math.max(
-            ...userSessions.map((s) => new Date(s.created_at).getTime()),
+            ...userSessions.map((s) => new Date(s._creationTime).getTime()),
           ),
         );
         const daysSinceLastActivity = Math.floor(
@@ -676,7 +676,7 @@ class AdvancedAnalyticsService {
 
       // Factor 3: Account age
       const accountAge = Math.floor(
-        (Date.now() - new Date(user.created_at).getTime()) /
+        (Date.now() - new Date(user._creationTime).getTime()) /
           (1000 * 60 * 60 * 24),
       );
       if (accountAge < 7) {
@@ -709,15 +709,15 @@ class AdvancedAnalyticsService {
     // Simplified LTV calculation
     const segments = {
       "High Activity": users.filter((u) => {
-        const userSessions = sessions.filter((s) => s.user_id === u.id);
+        const userSessions = sessions.filter((s) => s.userId === u.id);
         return userSessions.length > 10;
       }),
       "Medium Activity": users.filter((u) => {
-        const userSessions = sessions.filter((s) => s.user_id === u.id);
+        const userSessions = sessions.filter((s) => s.userId === u.id);
         return userSessions.length >= 5 && userSessions.length <= 10;
       }),
       "Low Activity": users.filter((u) => {
-        const userSessions = sessions.filter((s) => s.user_id === u.id);
+        const userSessions = sessions.filter((s) => s.userId === u.id);
         return userSessions.length < 5;
       }),
     };
@@ -727,7 +727,7 @@ class AdvancedAnalyticsService {
       const avgSessionsPerUser =
         segmentUsers.length > 0
           ? sessions.filter((s) =>
-              segmentUsers.some((u: any) => u.id === s.user_id),
+              segmentUsers.some((u: any) => u.id === s.userId),
             ).length / segmentUsers.length
           : 0;
 
@@ -793,7 +793,7 @@ class AdvancedAnalyticsService {
     const monthlyData: Record<string, number> = {};
 
     users.forEach((user) => {
-      const date = new Date(user.created_at);
+      const date = new Date(user._creationTime);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
       monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
     });
@@ -824,14 +824,14 @@ class AdvancedAnalyticsService {
           // Get users for this step (simplified example)
           const { data: events, error } = await supabase
             .from("events")
-            .select("user_id, created_at")
+            .select("userId, _creationTime")
             .eq("event_type", step)
-            .gte("created_at", startDate)
-            .lte("created_at", endDate);
+            .gte("_creationTime", startDate)
+            .lte("_creationTime", endDate);
 
           if (error) throw error;
 
-          const uniqueUsers = new Set(events?.map((e) => e.user_id) || []).size;
+          const uniqueUsers = new Set(events?.map((e) => e.userId) || []).size;
           const conversionRate =
             i === 0
               ? 100
@@ -918,17 +918,17 @@ class AdvancedAnalyticsService {
         // Get user activity data
         const { data: users, error } = await supabase
           .from("users")
-          .select("id, created_at")
-          .gte("created_at", startDate)
-          .lte("created_at", endDate);
+          .select("id, _creationTime")
+          .gte("_creationTime", startDate)
+          .lte("_creationTime", endDate);
 
         if (error) throw error;
 
         const { data: sessions, error: sessionError } = await supabase
           .from("user_sessions")
-          .select("user_id, created_at")
-          .gte("created_at", startDate)
-          .lte("created_at", endDate);
+          .select("userId, _creationTime")
+          .gte("_creationTime", startDate)
+          .lte("_creationTime", endDate);
 
         if (sessionError) throw sessionError;
 
@@ -970,15 +970,15 @@ class AdvancedAnalyticsService {
     monetary: number;
   }> {
     return users.map((user) => {
-      const userSessions = sessions.filter((s) => s.user_id === user.id);
+      const userSessions = sessions.filter((s) => s.userId === user.id);
 
       // Recency: Days since last activity
       const lastActivity =
         userSessions.length > 0
           ? Math.max(
-              ...userSessions.map((s) => new Date(s.created_at).getTime()),
+              ...userSessions.map((s) => new Date(s._creationTime).getTime()),
             )
-          : new Date(user.created_at).getTime();
+          : new Date(user._creationTime).getTime();
 
       const recency = Math.floor(
         (Date.now() - lastActivity) / (1000 * 60 * 60 * 24),

@@ -3,7 +3,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { Heart, Music, Users, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import { createPageMetadata } from "~/lib/seo-metadata";

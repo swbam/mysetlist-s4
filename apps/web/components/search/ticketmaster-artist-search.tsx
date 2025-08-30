@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Input } from "@repo/design-system/input";
-import { Skeleton } from "@repo/design-system/skeleton";
+import { Badge } from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Skeleton } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { Music, Search, Sparkles } from "lucide-react";
 import Image from "next/image";

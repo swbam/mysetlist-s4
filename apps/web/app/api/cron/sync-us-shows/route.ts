@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       SELECT s.id, s.ticketmaster_id, s.date, s.last_sync_at, 
              v.name as venue_name, v.city, v.state, v.timezone, v.country
       FROM shows s
-      JOIN venues v ON s.venue_id = v.id
+      JOIN venues v ON s.venueId = v.id
       WHERE v.country = 'US'
       AND s.date BETWEEN NOW() AND NOW() + INTERVAL '30 days'
       AND (s.last_sync_at IS NULL OR s.last_sync_at < NOW() - INTERVAL '12 hours')

@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
-import { Input } from "@repo/design-system/input";
+import { Button } from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Clock, Search, TrendingUp, X } from "lucide-react";

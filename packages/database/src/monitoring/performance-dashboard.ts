@@ -88,9 +88,9 @@ export class DatabasePerformanceMonitor {
     `);
 
     const bufferCache =
-      result.rows.find((r) => r.cache_type === "buffer_cache")?.hit_ratio || 0;
+      result.rows.find((r: { cache_type: string; }) => r.cache_type === "buffer_cache")?.hit_ratio || 0;
     const indexCache =
-      result.rows.find((r) => r.cache_type === "index_cache")?.hit_ratio || 0;
+      result.rows.find((r: { cache_type: string; }) => r.cache_type === "index_cache")?.hit_ratio || 0;
 
     const avgHitRatio = (bufferCache + indexCache) / 2;
 
@@ -136,7 +136,7 @@ export class DatabasePerformanceMonitor {
 
     if (unusedIndexes.rows.length > 0) {
       recommendations.push(
-        `Review these unused indexes: ${unusedIndexes.rows.map((r) => r.indexname).join(", ")}`,
+        `Review these unused indexes: ${unusedIndexes.rows.map((r: { indexname: any; }) => r.indexname).join(", ")}`,
       );
     }
 
@@ -185,7 +185,7 @@ export class DatabasePerformanceMonitor {
 
     if (heavySeqScanTables.rows.length > 0) {
       recommendations.push(
-        `Consider adding indexes to: ${heavySeqScanTables.rows.map((r) => r.tablename).join(", ")}`,
+        `Consider adding indexes to: ${heavySeqScanTables.rows.map((r: { tablename: any; }) => r.tablename).join(", ")}`,
       );
     }
 

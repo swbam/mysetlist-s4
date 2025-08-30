@@ -1,16 +1,16 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Input } from "@repo/design-system/input";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/select";
-import { Toggle } from "@repo/design-system/toggle";
+} from "@repo/design-system";
+import { Toggle } from "@repo/design-system";
 import { Grid3X3, Loader2, Map, MapPin, Music2, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";

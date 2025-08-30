@@ -4,10 +4,10 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/avatar";
-import { Badge } from "@repo/design-system/badge";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
 import { Crown, Music, Shield, User } from "lucide-react";
-import { cn } from "~/lib/utils";
+import { cn } from "@repo/design-system";
 
 interface UserAvatarProps {
   user: {

@@ -9,9 +9,9 @@ interface Show {
   name: string;
   date: string;
   status: "upcoming" | "ongoing" | "completed";
-  artist_id: string;
-  venue_id: string;
-  created_at: string;
+  artistId: string;
+  venueId: string;
+  _creationTime: string;
   artist?: {
     id: string;
     name: string;
@@ -51,7 +51,7 @@ export function useRealtimeShows({
     try {
       setIsLoading(true);
       let query = supabase
-        .from("shows")
+        api.shows
         .select(
           `
           *,
@@ -63,10 +63,10 @@ export function useRealtimeShows({
         .limit(limit);
 
       if (artistId) {
-        query = query.eq("artist_id", artistId);
+        query = query.eq("artistId", artistId);
       }
       if (venueId) {
-        query = query.eq("venue_id", venueId);
+        query = query.eq("venueId", venueId);
       }
       if (status) {
         query = query.eq("status", status);
@@ -90,10 +90,10 @@ export function useRealtimeShows({
     // Build filters for subscription
     const filters: any = {};
     if (artistId) {
-      filters.artist_id = `eq.${artistId}`;
+      filters.artistId = `eq.${artistId}`;
     }
     if (venueId) {
-      filters.venue_id = `eq.${venueId}`;
+      filters.venueId = `eq.${venueId}`;
     }
     if (status) {
       filters.status = `eq.${status}`;
@@ -116,7 +116,7 @@ export function useRealtimeShows({
         if (payload.new && "id" in payload.new) {
           // Fetch the full show data with relations
           const { data: fullShow } = await supabase
-            .from("shows")
+            api.shows
             .select(
               `
                 *,
@@ -148,15 +148,15 @@ export function useRealtimeShows({
           // Check if this show matches our filters
           if (
             artistId &&
-            "artist_id" in payload.new &&
-            payload.new.artist_id !== artistId
+            "artistId" in payload.new &&
+            payload.new.artistId !== artistId
           ) {
             return;
           }
           if (
             venueId &&
-            "venue_id" in payload.new &&
-            payload.new.venue_id !== venueId
+            "venueId" in payload.new &&
+            payload.new.venueId !== venueId
           ) {
             return;
           }
@@ -170,7 +170,7 @@ export function useRealtimeShows({
 
           // Fetch the full show data with relations
           const { data: fullShow } = await supabase
-            .from("shows")
+            api.shows
             .select(
               `
               *,

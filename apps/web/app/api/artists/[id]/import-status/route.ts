@@ -7,14 +7,14 @@ import { NextResponse } from "next/server";
  */
 function calculateEstimatedTime(importStatus: any): number | null {
   if (
-    !importStatus.created_at ||
+    !importStatus._creationTime ||
     importStatus.stage === "completed" ||
     importStatus.stage === "failed"
   ) {
     return null;
   }
 
-  const startTime = new Date(importStatus.created_at).getTime();
+  const startTime = new Date(importStatus._creationTime).getTime();
   const currentTime = Date.now();
   const elapsedTime = currentTime - startTime;
   const progress = importStatus.percentage || 0;
@@ -54,8 +54,8 @@ export async function GET(
     const { data: importStatus, error } = await supabase
       .from("import_status")
       .select("*")
-      .eq("artist_id", artistId)
-      .order("created_at", { ascending: false })
+      .eq("artistId", artistId)
+      .order("_creationTime", { ascending: false })
       .limit(1)
       .single();
 
@@ -94,13 +94,13 @@ export async function GET(
       progress: importStatus.percentage || 0, // Alias for compatibility
       message: importStatus.message,
       error: importStatus.error,
-      startedAt: importStatus.created_at,
+      startedAt: importStatus._creationTime,
       updatedAt: importStatus.updated_at,
       completedAt: importStatus.completed_at,
       isComplete: importStatus.stage === "completed",
       hasError: importStatus.stage === "failed",
       errorMessage: importStatus.error,
-      artistId: importStatus.artist_id,
+      artistId: importStatus.artistId,
       estimatedTimeRemaining: calculateEstimatedTime(importStatus),
     };
 

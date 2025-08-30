@@ -45,8 +45,8 @@ export async function GET(
           const { data: importStatus, error } = await supabase
             .from("import_status")
             .select("*")
-            .eq("artist_id", artistId)
-            .order("created_at", { ascending: false })
+            .eq("artistId", artistId)
+            .order("_creationTime", { ascending: false })
             .limit(1)
             .single();
 
@@ -77,11 +77,11 @@ export async function GET(
             progress: importStatus.percentage || 0,
             message: importStatus.message || "Processing...",
             timestamp: importStatus.updated_at,
-            artistId: importStatus.artist_id,
+            artistId: importStatus.artistId,
             isComplete: importStatus.stage === "completed",
             hasError: importStatus.stage === "failed",
             errorMessage: importStatus.error,
-            startedAt: importStatus.created_at,
+            startedAt: importStatus._creationTime,
             completedAt: importStatus.completed_at,
           };
 

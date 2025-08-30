@@ -1,11 +1,11 @@
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +13,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/dropdown-menu";
-import { Input } from "@repo/design-system/input";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import {
   Table,
   TableBody,
@@ -22,7 +22,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/design-system/table";
+} from "@repo/design-system";
 import { format } from "date-fns";
 import { AlertTriangle, Ban, Download, Filter, Search } from "lucide-react";
 import { createClient } from "~/lib/supabase/server";
@@ -50,16 +50,16 @@ export default async function UsersPage() {
       _photos:venue_photos(count)
     `,
     )
-    .order("created_at", { ascending: false })
+    .order("_creationTime", { ascending: false })
     .limit(50);
 
   // Get ban information
   const { data: activeBans } = await supabase
     .from("user_bans")
-    .select("user_id")
+    .select("userId")
     .is("lifted_at", null);
 
-  const bannedUserIds = new Set(activeBans?.map((ban) => ban.user_id) ?? []);
+  const bannedUserIds = new Set(activeBans?.map((ban) => ban.userId) ?? []);
 
   return (
     <div className="space-y-6">
@@ -207,7 +207,7 @@ export default async function UsersPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {format(new Date(user.created_at), "MMM d, yyyy")}
+                      {format(new Date(user._creationTime), "MMM d, yyyy")}
                     </TableCell>
                     <TableCell>
                       {user.last_login_at

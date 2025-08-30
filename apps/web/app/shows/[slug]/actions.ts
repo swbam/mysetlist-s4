@@ -2,33 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "~/lib/auth";
-import { createClient } from "~/lib/supabase/server";
-import { setlistPreseeder } from "~/lib/services/ingest/SetlistPreseeder";
+import { createConvexClient } from "~/lib/database";
+import { api } from "~/lib/convex-api";
 
 export async function getShowDetails(slug: string) {
-  const supabase = await createClient();
+  const convex = createConvexClient();
   const user = await getCurrentUser();
 
-  // First, get the basic show data
-  let { data: show, error } = await supabase
-    .from("shows")
-    .select(
-      `
-      *,
-      headliner_artist:artists(*),
-      venue:venues(*),
-      show_artists(
-        *,
-        artist:artists(*)
-      )
-    `,
-    )
-    .eq("slug", slug)
-    .single();
+  // Get show by slug using Convex
+  const show = await convex.query(api.shows.getBySlug, { slug });
 
   if (error) {
     const fallback = await supabase
-      .from("shows")
+      api.shows
       .select("*")
       .eq("slug", slug)
       .single();
@@ -47,7 +33,7 @@ export async function getShowDetails(slug: string) {
     const { data: existingSetlists } = await supabase
       .from("setlists")
       .select("id, type")
-      .eq("show_id", show.id);
+      .eq("showId", show.id);
 
     const hasPredicted = (existingSetlists || []).some((s: any) => s.type === "predicted");
 
@@ -78,12 +64,12 @@ export async function getShowDetails(slug: string) {
         song:songs(*),
         votes(
           id,
-          user_id
+          userId
         )
       )
     `,
     )
-    .eq("show_id", show.id)
+    .eq("showId", show.id)
     .order("order_index", { ascending: true });
 
   // Process setlists to calculate vote counts and separate by type
@@ -92,7 +78,7 @@ export async function getShowDetails(slug: string) {
       const votes = setlistSong.votes || [];
       const upvotes = votes.length; // All votes are upvotes in simplified system
       const userVote =
-        user && votes.some((v) => v.user_id === user.id) ? "up" : null;
+        user && votes.some((v) => v.userId === user.id) ? "up" : null;
 
       return {
         ...setlistSong,
@@ -141,8 +127,8 @@ export async function createSetlist(
   const { data: setlist, error } = await supabase
     .from("setlists")
     .insert({
-      show_id: showId,
-      artist_id: artistId,
+      showId: showId,
+      artistId: artistId,
       type,
       name,
       created_by: user.id,
@@ -176,7 +162,7 @@ export async function createSetlist(
           external_urls
         )
       `)
-      .eq("artist_id", artistId)
+      .eq("artistId", artistId)
       .limit(50);
 
     if (artistSongsData && artistSongsData.length > 0) {
@@ -199,7 +185,7 @@ export async function createSetlist(
     } else {
       // Fallback: Try to get songs from the songs table by artist name
       const { data: artist } = await supabase
-        .from("artists")
+        api.artists
         .select("name")
         .eq("id", artistId)
         .single();
@@ -413,7 +399,7 @@ export async function voteSong(setlistSongId: string, voteType: "up") {
     .from("votes")
     .select("id")
     .eq("setlist_song_id", setlistSongId)
-    .eq("user_id", user.id)
+    .eq("userId", user.id)
     .single();
 
   if (existingVote) {
@@ -425,7 +411,7 @@ export async function voteSong(setlistSongId: string, voteType: "up") {
   // Create new upvote (simplified system - presence = upvote)
   await supabase.from("votes").insert({
     setlist_song_id: setlistSongId,
-    user_id: user.id,
+    userId: user.id,
   });
 
   return { created: true };
@@ -476,7 +462,7 @@ export async function importActualSetlistFromSetlistFm(showId: string) {
 
   // Get show details
   const { data: show } = await supabase
-    .from("shows")
+    api.shows
     .select(`
       *,
       headliner_artist:artists(*),
@@ -501,7 +487,7 @@ export async function importActualSetlistFromSetlistFm(showId: string) {
   const { data: existingActualSetlist } = await supabase
     .from("setlists")
     .select("id")
-    .eq("show_id", showId)
+    .eq("showId", showId)
     .eq("type", "actual")
     .single();
 
@@ -520,7 +506,7 @@ export async function importActualSetlistFromSetlistFm(showId: string) {
     const { data: importedSetlist } = await supabase
       .from("setlists")
       .select("*")
-      .eq("show_id", showId)
+      .eq("showId", showId)
       .eq("type", "actual")
       .single();
 

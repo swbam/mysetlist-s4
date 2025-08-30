@@ -1,6 +1,6 @@
 "use client";
 
-import { Progress } from "@repo/design-system/progress";
+import { Progress } from "@repo/design-system";
 import { CheckCircle2, Clock, Loader2, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { SyncProgress } from "~/lib/sync/progress-tracker";

@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
-import { Card } from "@repo/design-system/card";
+import { Button } from "@repo/design-system";
+import { Card } from "@repo/design-system";
 import { AlertTriangle, ChevronLeft, Home, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";

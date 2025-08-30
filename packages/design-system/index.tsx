@@ -114,4 +114,4 @@ export { cn, capitalize, handleError } from "./lib/utils";
 // Hooks
 export { useToast } from "./hooks/use-toast";
 export { toast } from "./components/ui/use-toast";
-export { useIsMobile } from "./hooks/use-mobile";
+export { useIsMobile } from "./hooks/use-mobile.js";

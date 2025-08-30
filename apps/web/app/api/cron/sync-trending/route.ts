@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Phase 1: Update trending scores
     const phase1Start = Date.now();
     try {
-      await db.execute(sql`SELECT update_trending_scores()`);
+      await db.execute(sql`SELECT update_trendingScores()`);
       results.phases.updateScores.completed = true;
       results.phases.updateScores.duration = Date.now() - phase1Start;
     } catch (error) {

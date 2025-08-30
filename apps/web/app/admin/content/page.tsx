@@ -1,4 +1,5 @@
-import { createClient } from "~/lib/supabase/server";
+import { createConvexClient } from "~/lib/database";
+import { api } from "~/lib/convex-api";
 import ContentClient from "./content-client";
 
 // Force dynamic rendering due to user-specific data fetching
@@ -9,36 +10,15 @@ export default async function ContentPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const supabase = await createClient();
+  const convex = createConvexClient();
   const { locale } = await params;
 
   // Fetch content data
-  const [{ data: artists }, { data: venues }, { data: shows }] =
-    await Promise.all([
-      supabase
-        .from("artists")
-        .select("*, artist_stats(*)")
-        .order("trending_score", { ascending: false })
-        .limit(20),
-      supabase
-        .from("venues")
-        .select("*, _reviews:venue_reviews(count), _photos:venue_photos(count)")
-        .order("created_at", { ascending: false })
-        .limit(20),
-      supabase
-        .from("shows")
-        .select(
-          `
-        *,
-        headliner:artists!shows_headliner_artist_id_fkey(name),
-        venue:venues(name, city),
-        _attendees:show_attendees(count),
-        _setlists:setlists(count)
-      `,
-        )
-        .order("trending_score", { ascending: false })
-        .limit(20),
-    ]);
+  const [artists, venues, shows] = await Promise.all([
+    convex.query(api.artists.getAll, { limit: 20 }),
+    convex.query(api.venues.getAll, { limit: 20 }),
+    convex.query(api.shows.getUpcoming, { limit: 20 }),
+  ]);
 
   return (
     <ContentClient

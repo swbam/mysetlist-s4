@@ -1,14 +1,14 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,15 +16,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/design-system/dropdown-menu";
-import { Input } from "@repo/design-system/input";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/select";
+} from "@repo/design-system";
 import {
   Table,
   TableBody,
@@ -32,7 +32,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/design-system/table";
+} from "@repo/design-system";
 import {
   Calendar,
   CheckCircle,
@@ -67,10 +67,10 @@ interface Show {
   };
   artist: {
     name: string;
-    image_url?: string;
+    imageUrl?: string;
   };
   ticket_url?: string;
-  created_at: string;
+  _creationTime: string;
   updated_at: string;
   setlists_count?: number;
   attendees_count?: number;
@@ -165,7 +165,7 @@ export default function ShowsManagementPage() {
 
     // Fetch shows with related data
     const { data: showsData } = await supabase
-      .from("shows")
+      api.shows
       .select(
         `
 				id,
@@ -174,7 +174,7 @@ export default function ShowsManagementPage() {
 				time,
 				status,
 				ticket_url,
-				created_at,
+				_creationTime,
 				updated_at,
 				venue:venues (
 					name,
@@ -183,7 +183,7 @@ export default function ShowsManagementPage() {
 				),
 				artist:artists (
 					name,
-					image_url
+					imageUrl
 				),
 				setlists (count),
 				attendees (count)
@@ -194,24 +194,24 @@ export default function ShowsManagementPage() {
 
     // Get quick stats
     const { count: total } = await supabase
-      .from("shows")
+      api.shows
       .select("*", { count: "exact", head: true });
 
     const { count: upcoming } = await supabase
-      .from("shows")
+      api.shows
       .select("*", { count: "exact", head: true })
       .eq("status", "upcoming");
 
     const { count: completed } = await supabase
-      .from("shows")
+      api.shows
       .select("*", { count: "exact", head: true })
       .eq("status", "completed");
 
     // Calculate average setlists per show
     const { data: setlistsData } = await supabase
       .from("setlists")
-      .select("show_id")
-      .not("show_id", "is", null);
+      .select("showId")
+      .not("showId", "is", null);
       
     const totalSetlists = setlistsData?.length || 0;
     const avgSetlists = total && total > 0 ? Number((totalSetlists / total).toFixed(1)) : 0;
@@ -220,7 +220,7 @@ export default function ShowsManagementPage() {
     const transformedShows = (showsData || []).map((show: any) => ({
       ...show,
       venue: show.venue?.[0] || { name: "", city: "", state: "" },
-      artist: show.artist?.[0] || { name: "", image_url: "" },
+      artist: show.artist?.[0] || { name: "", imageUrl: "" },
       setlists_count: show.setlists?.[0]?.count || 0,
       attendees_count: show.attendees?.[0]?.count || 0,
     }));
@@ -458,9 +458,9 @@ export default function ShowsManagementPage() {
                   <TableRow key={show.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        {show.artist?.image_url ? (
+                        {show.artist?.imageUrl ? (
                           <img
-                            src={show.artist.image_url}
+                            src={show.artist.imageUrl}
                             alt={show.artist.name}
                             className="h-10 w-10 rounded-full object-cover"
                           />

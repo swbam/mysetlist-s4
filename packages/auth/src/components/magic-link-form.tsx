@@ -3,8 +3,8 @@
 import {
   Alert,
   AlertDescription,
-} from "@repo/design-system/components/ui/alert";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
@@ -12,9 +12,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { Label } from "@repo/design-system";
 import { CheckCircle, Mail } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../hooks/use-auth";
@@ -112,7 +112,7 @@ export function MagicLinkForm() {
               autoComplete="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: { target: { value: any; }; }) => setEmail(e.target.value)}
               className={error ? "border-red-500" : ""}
               placeholder="Enter your email"
             />

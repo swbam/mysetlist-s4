@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@repo/design-system/dialog";
+} from "@repo/design-system";
 import { Music } from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";

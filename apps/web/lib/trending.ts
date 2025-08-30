@@ -8,7 +8,7 @@ export interface TrendingItem {
   votes: number;
   attendees: number;
   recent_activity: number;
-  image_url?: string;
+  imageUrl?: string;
   slug?: string;
   artist_name?: string;
   venue_name?: string;
@@ -31,7 +31,7 @@ const DEFAULT_CONFIG: TrendingConfig = {
   limit: 10,
 };
 
-// calculateTrendingScore function removed - using real trending_score from database only
+// calculateTrendingScore function removed - using real trendingScore from database only
 // No mathematical calculations allowed - all trending scores come from sync system
 
 export async function getTrendingShows(
@@ -42,7 +42,7 @@ export async function getTrendingShows(
 
     // Get shows with proper joins to get real artist and venue names
     const { data: shows, error } = await supabase
-      .from("shows")
+      api.shows
       .select(
         `
         id,
@@ -50,17 +50,17 @@ export async function getTrendingShows(
         name,
         date,
         status,
-        created_at,
-        trending_score,
-        view_count,
-        attendee_count,
-        vote_count,
-        headliner_artist_id,
-        venue_id,
-        artists!headliner_artist_id (
+        _creationTime,
+        trendingScore,
+        viewCount,
+        attendeeCount,
+        voteCount,
+        artistId,
+        venueId,
+        artists!artistId (
           id,
           name,
-          image_url
+          imageUrl
         ),
         venues (
           id,
@@ -71,9 +71,9 @@ export async function getTrendingShows(
         )
       `,
       )
-      .gt("trending_score", 0)
+      .gt("trendingScore", 0)
       .in("status", ["upcoming", "ongoing"])
-      .order("trending_score", { ascending: false })
+      .order("trendingScore", { ascending: false })
       .limit(config.limit);
 
     if (error || !shows) {
@@ -93,11 +93,11 @@ export async function getTrendingShows(
         id: show.id,
         type: "show" as const,
         name: show.name || "Concert Show",
-        score: show.trending_score || 0,
-        votes: show.vote_count || 0,
-        attendees: show.attendee_count || 0,
-        recent_activity: (show.vote_count || 0) + (show.attendee_count || 0),
-        ...(artist?.image_url && { image_url: artist.image_url }),
+        score: show.trendingScore || 0,
+        votes: show.voteCount || 0,
+        attendees: show.attendeeCount || 0,
+        recent_activity: (show.voteCount || 0) + (show.attendeeCount || 0),
+        ...(artist?.imageUrl && { imageUrl: artist.imageUrl }),
         slug: show.slug,
         artist_name: artist?.name || "Artist TBA",
         venue_name: venue
@@ -122,23 +122,23 @@ export async function getTrendingArtists(
 
     // Get artists with highest trending scores
     const { data: artists, error } = await supabase
-      .from("artists")
+      api.artists
       .select(
         `
         id,
         name,
         slug,
-        image_url,
+        imageUrl,
         popularity,
         followers,
-        follower_count,
-        trending_score,
-        created_at,
+        followerCount,
+        trendingScore,
+        _creationTime,
         updated_at
       `,
       )
-      .gt("trending_score", 0)
-      .order("trending_score", { ascending: false })
+      .gt("trendingScore", 0)
+      .order("trendingScore", { ascending: false })
       .limit(config.limit);
 
     if (error || !artists) {
@@ -149,17 +149,17 @@ export async function getTrendingArtists(
     const trendingArtists = artists.map((artist) => {
       // Use real metrics from database only (no mathematical scaling)
       const votes = artist.popularity || 0; // Direct popularity value from Spotify
-      const attendees = artist.follower_count || 0; // App followers
+      const attendees = artist.followerCount || 0; // App followers
 
       return {
         id: artist.id,
         type: "artist" as const,
         name: artist.name,
-        score: artist.trending_score || 0,
+        score: artist.trendingScore || 0,
         votes,
         attendees,
         recent_activity: votes + attendees,
-        image_url: artist.image_url,
+        imageUrl: artist.imageUrl,
         slug: artist.slug,
       };
     });

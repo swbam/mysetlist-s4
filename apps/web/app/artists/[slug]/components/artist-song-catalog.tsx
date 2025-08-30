@@ -1,16 +1,16 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Input } from "@repo/design-system/input";
-import { ScrollArea } from "@repo/design-system/scroll-area";
-import { Skeleton } from "@repo/design-system/skeleton";
+} from "@repo/design-system";
+import { Input } from "@repo/design-system";
+import { ScrollArea } from "@repo/design-system";
+import { Skeleton } from "@repo/design-system";
 import {
   ArrowDown,
   ArrowUp,

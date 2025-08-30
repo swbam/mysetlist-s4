@@ -8,7 +8,6 @@ const nextConfig = {
 
   // Transpile packages from the monorepo
   transpilePackages: [
-    '@repo/database',
     '@repo/design-system',
     '@repo/email',
     '@repo/external-apis',
@@ -16,7 +15,6 @@ const nextConfig = {
     '@repo/internationalization',
     '@repo/next-config',
     '@repo/observability',
-    '@repo/queues',
     '@repo/rate-limit',
     '@repo/security',
     '@repo/seo',

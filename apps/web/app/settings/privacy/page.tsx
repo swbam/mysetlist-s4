@@ -18,7 +18,7 @@ export default async function PrivacySettingsPage() {
   const { data: privacySettings } = await supabase
     .from("user_privacy_settings")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("userId", user.id)
     .single();
 
   return (

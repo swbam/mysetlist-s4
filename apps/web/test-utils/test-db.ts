@@ -35,15 +35,15 @@ export const testDb = {
       .delete()
       .neq("id", "00000000-0000-0000-0000-000000000000");
     await supabase
-      .from("shows")
+      api.shows
       .delete()
       .neq("id", "00000000-0000-0000-0000-000000000000");
     await supabase
-      .from("venues")
+      api.venues
       .delete()
       .neq("id", "00000000-0000-0000-0000-000000000000");
     await supabase
-      .from("artists")
+      api.artists
       .delete()
       .neq("id", "00000000-0000-0000-0000-000000000000");
   },
@@ -56,7 +56,7 @@ export const testDb = {
   async seedTestData() {
     // Insert common test data
     const { data: artist } = await supabase
-      .from("artists")
+      api.artists
       .insert({
         name: "Test Artist",
         slug: "test-artist",
@@ -69,7 +69,7 @@ export const testDb = {
       .single();
 
     const { data: venue } = await supabase
-      .from("venues")
+      api.venues
       .insert({
         name: "Test Venue",
         slug: "test-venue",
@@ -81,12 +81,12 @@ export const testDb = {
       .single();
 
     const { data: show } = await supabase
-      .from("shows")
+      api.shows
       .insert({
         name: "Test Show",
         slug: "test-show",
-        headliner_artist_id: artist.id,
-        venue_id: venue.id,
+        artistId: artist.id,
+        venueId: venue.id,
         date: "2024-12-31",
         start_time: "20:00",
         status: "upcoming",
@@ -109,8 +109,8 @@ export const testDb = {
     const { data: setlist } = await supabase
       .from("setlists")
       .insert({
-        show_id: show.id,
-        artist_id: artist.id,
+        showId: show.id,
+        artistId: artist.id,
         type: "predicted",
         name: "Main Set",
       })
@@ -196,8 +196,8 @@ export const testDataFactory = {
   show: (artistId: string, venueId: string, overrides = {}) => ({
     name: "Test Show",
     slug: "test-show",
-    headliner_artist_id: artistId,
-    venue_id: venueId,
+    artistId: artistId,
+    venueId: venueId,
     date: "2024-12-31",
     status: "upcoming",
     ...overrides,
@@ -213,8 +213,8 @@ export const testDataFactory = {
   }),
 
   setlist: (showId: string, artistId: string, overrides = {}) => ({
-    show_id: showId,
-    artist_id: artistId,
+    showId: showId,
+    artistId: artistId,
     type: "predicted",
     name: "Main Set",
     ...overrides,
@@ -231,7 +231,7 @@ export const testDataFactory = {
   }),
 
   vote: (userId: string, setlistSongId: string, overrides = {}) => ({
-    user_id: userId,
+    userId: userId,
     setlist_song_id: setlistSongId,
     vote_type: "up",
     ...overrides,
@@ -264,7 +264,7 @@ export const testAssertions = {
     const { data } = await supabase
       .from("votes")
       .select("vote_type")
-      .eq("user_id", userId)
+      .eq("userId", userId)
       .eq("setlist_song_id", setlistSongId)
       .maybeSingle();
 
@@ -277,7 +277,7 @@ export const testAssertions = {
 
   async expectArtistExists(slug: string) {
     const { data } = await supabase
-      .from("artists")
+      api.artists
       .select("id")
       .eq("slug", slug)
       .maybeSingle();
@@ -288,7 +288,7 @@ export const testAssertions = {
 
   async expectShowExists(slug: string) {
     const { data } = await supabase
-      .from("shows")
+      api.shows
       .select("id")
       .eq("slug", slug)
       .maybeSingle();

@@ -1,6 +1,6 @@
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
-import { Card, CardContent } from "@repo/design-system/card";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
 import { format } from "date-fns";
 import { Calendar, ChevronRight, Clock, MapPin } from "lucide-react";
 import Image from "next/image";
@@ -34,7 +34,7 @@ async function getUpcomingShows(): Promise<UpcomingShow[]> {
     const supabase = createServiceClient();
 
     const { data: shows, error } = await supabase
-      .from("shows")
+      api.shows
       .select(
         `
         id,
@@ -43,13 +43,13 @@ async function getUpcomingShows(): Promise<UpcomingShow[]> {
         date,
         start_time,
         status,
-        headlinerArtist:artists!shows_headliner_artist_id_fkey(
+        headlinerArtist:artists!shows_artistId_fkey(
           id,
           name,
           slug,
-          image_url
+          imageUrl
         ),
-        venue:venues!shows_venue_id_fkey(
+        venue:venues!shows_venueId_fkey(
           id,
           name,
           slug,
@@ -79,7 +79,7 @@ async function getUpcomingShows(): Promise<UpcomingShow[]> {
         id: show.headlinerArtist?.id || "",
         name: show.headlinerArtist?.name || "",
         slug: show.headlinerArtist?.slug || "",
-        imageUrl: show.headlinerArtist?.image_url || null,
+        imageUrl: show.headlinerArtist?.imageUrl || null,
       },
       venue: show.venue || null,
     }));

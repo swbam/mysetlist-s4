@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/button";
+import { Button } from "@repo/design-system";
 import { AlertCircle } from "lucide-react";
 import { Component, type ReactNode } from "react";
 

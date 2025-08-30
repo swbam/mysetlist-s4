@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent } from "@repo/design-system/card";
+import { Card, CardContent } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { motion } from "framer-motion";
 import { useRef, useState } from "react";

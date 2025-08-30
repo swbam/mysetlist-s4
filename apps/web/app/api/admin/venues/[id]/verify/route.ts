@@ -28,7 +28,7 @@ export async function POST(
 
     // Get venue details
     const { data: venue } = await supabase
-      .from("venues")
+      api.venues
       .select("name, verified")
       .eq("id", venueId)
       .single();
@@ -43,7 +43,7 @@ export async function POST(
 
     // Mark venue as verified
     const { error } = await supabase
-      .from("venues")
+      api.venues
       .update({
         verified: true,
         updated_at: new Date().toISOString(),

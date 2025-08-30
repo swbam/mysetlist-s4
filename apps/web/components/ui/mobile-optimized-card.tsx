@@ -4,7 +4,7 @@ import {
   Card,
   CardContent,
   CardHeader,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import * as React from "react";
 

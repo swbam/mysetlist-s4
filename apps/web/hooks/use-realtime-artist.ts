@@ -5,9 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient } from "~/lib/supabase/client";
 
 interface ArtistFollower {
-  artist_id: string;
-  user_id: string;
-  created_at: string;
+  artistId: string;
+  userId: string;
+  _creationTime: string;
 }
 
 interface UseRealtimeArtistOptions {
@@ -32,7 +32,7 @@ export function useRealtimeArtist({
       const { count, error } = await supabase
         .from("user_follows_artists")
         .select("*", { count: "exact", head: true })
-        .eq("artist_id", artistId);
+        .eq("artistId", artistId);
 
       if (!error && count !== null) {
         setFollowerCount(count);
@@ -57,7 +57,7 @@ export function useRealtimeArtist({
           event: "*",
           schema: "public",
           table: "user_follows_artists",
-          filter: `artist_id=eq.${artistId}`,
+          filter: `artistId=eq.${artistId}`,
         },
         (payload: RealtimePostgresChangesPayload<ArtistFollower>) => {
           if (payload.eventType === "INSERT") {

@@ -85,16 +85,16 @@ export async function GET(request: NextRequest) {
           .from("user_sessions")
           .upsert(
             {
-              user_id: user.id,
+              userId: user.id,
               session_id: sessionId,
               csrf_token_hash: tokenHash,
               expires_at: expiresAt.toISOString(),
               user_agent: payload.userAgent,
               origin: payload.origin,
-              created_at: timestamp,
+              _creationTime: timestamp,
             },
             {
-              onConflict: "user_id,session_id",
+              onConflict: "userId,session_id",
             },
           );
 
@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
         const { data: session } = await supabase
           .from("user_sessions")
           .select("expires_at, csrf_token_hash")
-          .eq("user_id", user.id)
+          .eq("userId", user.id)
           .eq("csrf_token_hash", providedHash)
           .single();
 

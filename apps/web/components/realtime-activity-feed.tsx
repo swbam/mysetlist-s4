@@ -1,13 +1,13 @@
 "use client";
 
-import { Badge } from "@repo/design-system/badge";
+import { Badge } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { ScrollArea } from "@repo/design-system/scroll-area";
+} from "@repo/design-system";
+import { ScrollArea } from "@repo/design-system";
 import { cn } from "@repo/design-system";
 import { formatDistanceToNow } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
@@ -72,7 +72,7 @@ export function RealtimeActivityFeed({
             const activity: Activity = {
               id: `vote-${payload.new['id']}`,
               type: "vote",
-              timestamp: new Date(payload.new['created_at']),
+              timestamp: new Date(payload.new['_creationTime']),
               data: voteData,
             };
             addActivity(activity);
@@ -115,7 +115,7 @@ export function RealtimeActivityFeed({
             const activity: Activity = {
               id: `joined-${payload.new['id']}`,
               type: "user_joined",
-              timestamp: new Date(payload.new['created_at']),
+              timestamp: new Date(payload.new['_creationTime']),
               data: attendeeData,
             };
             addActivity(activity);

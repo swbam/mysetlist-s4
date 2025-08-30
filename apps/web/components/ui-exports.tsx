@@ -7,14 +7,14 @@ export {
   Avatar,
   AvatarImage,
   AvatarFallback,
-} from "@repo/design-system/avatar";
+} from "@repo/design-system";
 
 export {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 
 export {
   DropdownMenu,
@@ -32,7 +32,7 @@ export {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuCheckboxItem,
-} from "@repo/design-system/dropdown-menu";
+} from "@repo/design-system";
 
 export {
   Table,
@@ -43,7 +43,7 @@ export {
   TableRow,
   TableCell,
   TableCaption,
-} from "@repo/design-system/table";
+} from "@repo/design-system";
 
 export {
   Select,
@@ -51,23 +51,23 @@ export {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/select";
+} from "@repo/design-system";
 
-export { Badge } from "@repo/design-system/badge";
-export { Button } from "@repo/design-system/button";
-export { Input } from "@repo/design-system/input";
-export { Label } from "@repo/design-system/label";
-export { Switch } from "@repo/design-system/switch";
-export { Textarea } from "@repo/design-system/textarea";
-export { Separator } from "@repo/design-system/separator";
-export { toast } from "@repo/design-system/use-toast";
+export { Badge } from "@repo/design-system";
+export { Button } from "@repo/design-system";
+export { Input } from "@repo/design-system";
+export { Label } from "@repo/design-system";
+export { Switch } from "@repo/design-system";
+export { Textarea } from "@repo/design-system";
+export { Separator } from "@repo/design-system";
+export { toast } from "@repo/design-system";
 export {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
+} from "@repo/design-system";
 
 export {
   Dialog,
@@ -77,4 +77,4 @@ export {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@repo/design-system/dialog";
+} from "@repo/design-system";

@@ -68,9 +68,9 @@ export async function exportContentData() {
 
   // Fetch all content data
   const [shows, artists, venues, setlists] = await Promise.all([
-    supabase.from("shows").select("*"),
-    supabase.from("artists").select("*"),
-    supabase.from("venues").select("*"),
+    supabaseapi.shows.select("*"),
+    supabaseapi.artists.select("*"),
+    supabaseapi.venues.select("*"),
     supabase.from("setlists").select("*, setlist_songs(*)"),
   ]);
 

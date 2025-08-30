@@ -89,7 +89,7 @@ export default function ContentActions({
     setLoading(true);
     try {
       const { error } = await supabase
-        .from("shows")
+        api.shows
         .update({ is_featured: !item.is_featured })
         .eq("id", item.id);
 

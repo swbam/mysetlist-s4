@@ -4,23 +4,23 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@repo/design-system/alert";
-import { Badge } from "@repo/design-system/badge";
-import { Button } from "@repo/design-system/button";
+} from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Button } from "@repo/design-system";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/card";
-import { Progress } from "@repo/design-system/progress";
+} from "@repo/design-system";
+import { Progress } from "@repo/design-system";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/tabs";
+} from "@repo/design-system";
 import {
   AlertCircle,
   CheckCircle2,
@@ -377,7 +377,7 @@ function CheckCard({ check, onFix, fixing }: CheckCardProps) {
                 variant="outline"
                 onClick={() => {
                   if (check.name === "Vote Count Consistency") {
-                    onFix("fix_vote_counts");
+                    onFix("fix_voteCounts");
                   } else if (check.name === "Missing Artist Slugs") {
                     onFix("fix_slugs");
                   } else if (check.name === "Orphaned Votes") {

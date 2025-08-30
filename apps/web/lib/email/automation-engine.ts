@@ -83,7 +83,7 @@ export interface PersonalizedEmailData {
   email: string;
   preferences: {
     favoriteGenres: string[];
-    favoriteArtists: Array<{ id: string; name: string; image_url?: string }>;
+    favoriteArtists: Array<{ id: string; name: string; imageUrl?: string }>;
     favoriteVenues: Array<{ id: string; name: string; city: string }>;
     lastActivity: Date;
     timezone: string;
@@ -91,7 +91,7 @@ export interface PersonalizedEmailData {
   };
   recommendations: {
     shows: Array<{ id: string; name: string; date: string; venue: string }>;
-    artists: Array<{ id: string; name: string; image_url?: string }>;
+    artists: Array<{ id: string; name: string; imageUrl?: string }>;
   };
   recentActivity: {
     votesCount: number;
@@ -126,7 +126,7 @@ class EmailAutomationEngine {
         type: "event",
         conditions: [
           {
-            field: "user.created_at",
+            field: "user._creationTime",
             operator: "greater_than",
             value: Date.now() - 24 * 60 * 60 * 1000,
           },
@@ -173,7 +173,7 @@ class EmailAutomationEngine {
         type: "event",
         conditions: [
           {
-            field: "show.created_at",
+            field: "show._creationTime",
             operator: "greater_than",
             value: Date.now() - 60 * 60 * 1000,
           },
@@ -286,27 +286,27 @@ class EmailAutomationEngine {
     const { data: recentVotes } = await supabase
       .from("setlist_votes")
       .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
+      .eq("userId", userId)
+      .order("_creationTime", { ascending: false })
       .limit(50);
 
     const { data: recentAttendance } = await supabase
       .from("show_attendance")
       .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
+      .eq("userId", userId)
+      .order("_creationTime", { ascending: false })
       .limit(20);
 
     // Following feature removed - get popular artists instead
     const { data: popularArtists } = await supabase
-      .from("artists")
-      .select("id, name, image_url")
-      .order("trending_score", { ascending: false })
+      api.artists
+      .select("id, name, imageUrl")
+      .order("trendingScore", { ascending: false })
       .limit(10);
 
     // Get user's favorite venues with details
     const { data: favoriteVenues } = await supabase
-      .from("shows")
+      api.shows
       .select(
         `
         venues(id, name, city)
@@ -333,7 +333,7 @@ class EmailAutomationEngine {
             ?.map((v) => v.venues)
             .filter(Boolean)
             .flat() || [],
-        lastActivity: new Date(user.last_sign_in_at || user.created_at),
+        lastActivity: new Date(user.last_sign_in_at || user._creationTime),
         timezone: user.timezone || "UTC",
         ...(user.location && {
           location: {
@@ -347,11 +347,11 @@ class EmailAutomationEngine {
         votesCount: recentVotes?.length || 0,
         showsAttended: recentAttendance?.length || 0,
         // Following feature removed: newFollows: 0,
-        ...(recentVotes?.[0]?.created_at && {
-          lastVote: new Date(recentVotes[0].created_at),
+        ...(recentVotes?.[0]?._creationTime && {
+          lastVote: new Date(recentVotes[0]._creationTime),
         }),
-        ...(recentAttendance?.[0]?.created_at && {
-          lastAttendance: new Date(recentAttendance[0].created_at),
+        ...(recentAttendance?.[0]?._creationTime && {
+          lastAttendance: new Date(recentAttendance[0]._creationTime),
         }),
       },
       engagement,
@@ -364,25 +364,25 @@ class EmailAutomationEngine {
 
     // Get popular upcoming shows (replaces followed artists)
     const { data: recommendedShows } = await supabase
-      .from("shows")
+      api.shows
       .select(
         `
         id,
         name,
         date,
         venues(name, city),
-        artists!inner(trending_score)
+        artists!inner(trendingScore)
       `,
       )
       .gte("date", new Date().toISOString())
-      .order("artists.trending_score", { ascending: false })
+      .order("artists.trendingScore", { ascending: false })
       .limit(5);
 
     // Get trending artists based on user preferences
     const { data: recommendedArtists } = await supabase
-      .from("artists")
-      .select("id, name, image_url")
-      .order("trending_score", { ascending: false })
+      api.artists
+      .select("id, name, imageUrl")
+      .order("trendingScore", { ascending: false })
       .limit(5);
 
     return {
@@ -406,18 +406,18 @@ class EmailAutomationEngine {
     // Get recent engagement data
     const { data: recentActivity } = await supabase
       .from("events")
-      .select("created_at, event_type")
-      .eq("user_id", userId)
+      .select("_creationTime, event_type")
+      .eq("userId", userId)
       .gte(
-        "created_at",
+        "_creationTime",
         new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
       )
-      .order("created_at", { ascending: false });
+      .order("_creationTime", { ascending: false });
 
     const { data: emailEngagement } = await supabase
       .from("email_engagement")
       .select("*")
-      .eq("user_id", userId)
+      .eq("userId", userId)
       .gte(
         "timestamp",
         new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -441,8 +441,8 @@ class EmailAutomationEngine {
     return {
       score,
       trend: trend as "up" | "down" | "stable",
-      lastEngagement: recentActivity?.[0]?.created_at
-        ? new Date(recentActivity[0].created_at)
+      lastEngagement: recentActivity?.[0]?._creationTime
+        ? new Date(recentActivity[0]._creationTime)
         : new Date(),
       emailOpens,
       emailClicks,
@@ -508,9 +508,9 @@ class EmailAutomationEngine {
       case "welcome-series": {
         const { data: newUsers } = await supabase
           .from("users")
-          .select("id, email, display_name, created_at")
+          .select("id, email, display_name, _creationTime")
           .gte(
-            "created_at",
+            "_creationTime",
             new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
           )
           .is("welcome_email_sent", null);
@@ -555,13 +555,13 @@ class EmailAutomationEngine {
     switch (trigger.id) {
       case "show-reminders": {
         const { data: upcomingShows } = await supabase
-          .from("shows")
+          api.shows
           .select(
             `
             id,
             name,
             date,
-            artists(id, name, image_url),
+            artists(id, name, imageUrl),
             venues(name, city)
           `,
           )
@@ -575,12 +575,12 @@ class EmailAutomationEngine {
           // Get users who attended similar shows (replaces following)
           const { data: interestedUsers } = await supabase
             .from("show_attendance")
-            .select("user_id, users(email, display_name)")
+            .select("userId, users(email, display_name)")
             .limit(50); // Limit for performance
 
           for (const userFollow of interestedUsers || []) {
             const personalizedData = await this.generatePersonalizedData(
-              userFollow.user_id,
+              userFollow.userId,
             );
 
             const emailResult = await sendShowReminderEmail({
@@ -703,7 +703,7 @@ class EmailAutomationEngine {
             const { count } = await supabase
               .from("setlist_votes")
               .select("*", { count: "exact", head: true })
-              .eq("user_id", user.id);
+              .eq("userId", user.id);
 
             if (count === milestone) {
               users.push({ ...user, voteCount: count });
@@ -722,14 +722,14 @@ class EmailAutomationEngine {
                 `
                 vote_value,
                 setlist_songs(
-                  songs(title, artist_id),
+                  songs(title, artistId),
                   setlists(
                     shows(name, venues(name))
                   )
                 )
               `,
               )
-              .eq("user_id", user.id)
+              .eq("userId", user.id)
               .order("vote_value", { ascending: false })
               .limit(1)
               .single();
@@ -783,18 +783,18 @@ class EmailAutomationEngine {
 
     // Get shows created in the last hour
     const { data: newShows } = await supabase
-      .from("shows")
+      api.shows
       .select(
         `
         id,
         name,
         date,
-        created_at,
-        artists(id, name, image_url),
+        _creationTime,
+        artists(id, name, imageUrl),
         venues(name, city)
       `,
       )
-      .gte("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString());
+      .gte("_creationTime", new Date(Date.now() - 60 * 60 * 1000).toISOString());
 
     for (const show of newShows || []) {
       // Get users who might be interested in this show
@@ -815,7 +815,7 @@ class EmailAutomationEngine {
             artistName: show.artists?.[0]?.name || "Unknown Artist",
             venue: show.venues?.[0]?.name || "Unknown Venue",
             date: show.date,
-            announcedAt: show.created_at,
+            announcedAt: show._creationTime,
           },
         });
 
@@ -837,12 +837,12 @@ class EmailAutomationEngine {
     // Get users who want weekly digests
     const { data: users } = await supabase
       .from("user_notification_preferences")
-      .select("user_id, users(email, display_name)")
+      .select("userId, users(email, display_name)")
       .eq("digest_frequency", "weekly");
 
     for (const user of users || []) {
       const personalizedData = await this.generatePersonalizedData(
-        user.user_id,
+        user.userId,
       );
 
       const emailResult = await sendWeeklyDigestEmail({
@@ -911,7 +911,7 @@ class EmailAutomationEngine {
       .from("ab_test_assignments")
       .select("variant")
       .eq("campaign_id", campaignId)
-      .eq("user_id", userId)
+      .eq("userId", userId)
       .single();
 
     if (existingAssignment) {
@@ -939,7 +939,7 @@ class EmailAutomationEngine {
         // Save assignment
         await supabase.from("ab_test_assignments").insert({
           campaign_id: campaignId,
-          user_id: userId,
+          userId: userId,
           variant: variant.name,
           assigned_at: new Date().toISOString(),
         });
@@ -969,7 +969,7 @@ class EmailAutomationEngine {
 
     await supabase.from("email_engagement").insert({
       email_id: emailId,
-      user_id: userId,
+      userId: userId,
       action,
       timestamp: new Date().toISOString(),
       metadata,

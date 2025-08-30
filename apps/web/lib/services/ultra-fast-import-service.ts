@@ -675,8 +675,8 @@ export class UltraFastImportService {
     for (const venue of venuesData) {
       await db.execute(sql`
         UPDATE ${shows}
-        SET venue_id = (
-          SELECT id FROM ${venues} WHERE tm_venue_id = ${venue.id} LIMIT 1
+        SET venueId = (
+          SELECT id FROM ${venues} WHERE tm_venueId = ${venue.id} LIMIT 1
         )
         WHERE raw_data::jsonb -> '_embedded' -> 'venues' -> 0 ->> 'id' = ${venue.id}
       `);
@@ -746,7 +746,7 @@ export class UltraFastImportService {
     await db.execute(sql`
       UPDATE ${artists}
       SET total_songs = (
-        SELECT COUNT(*) FROM ${artistSongs} WHERE artist_id = ${artistId}
+        SELECT COUNT(*) FROM ${artistSongs} WHERE artistId = ${artistId}
       )
       WHERE id = ${artistId}
     `);

@@ -76,7 +76,7 @@ export async function POST() {
     try {
       const cronResult = await db.execute(sql`
         DELETE FROM cron_logs 
-        WHERE created_at < NOW() - INTERVAL '14 days'
+        WHERE _creationTime < NOW() - INTERVAL '14 days'
         AND status = 'success'
         RETURNING id
       `);
@@ -106,7 +106,7 @@ export async function POST() {
     try {
       const errorResult = await db.execute(sql`
         DELETE FROM error_logs 
-        WHERE created_at < NOW() - INTERVAL '30 days'
+        WHERE _creationTime < NOW() - INTERVAL '30 days'
         AND severity NOT IN ('critical', 'fatal')
         RETURNING id
       `);
@@ -121,7 +121,7 @@ export async function POST() {
     try {
       const tempResult = await db.execute(sql`
         DELETE FROM temp_uploads 
-        WHERE created_at < NOW() - INTERVAL '24 hours'
+        WHERE _creationTime < NOW() - INTERVAL '24 hours'
         AND status != 'processing'
         RETURNING id
       `);
@@ -171,7 +171,7 @@ export async function POST() {
     try {
       await db.execute(sql`
         DELETE FROM analytics_events 
-        WHERE created_at < NOW() - INTERVAL '90 days'
+        WHERE _creationTime < NOW() - INTERVAL '90 days'
         AND event_type NOT IN ('conversion', 'error', 'performance_critical')
       `);
       console.log('✅ Cleaned old analytics data');
